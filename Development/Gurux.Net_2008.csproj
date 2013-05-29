@@ -50,6 +50,7 @@
   <ItemGroup>
     <Compile Include="AvailableMediaSettings.cs" />
     <Compile Include="GXNet.cs" />
+    <Compile Include="NamespaceDoc.cs" />
     <Compile Include="NetworkType.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReceiveThread.cs" />

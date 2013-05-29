@@ -42,15 +42,15 @@ using System.Xml;
 using Gurux.Shared;
 using Gurux.Common;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 namespace Gurux.Net
-{   
+{    
     /// <summary>
     /// The GXNet component determines methods that make the communication possible using Internet. 
     /// </summary>
     /// <seealso href="../Net/useNet.html">Using from .NET</seealso>
     /// <seealso href="../Net/useVB.html">Using from VB</seealso> 
-    /// <seealso href="../Net/useC.html">Using from C++</seealso> 
     public class GXNet : IGXMedia, INotifyPropertyChanged, IDisposable
     {
 #if WINDOWS_PHONE
@@ -216,9 +216,7 @@ namespace Gurux.Net
         /// <seealso cref="Open">Open</seealso>
         /// <seealso cref="Close">Close</seealso> 
         /// <example>
-        /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Send" />
-        /// <code lang="vbNet" source="..\\GXNet VB Net Sample\\Form1.vb" region="Send" />
-        /// <code lang="vbscript" source="..\\GXNet Sample\\Form1.frm" region="Send" />
+        /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Send" />                
         /// </example>
         public void Send(object data, string receiver)
         {
@@ -494,21 +492,19 @@ namespace Gurux.Net
         /// Protocol, Port and HostName must be set, before calling the Open method.
         /// </remarks>
         /// <example>
-        /// <code lang="vbscript">
+        /// <code lang="csharp">
         /// 'This example shows how to start client connection.
-        /// 'Set Protocol
-        /// GXNet1.Protocol = GX_NW_UDP  
-        /// 'Set client port
-        /// GXNet1.Port = 1234
-        /// 'Set client name
-        /// GXNet1.HostName = "localhost"
-        /// 'Make connection
-        /// GXNet1.Open
-        /// 'Send data
-        /// dim dataToSend
-        /// dataToSend = "Hello"
-        /// GXNet1.Send dataToSend, ""
-        /// 'The response is received after this through the IGXNetEvents.OnReceived method.
+        /// //Set Protocol
+        /// GXNet1.Protocol = ProtocolType.Tcp;
+        /// //Set client port
+        /// GXNet1.Port = 1234;
+        /// //Set client name
+        /// GXNet1.HostName = "localhost";
+        /// //Make connection
+        /// GXNet1.Open();
+        /// //Send data
+        /// GXNet1.Send("Hello World!", null);
+        /// //The response is received after this through the OnReceived event.
         /// </code>
         /// </example>
         /// <seealso cref="Port">Port</seealso>
@@ -653,8 +649,6 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.Close"/>        
         /// <example>
         /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Close" />
-        /// <code lang="vbNet" source="..\\GXNet VB Net Sample\\Form1.vb" region="Close" />
-        /// <code lang="vbscript" source="..\\GXNet Sample\\Form1.frm" region="Close" />
         /// </example>
         public void Close()
         {            
@@ -713,9 +707,8 @@ namespace Gurux.Net
         }
 #endif
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
-        /// <seealso char="Connect">Open</seealso>
-        /// <seealso char="StartServer">StartServer</seealso>
-        /// <seealso char="Close">Close</seealso>
+        /// <seealso cref="Open">Open</seealso>
+        /// <seealso cref="Close">Close</seealso>
         [Browsable(false)]
         public bool IsOpen
         {
@@ -734,7 +727,7 @@ namespace Gurux.Net
         /// <value>
         /// Protocol
         /// </value>
-        //[DefaultValue(NetworkType::Udp)]
+        [DefaultValue(NetworkType.Udp)]
         [Category("Communication")]
         [Description("Retrieves or sets the protocol.")]
         public NetworkType Protocol
