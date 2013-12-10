@@ -444,27 +444,33 @@ namespace Gurux.Net
                     }
                     else
                     {
-                        workerSocket = m_Socket.EndAccept(result);
-                        ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.LocalEndPoint.ToString()); 
-                        if (m_OnClientConnected != null)
-                        {                            
-                            m_OnClientConnected(this, e);
-                            if (!e.Accept)
-                            {
-                                workerSocket.Close();
-                            }
-                        }
-                        if (e.Accept)
+                        if (m_Socket != null)
                         {
-                            byte[] buff = new byte[1024];
-                            m_ServerDataBuffers[workerSocket] = buff;
-                            //Receive(workerSocket);
-                            workerSocket.BeginReceive(buff, 0, buff.Length,
-                                SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
+                            workerSocket = m_Socket.EndAccept(result);
+                            ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.LocalEndPoint.ToString());
+                            if (m_OnClientConnected != null)
+                            {
+                                m_OnClientConnected(this, e);
+                                if (!e.Accept)
+                                {
+                                    workerSocket.Close();
+                                }
+                            }
+                            if (e.Accept)
+                            {
+                                byte[] buff = new byte[1024];
+                                m_ServerDataBuffers[workerSocket] = buff;
+                                //Receive(workerSocket);
+                                workerSocket.BeginReceive(buff, 0, buff.Length,
+                                    SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
+                            }
                         }
                     }
                     // Wait other clients.
-                    m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
+                    if (m_Socket != null)
+                    {
+                        m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
+                    }
                 }
             }
             catch (ObjectDisposedException)//Server has left.
