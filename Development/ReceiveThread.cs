@@ -40,6 +40,7 @@ using Gurux.Common;
 
 namespace Gurux.Net
 {
+#if WINDOWS_PHONE
     class ReceiveThread
     {
         public ManualResetEvent Closing;
@@ -112,4 +113,5 @@ namespace Gurux.Net
             }
         }
     }
+#endif
 }

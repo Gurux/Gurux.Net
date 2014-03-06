@@ -195,29 +195,9 @@ namespace Gurux.Net
         /// <param name="data">Data to send to the device.</param>
         /// <param name="receiver">IP address of the receiver (optional).</param>
         /// <remarks>Reply data is received through OnReceived event.<br/>
-        /// If data is send synchronously use </remarks>
-        /// <example>
-        /// <code>
-        /// 'Send ASCII (text) string to the device.
-        /// dim dataToSend as string
-        /// GXNet1.Send("Test", null)
-        /// 
-        /// 'Send byte array to the device.
-        /// dim dataToSend as string
-        /// GXNet1.Send(new byte[]{"01, 02, 03, 04}, null)
-        /// 
-        /// 'Send byte to the device.
-        /// dim dataToSend
-        /// dataToSend = ""
-        /// GXNet1.Send((byte) 55, null)
-        /// </code>
-        /// </example>			
-        /// <seealso cref="OnReceived">OnReceived</seealso>
-        /// <seealso cref="Open">Open</seealso>
-        /// <seealso cref="Close">Close</seealso> 
-        /// <example>
-        /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Send" />                
-        /// </example>
+        /// If data is send synchronously use Synchronous</remarks>
+        /// <seealso cref="OnReceived"/>
+        /// <seealso cref="Synchronous"/>
         public void Send(object data, string receiver)
         {
             if (m_Socket == null)
@@ -238,28 +218,34 @@ namespace Gurux.Net
                 }
                 // Create SocketAsyncEventArgs context object
                 SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-
-                // Set properties on context object
-                socketEventArg.RemoteEndPoint = m_Socket.RemoteEndPoint;
-                socketEventArg.UserToken = null;
                 SocketError err = 0;
-                // Inline event handler for the Completed event.
-                // Note: This event handler was implemented inline in order to make this method self-contained.
-                socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                try
                 {
-                    err = e.SocketError;
-                    m_clientDone.Set();
-                });                
-                
-                socketEventArg.SetBuffer(value, 0, value.Length);
-                // Sets the state of the event to nonsignaled, causing threads to block
-                m_clientDone.Reset();
-                // Make an asynchronous Send request over the socket
-                m_Socket.SendAsync(socketEventArg);
+                    // Set properties on context object
+                    socketEventArg.RemoteEndPoint = m_Socket.RemoteEndPoint;
+                    socketEventArg.UserToken = null;
+                    // Inline event handler for the Completed event.
+                    // Note: This event handler was implemented inline in order to make this method self-contained.
+                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                    {
+                        err = e.SocketError;
+                        m_clientDone.Set();
+                    });
 
-                // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                // If no response comes back within this time then proceed
-                m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                    socketEventArg.SetBuffer(value, 0, value.Length);
+                    // Sets the state of the event to nonsignaled, causing threads to block
+                    m_clientDone.Reset();
+                    // Make an asynchronous Send request over the socket
+                    m_Socket.SendAsync(socketEventArg);
+
+                    // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                    // If no response comes back within this time then proceed
+                    m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                }
+                finally
+                {
+                    socketEventArg.Dispose();
+                }
                 if (err != 0)
                 {
                     throw new SocketException((int)err);
@@ -336,7 +322,12 @@ namespace Gurux.Net
                         lock (m_syncBase.m_ReceivedSync)
                         {
                             int index = m_syncBase.m_ReceivedSize;
-                            m_syncBase.AppendData(buff, 0, bytes);                            
+                            m_syncBase.AppendData(buff, 0, bytes);
+                            if (bytes != 0 && m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                            {
+                                arg = new TraceEventArgs(TraceTypes.Received, buff, 0, bytes);
+                                m_OnTrace(this, arg);
+                            }
                             if (bytes != 0 && Eop != null) //Search Eop if given.
                             {
                                 if (Eop is Array)
@@ -358,15 +349,7 @@ namespace Gurux.Net
                             if (bytes != -1)
                             {
                                 m_syncBase.m_ReceivedEvent.Set();
-                                if (bytes != 0 && m_Trace == TraceLevel.Verbose && m_OnTrace != null)
-                                {
-                                    arg = new TraceEventArgs(TraceTypes.Received, m_syncBase.m_Received, index, bytes - index);
-                                }
-                            }
-                        }
-                        if (arg != null)
-                        {
-                            m_OnTrace(this, arg);
+                            }                            
                         }
                     }
                     else
@@ -376,9 +359,13 @@ namespace Gurux.Net
                             m_syncBase.m_ReceivedSize = 0;
                             byte[] data = new byte[bytes];
                             Array.Copy(buff, data, bytes);
+                            if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                            {
+                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data));
+                            }
                             m_OnReceived(this, new ReceiveEventArgs(data, socket.LocalEndPoint.ToString()));
                         }
-                        if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                        else if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
                         {
                             m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, buff, 0, bytes));
                         }
@@ -595,27 +582,35 @@ namespace Gurux.Net
                     SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
                     socketEventArg.RemoteEndPoint = ep;
                     SocketError err = 0;
-                    // Inline event handler for the Completed event.
-                    // Note: This event handler was implemented inline in order to make this method self-contained.
-                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                    try
                     {
-                        err = e.SocketError;
-                        m_clientDone.Set();
-                    });
+                        // Inline event handler for the Completed event.
+                        // Note: This event handler was implemented inline in order to make this method self-contained.
+                        socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                        {
+                            err = e.SocketError;
+                            m_clientDone.Set();
+                        });
 
-                    // Sets the state of the event to nonsignaled, causing threads to block
-                    m_clientDone.Reset();
+                        // Sets the state of the event to nonsignaled, causing threads to block
+                        m_clientDone.Reset();
 
-                    // Make an asynchronous Connect request over the socket
-                    m_Socket.ConnectAsync(socketEventArg);
+                        // Make an asynchronous Connect request over the socket
+                        m_Socket.ConnectAsync(socketEventArg);
 
-                    // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                    // If no response comes back within this time then proceed
-                    m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
-                    if (err != 0)
-                    {
-                        throw new SocketException((int)err);
+                        // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                        // If no response comes back within this time then proceed
+                        m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                        if (err != 0)
+                        {
+                            throw new SocketException((int)err);
+                        }
                     }
+                    finally
+                    {
+                        socketEventArg.Dispose();
+                    }
+                     
 #if WINDOWS_PHONE
                     m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
                     m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
