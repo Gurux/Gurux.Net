@@ -117,22 +117,40 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Yhteyden asetukset</value>
+  </data>
   <data name="HostNameTxt" xml:space="preserve">
-    <value>Host Name</value>
+    <value>Osoite:</value>
   </data>
-  <data name="PortTxt" xml:space="preserve">
-    <value>Port</value>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Virheellinen asiakas.</value>
   </data>
-  <data name="ProtocolTxt" xml:space="preserve">
-    <value>Protocol</value>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Virheellinen liitäntä.</value>
   </data>
-  <data name="ServerTxt" xml:space="preserve">
-    <value>Server</value>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Virheellinen palvelimen nimi .</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Virheellinen portin nimi .</value>
   </data>
   <data name="SettingsTxt" xml:space="preserve">
-    <value>Network Settings</value>
+    <value>Verkkoasetukset</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Portti:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokolla</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Palvelin</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Palvelimen asetukset:</value>
   </data>
   <data name="UseIPv6Txt" xml:space="preserve">
-    <value>Use IPv6</value>
+    <value>Käytä IPv6</value>
   </data>
 </root>

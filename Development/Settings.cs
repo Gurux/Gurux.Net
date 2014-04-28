@@ -38,6 +38,7 @@ using System.Linq;
 using System.Reflection;
 using Gurux.Common;
 using System.Windows.Forms;
+using Gurux.Net.Properties;
 
 namespace Gurux.Net
 {
@@ -140,11 +141,11 @@ namespace Gurux.Net
 
         void IGXPropertyPage.Initialize()
         {
-            this.ServerCB.Text = Gurux.Net.Resources.ServerTxt;
-            this.IPAddressLbl.Text = Gurux.Net.Resources.HostNameTxt;
-            this.PortLbl.Text = Gurux.Net.Resources.PortTxt;
-            this.ProtocolLbl.Text = Gurux.Net.Resources.ProtocolTxt;
-			this.UseIPv6CB.Text = Gurux.Net.Resources.UseIPv6Txt;
+            this.ServerCB.Text = Resources.ServerTxt;
+            this.IPAddressLbl.Text = Resources.HostNameTxt;
+            this.PortLbl.Text = Resources.PortTxt;
+            this.ProtocolLbl.Text = Resources.ProtocolTxt;
+			this.UseIPv6CB.Text = Resources.UseIPv6Txt;
             ProtocolCB.Items.Add(NetworkType.Tcp);
             ProtocolCB.Items.Add(NetworkType.Udp);
             this.ServerCB.Checked = Target.Server;

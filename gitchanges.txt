@@ -1,0 +1,2 @@
+Development/Gurux.Net_2010.csproj
+Development/Shared/GXSynchronousMediaBase.cs

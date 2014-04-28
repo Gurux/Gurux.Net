@@ -190,7 +190,7 @@
             this.ShowIcon = false;
             this.ShowInTaskbar = false;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-            this.Text = "Network Settings";
+            this.Text = "Network SettingsX";
             this.ServerPanel.ResumeLayout(false);
             this.ServerPanel.PerformLayout();
             this.UseIPv6Panel.ResumeLayout(false);

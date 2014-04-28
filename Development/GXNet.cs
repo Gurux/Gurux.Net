@@ -43,6 +43,7 @@ using Gurux.Shared;
 using Gurux.Common;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
+using Gurux.Net.Properties;
 
 namespace Gurux.Net
 {    
@@ -202,11 +203,11 @@ namespace Gurux.Net
         {
             if (m_Socket == null)
             {
-                throw new Exception("Invalid connection.");
+                throw new Exception(Resources.InvalidConnection);
             }
             if (!this.m_Server)
             {
-				byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
+                byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
                 if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
                 {
                     m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value));
@@ -249,7 +250,7 @@ namespace Gurux.Net
                 if (err != 0)
                 {
                     throw new SocketException((int)err);
-                }
+                }                
                 this.m_BytesSend += (ulong)value.Length;
             }
             else
@@ -266,13 +267,13 @@ namespace Gurux.Net
                 }
                 if (client == null)
                 {
-                    throw new Exception("Invalid client.");
+                    throw new Exception(Resources.InvalidClient);
                 }
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
                 client.Send(value);
-                this.m_BytesSend += (ulong)value.Length;                
+                this.m_BytesSend += (ulong)value.Length;
 #endif
-            }
+            }            
         }
 
         void NotifyMediaStateChange(MediaState state)
@@ -509,46 +510,46 @@ namespace Gurux.Net
         {
             Close();            
             try
-            {
+            {                
                 lock (m_syncBase.m_ReceivedSync)
                 {
                     m_syncBase.m_LastPosition = 0;
-                }
+                }                
+                EndPoint ep = null;
                 NotifyMediaStateChange(MediaState.Opening);
-				AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;								
-				EndPoint ep = null;
+                AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;                    
                 if (!this.m_Server)
                 {
-					IPAddress address;
-					if (IPAddress.TryParse(HostName, out address))
-					{
-						switch (address.AddressFamily)
-						{
-							case AddressFamily.InterNetwork:
-								family = address.AddressFamily;
-								break;
-							case AddressFamily.InterNetworkV6:
-								family = address.AddressFamily;
-								break;
-							default:
-								family = address.AddressFamily;
-								break;
-						}
-					}
-					else
-					{
-						// Get host related information.
-						IPHostEntry host = Dns.GetHostEntry(HostName);
-						foreach (IPAddress ip in host.AddressList)
-						{
-							if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
-								ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
-							{
-								ep = new IPEndPoint(ip, Port);
-								break;
-							}
-						}
-					}
+                    IPAddress address;
+                    if (IPAddress.TryParse(HostName, out address))
+                    {
+                        switch (address.AddressFamily)
+                        {
+                            case AddressFamily.InterNetwork:
+                                family = address.AddressFamily;
+                                break;
+                            case AddressFamily.InterNetworkV6:
+                                family = address.AddressFamily;
+                                break;
+                            default:
+                                family = address.AddressFamily;
+                                break;
+                        }
+                    }
+                    else
+                    {
+                        // Get host related information.
+                        IPHostEntry host = Dns.GetHostEntry(HostName);
+                        foreach (IPAddress ip in host.AddressList)
+                        {
+                            if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
+                                ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
+                            {
+                                ep = new IPEndPoint(ip, Port);
+                                break;
+                            }
+                        }
+                    }
                     if (ep == null)
                     {
                         ep = new IPEndPoint(address, Port);
@@ -565,19 +566,28 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    throw new ArgumentException("Protocol");
+                    throw new ArgumentException(Resources.ProtocolTxt);
                 }
                 if (!this.m_Server)
-                {                    
+                {
 #if WINDOWS_PHONE 
                     // Create DnsEndPoint. The hostName and port are passed in to this method.
                     ep = new DnsEndPoint(HostName, Port);
-#else                   					
+#else
                     if (m_Trace >= TraceLevel.Info && m_OnTrace != null)
                     {
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, "Client settings: Protocol: " + this.Protocol.ToString() + " Host: " + HostName + " Port: " + Port.ToString()));
-                    }                        
-#endif                    
+                        string str = string.Format("{0} {1} {2} {3} {4} {5} {6}", 
+                            Resources.ClientSettings, 
+                            Resources.ProtocolTxt, 
+                            this.Protocol.ToString(), 
+                            Resources.HostNameTxt, 
+                            HostName, 
+                            Resources.PortTxt, 
+                            Port.ToString());
+
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str));
+                    }
+#endif
                     // Create a SocketAsyncEventArgs object to be used in the connection request
                     SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
                     socketEventArg.RemoteEndPoint = ep;
@@ -610,7 +620,7 @@ namespace Gurux.Net
                     {
                         socketEventArg.Dispose();
                     }
-                     
+
 #if WINDOWS_PHONE
                     m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
                     m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
@@ -626,7 +636,13 @@ namespace Gurux.Net
 #if !WINDOWS_PHONE
                     if (m_Trace >= TraceLevel.Info && m_OnTrace != null)
                     {
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, "Server settings: Protocol: " + this.Protocol.ToString() + " Port: " + Port.ToString()));
+                        string str = string.Format("{0} {1} {2} {3} {4}",
+                                    Resources.ServerSettings,
+                                    Resources.ProtocolTxt,
+                                    Protocol,
+                                    Resources.PortTxt,
+                                    Port);
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str));
                     }
                     IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, Port);
                     // Bind to local IP Address...
@@ -634,7 +650,7 @@ namespace Gurux.Net
                     // Start listening...
                     m_Socket.Listen(4);
                     // Create the call back for any client connections...
-                    m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);                    
+                    m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
 #endif
                 }
                 NotifyMediaStateChange(MediaState.Open);
@@ -652,7 +668,7 @@ namespace Gurux.Net
         /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Close" />
         /// </example>
         public void Close()
-        {            
+        {
             if (m_Socket != null)
             {
 #if WINDOWS_PHONE
@@ -665,13 +681,13 @@ namespace Gurux.Net
                     }
                     m_Receiver = null;
                 }
-#endif                
+#endif
                 m_ServerDataBuffers.Clear();
                 try
                 {
                     if (m_Socket.Connected)
                     {
-                        NotifyMediaStateChange(MediaState.Closing);                        
+                        NotifyMediaStateChange(MediaState.Closing);
                     }
                 }
                 catch (Exception ex)
@@ -682,7 +698,7 @@ namespace Gurux.Net
                 finally
                 {
                     try
-                    {                        
+                    {
                         m_Socket.Close();
                     }
                     catch
@@ -697,6 +713,7 @@ namespace Gurux.Net
                 }
             }
         }
+
 #if !WINDOWS_PHONE
         /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
         public System.Windows.Forms.Form PropertiesForm
@@ -1232,7 +1249,7 @@ namespace Gurux.Net
         /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
         public bool Properties(System.Windows.Forms.Form parent)
         {
-            return new Gurux.Shared.PropertiesForm(PropertiesForm, Gurux.Net.Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
+            return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
 #endif
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
@@ -1272,11 +1289,11 @@ namespace Gurux.Net
         {
             if (Port == 0)
             {
-                throw new Exception("Invalid port name.");
+                throw new Exception(Resources.InvalidPortName);
             }
             if (!m_Server && string.IsNullOrEmpty(HostName))
             {
-                throw new Exception("Invalid host name.");
+                throw new Exception(Resources.InvalidHostName);
             }
         }
 
@@ -1287,11 +1304,12 @@ namespace Gurux.Net
             set;
         }
 
+        /// <inheritdoc cref="IGXMedia.ConfigurableSettings"/>
         int IGXMedia.ConfigurableSettings
         {
             get;
             set;
-        }
+        }      
 
         #endregion
 
@@ -1305,6 +1323,6 @@ namespace Gurux.Net
             Close();
         }
 
-        #endregion
+        #endregion        
     }
 }
