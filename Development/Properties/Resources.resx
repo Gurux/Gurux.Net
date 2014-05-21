@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="ClientSettings" xml:space="preserve">
-    <value>Client settings</value>
+    <value>Client Settings:</value>
   </data>
   <data name="HostNameTxt" xml:space="preserve">
     <value>Host:</value>
@@ -148,7 +148,7 @@
     <value>Server</value>
   </data>
   <data name="ServerSettings" xml:space="preserve">
-    <value>Server settings:</value>
+    <value>Server Settings:</value>
   </data>
   <data name="UseIPv6Txt" xml:space="preserve">
     <value>Use IPv6</value>

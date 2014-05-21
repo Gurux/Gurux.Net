@@ -52,12 +52,13 @@ namespace Gurux.Net
     /// </summary>
     /// <seealso href="../Net/useNet.html">Using from .NET</seealso>
     /// <seealso href="../Net/useVB.html">Using from VB</seealso> 
-    public class GXNet : IGXMedia, INotifyPropertyChanged, IDisposable
+    public class GXNet : IGXMedia, IGXVirtualMedia, INotifyPropertyChanged, IDisposable
     {
 #if WINDOWS_PHONE
         ReceiveThread m_Receiver;
         Thread m_ReceiverThread;
 #endif
+        bool IsVirtual, VirtualOpen;
         // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this 
         // timeout period, the call is aborted.
         const int TIMEOUT_MILLISECONDS = 5000;
@@ -95,10 +96,10 @@ namespace Gurux.Net
         /// <param name="port">Client port.</param>
         public GXNet(NetworkType protocol, string hostName, int port)
             : this()
-        {            
-            Protocol = protocol;
-            HostName = hostName;
-            Port = port;
+        {
+            m_Protocol = protocol;
+            m_HostName = hostName;
+            m_Port = port;
         }
 
         /// <summary>
@@ -109,9 +110,9 @@ namespace Gurux.Net
         public GXNet(NetworkType protocol, int port) 
             : this()
         {
-            this.Server = true;
-            Protocol = protocol;            
-            Port = port;
+            m_Server = true;
+            m_Protocol = protocol;
+            m_Port = port;
         }
 
         /// <summary>
@@ -164,7 +165,7 @@ namespace Gurux.Net
             }
             if (m_Trace >= TraceLevel.Error && m_OnTrace != null)
             {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Error, ex));
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Error, ex, null));
             }
         }
 
@@ -179,6 +180,73 @@ namespace Gurux.Net
             {
                 ((IGXMedia)this).ConfigurableSettings = (int)value;
             }
+        }
+
+        /// <inheritdoc cref="IGXMedia.Tag"/>
+        public object Tag
+        {
+            get;
+            set;
+        }
+
+        /// <inheritdoc cref="IGXMedia.MediaContainer"/>
+        IGXMediaContainer IGXMedia.MediaContainer
+        {
+            get;
+            set;
+        }
+
+        /// <inheritdoc cref="IGXVirtualMedia.Virtual"/>
+        bool IGXVirtualMedia.Virtual
+        {
+            get
+            {
+                return IsVirtual;
+            }
+            set
+            {
+                IsVirtual = value;
+            }
+        }
+
+        /// <summary>
+        /// Occurs when a property value is asked.
+        /// </summary>
+        event GetPropertyValueEventHandler IGXVirtualMedia.OnGetPropertyValue
+        {
+            add
+            {
+                m_OnGetPropertyValue += value;
+            }
+            remove
+            {
+                m_OnGetPropertyValue -= value;
+            }
+        }
+
+         /// <summary>
+        /// Occurs when data is sent on virtual mode.
+        /// </summary>
+        event ReceivedEventHandler IGXVirtualMedia.OnDataSend
+        {
+            add
+            {
+                m_OnDataSend += value;
+            }
+            remove
+            {
+                m_OnDataSend -= value;
+            }
+        }
+
+        /// <summary>
+        /// Called when new data is received to the virtual media.
+        /// </summary>
+        /// <param name="data">received data</param>
+        /// <param name="sender">Data sender.</param>
+        void IGXVirtualMedia.DataReceived(byte[] data, string sender)
+        {
+            HandleReceivedData(data.Length, data, sender);
         }
 
         /// <summary>   
@@ -201,7 +269,7 @@ namespace Gurux.Net
         /// <seealso cref="Synchronous"/>
         public void Send(object data, string receiver)
         {
-            if (m_Socket == null)
+            if (m_Socket == null && !VirtualOpen)
             {
                 throw new Exception(Resources.InvalidConnection);
             }
@@ -210,47 +278,54 @@ namespace Gurux.Net
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
                 if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
                 {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value));
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value, receiver));
                 }
                 //Reset last position if Eop is used.
                 lock (m_syncBase.m_ReceivedSync)
                 {
                     m_syncBase.m_LastPosition = 0;
                 }
-                // Create SocketAsyncEventArgs context object
-                SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-                SocketError err = 0;
-                try
+                if (!IsVirtual)
                 {
-                    // Set properties on context object
-                    socketEventArg.RemoteEndPoint = m_Socket.RemoteEndPoint;
-                    socketEventArg.UserToken = null;
-                    // Inline event handler for the Completed event.
-                    // Note: This event handler was implemented inline in order to make this method self-contained.
-                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                    // Create SocketAsyncEventArgs context object
+                    SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
+                    SocketError err = 0;
+                    try
                     {
-                        err = e.SocketError;
-                        m_clientDone.Set();
-                    });
+                        // Set properties on context object
+                        socketEventArg.RemoteEndPoint = m_Socket.RemoteEndPoint;
+                        socketEventArg.UserToken = null;
+                        // Inline event handler for the Completed event.
+                        // Note: This event handler was implemented inline in order to make this method self-contained.
+                        socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                        {
+                            err = e.SocketError;
+                            m_clientDone.Set();
+                        });
 
-                    socketEventArg.SetBuffer(value, 0, value.Length);
-                    // Sets the state of the event to nonsignaled, causing threads to block
-                    m_clientDone.Reset();
-                    // Make an asynchronous Send request over the socket
-                    m_Socket.SendAsync(socketEventArg);
+                        socketEventArg.SetBuffer(value, 0, value.Length);
+                        // Sets the state of the event to nonsignaled, causing threads to block
+                        m_clientDone.Reset();
+                        // Make an asynchronous Send request over the socket
+                        m_Socket.SendAsync(socketEventArg);
 
-                    // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                    // If no response comes back within this time then proceed
-                    m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                        // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                        // If no response comes back within this time then proceed
+                        m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                    }
+                    finally
+                    {
+                        socketEventArg.Dispose();
+                    }
+                    if (err != 0)
+                    {
+                        throw new SocketException((int)err);
+                    }
                 }
-                finally
+                else
                 {
-                    socketEventArg.Dispose();
+                    m_OnDataSend(this, new ReceiveEventArgs(data, receiver));
                 }
-                if (err != 0)
-                {
-                    throw new SocketException((int)err);
-                }                
                 this.m_BytesSend += (ulong)value.Length;
             }
             else
@@ -280,7 +355,7 @@ namespace Gurux.Net
         {
             if (m_Trace >= TraceLevel.Info && m_OnTrace != null)
             {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, state));
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, state, null));
             }
             if (m_OnMediaStateChange != null)
             {
@@ -289,16 +364,21 @@ namespace Gurux.Net
         }
 
 #if !WINDOWS_PHONE
+        /// <summary>
+        /// New data is received.
+        /// </summary>
+        /// <param name="result"></param>
         void RecieveComplete(IAsyncResult result)
         {
             Socket socket = null;
             try
             {
+                int bytes = 0;
+                byte[] buff = null;
                 socket = result.AsyncState as Socket;
                 if (socket.Connected)
                 {
-                    byte[] buff = null;
-                    int bytes = socket.EndReceive(result);
+                    bytes = socket.EndReceive(result);
                     if (this.Server)
                     {
                         if (m_ServerDataBuffers.ContainsKey(socket))
@@ -310,67 +390,21 @@ namespace Gurux.Net
                     {
                         buff = ReceiveBuffer;
                     }
+                }
+                if (this.Server)
+                {
+                    string sender = socket.LocalEndPoint.ToString();
                     if (bytes == 0)
                     {
                         //Client has left.
-                        DisconnectClient(socket.LocalEndPoint.ToString());
+                        DisconnectClient(sender);
                         return;
-                    }                    
-                    m_BytesReceived += (uint)bytes;
-                    if (this.IsSynchronous)
-                    {
-                        TraceEventArgs arg = null;
-                        lock (m_syncBase.m_ReceivedSync)
-                        {
-                            int index = m_syncBase.m_ReceivedSize;
-                            m_syncBase.AppendData(buff, 0, bytes);
-                            if (bytes != 0 && m_Trace == TraceLevel.Verbose && m_OnTrace != null)
-                            {
-                                arg = new TraceEventArgs(TraceTypes.Received, buff, 0, bytes);
-                                m_OnTrace(this, arg);
-                            }
-                            if (bytes != 0 && Eop != null) //Search Eop if given.
-                            {
-                                if (Eop is Array)
-                                {
-                                    foreach (object eop in (Array)Eop)
-                                    {
-                                        bytes = GXCommon.IndexOf(m_syncBase.m_Received, GXCommon.GetAsByteArray(eop), index, m_syncBase.m_ReceivedSize);
-                                        if (bytes != -1)
-                                        {
-                                            break;
-                                        }
-                                    }
-                                }
-                                else
-                                {
-                                    bytes = GXCommon.IndexOf(m_syncBase.m_Received, GXCommon.GetAsByteArray(Eop), index, m_syncBase.m_ReceivedSize);
-                                }
-                            }
-                            if (bytes != -1)
-                            {
-                                m_syncBase.m_ReceivedEvent.Set();
-                            }                            
-                        }
                     }
-                    else
-                    {
-                        if (m_OnReceived != null)
-                        {
-                            m_syncBase.m_ReceivedSize = 0;
-                            byte[] data = new byte[bytes];
-                            Array.Copy(buff, data, bytes);
-                            if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
-                            {
-                                m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data));
-                            }
-                            m_OnReceived(this, new ReceiveEventArgs(data, socket.LocalEndPoint.ToString()));
-                        }
-                        else if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
-                        {
-                            m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, buff, 0, bytes));
-                        }
-                    }
+                }
+                if (bytes != 0)
+                {
+                    string sender = socket.LocalEndPoint.ToString();
+                    bytes = HandleReceivedData(bytes, buff, sender);
                     if (socket.Connected)
                     {
                         socket.BeginReceive(buff, 0, buff.Length, SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
@@ -405,6 +439,66 @@ namespace Gurux.Net
             {
                 NotifyError(ex);
             }
+        }
+
+        private int HandleReceivedData(int bytes, byte[] buff, string sender)
+        {
+            m_BytesReceived += (uint)bytes;
+            if (this.IsSynchronous)
+            {
+                TraceEventArgs arg = null;
+                lock (m_syncBase.m_ReceivedSync)
+                {
+                    int index = m_syncBase.m_ReceivedSize;
+                    m_syncBase.AppendData(buff, 0, bytes);
+                    if (bytes != 0 && m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                    {
+                        arg = new TraceEventArgs(TraceTypes.Received, buff, 0, bytes, null);
+                        m_OnTrace(this, arg);
+                    }
+                    if (bytes != 0 && Eop != null) //Search Eop if given.
+                    {
+                        if (Eop is Array)
+                        {
+                            foreach (object eop in (Array)Eop)
+                            {
+                                bytes = GXCommon.IndexOf(m_syncBase.m_Received, GXCommon.GetAsByteArray(eop), index, m_syncBase.m_ReceivedSize);
+                                if (bytes != -1)
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            bytes = GXCommon.IndexOf(m_syncBase.m_Received, GXCommon.GetAsByteArray(Eop), index, m_syncBase.m_ReceivedSize);
+                        }
+                    }
+                    if (bytes != -1)
+                    {
+                        m_syncBase.m_ReceivedEvent.Set();
+                    }
+                }
+            }
+            else
+            {
+                if (m_OnReceived != null)
+                {
+                    m_syncBase.m_ReceivedSize = 0;
+                    byte[] data = new byte[bytes];
+                    Array.Copy(buff, data, bytes);
+                    if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                    {
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data, null));
+                    }
+                    m_OnReceived(this, new ReceiveEventArgs(data, sender));
+                }
+                else if (m_Trace == TraceLevel.Verbose && m_OnTrace != null)
+                {
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, buff, 0, bytes, null));
+                }
+            }
+            return bytes;
         }              
 
         /// <summary>
@@ -517,8 +611,8 @@ namespace Gurux.Net
                 }                
                 EndPoint ep = null;
                 NotifyMediaStateChange(MediaState.Opening);
-                AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;                    
-                if (!this.m_Server)
+                AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+                if (!this.m_Server && !IsVirtual)
                 {
                     IPAddress address;
                     if (IPAddress.TryParse(HostName, out address))
@@ -539,30 +633,36 @@ namespace Gurux.Net
                     else
                     {
                         // Get host related information.
-                        IPHostEntry host = Dns.GetHostEntry(HostName);
+                        IPHostEntry host = Dns.GetHostEntry(m_HostName);
                         foreach (IPAddress ip in host.AddressList)
                         {
                             if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
                                 ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
                             {
-                                ep = new IPEndPoint(ip, Port);
+                                ep = new IPEndPoint(ip, m_Port);
                                 break;
                             }
                         }
                     }
                     if (ep == null)
                     {
-                        ep = new IPEndPoint(address, Port);
+                        ep = new IPEndPoint(address, m_Port);
                     }
                 }
                 // Create a stream-based, TCP socket using the InterNetwork Address Family.                 
-                if (Protocol == NetworkType.Tcp)
+                if (m_Protocol == NetworkType.Tcp)
                 {
-                    m_Socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
+                    if (!IsVirtual)
+                    {
+                        m_Socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
+                    }
                 }
-                else if (Protocol == NetworkType.Udp)
+                else if (m_Protocol == NetworkType.Udp)
                 {
-                    m_Socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
+                    if (!IsVirtual)
+                    {
+                        m_Socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
+                    }
                 }
                 else
                 {
@@ -579,13 +679,12 @@ namespace Gurux.Net
                         string str = string.Format("{0} {1} {2} {3} {4} {5} {6}", 
                             Resources.ClientSettings, 
                             Resources.ProtocolTxt, 
-                            this.Protocol.ToString(), 
+                            m_Protocol.ToString(), 
                             Resources.HostNameTxt, 
-                            HostName, 
+                            m_HostName, 
                             Resources.PortTxt, 
-                            Port.ToString());
-
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str));
+                            m_Port.ToString());
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
                     }
 #endif
                     // Create a SocketAsyncEventArgs object to be used in the connection request
@@ -596,29 +695,35 @@ namespace Gurux.Net
                     {
                         // Inline event handler for the Completed event.
                         // Note: This event handler was implemented inline in order to make this method self-contained.
-                        socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                        if (!IsVirtual)
                         {
-                            err = e.SocketError;
-                            m_clientDone.Set();
-                        });
+                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                            {
+                                err = e.SocketError;
+                                m_clientDone.Set();
+                            });
 
-                        // Sets the state of the event to nonsignaled, causing threads to block
-                        m_clientDone.Reset();
+                            // Sets the state of the event to nonsignaled, causing threads to block
+                            m_clientDone.Reset();
 
-                        // Make an asynchronous Connect request over the socket
-                        m_Socket.ConnectAsync(socketEventArg);
+                            // Make an asynchronous Connect request over the socket
+                            m_Socket.ConnectAsync(socketEventArg);
 
-                        // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                        // If no response comes back within this time then proceed
-                        m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
-                        if (err != 0)
-                        {
-                            throw new SocketException((int)err);
+                            // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                            // If no response comes back within this time then proceed
+                            m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                            if (err != 0)
+                            {
+                                throw new SocketException((int)err);
+                            }
                         }
                     }
                     finally
                     {
-                        socketEventArg.Dispose();
+                        if (!IsVirtual)
+                        {
+                            socketEventArg.Dispose();
+                        }
                     }
 
 #if WINDOWS_PHONE
@@ -627,8 +732,12 @@ namespace Gurux.Net
                     m_ReceiverThread.IsBackground = true;
                     m_ReceiverThread.Start();
 #else
-                    m_Socket.BeginReceive(ReceiveBuffer, 0, ReceiveBuffer.Length,
-                                                                    SocketFlags.None, new AsyncCallback(RecieveComplete), m_Socket);
+                    if (!IsVirtual)
+                    {
+                        m_Socket.BeginReceive(ReceiveBuffer, 0, ReceiveBuffer.Length,
+                                                                        SocketFlags.None, new AsyncCallback(RecieveComplete), m_Socket);
+                    }
+                    VirtualOpen = true;
 #endif
                 }
                 else
@@ -639,18 +748,21 @@ namespace Gurux.Net
                         string str = string.Format("{0} {1} {2} {3} {4}",
                                     Resources.ServerSettings,
                                     Resources.ProtocolTxt,
-                                    Protocol,
+                                    m_Protocol,
                                     Resources.PortTxt,
-                                    Port);
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str));
+                                    m_Port);
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
                     }
-                    IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, Port);
-                    // Bind to local IP Address...
-                    m_Socket.Bind(ipLocal);
-                    // Start listening...
-                    m_Socket.Listen(4);
-                    // Create the call back for any client connections...
-                    m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
+                    if (!IsVirtual)
+                    {
+                        IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, m_Port);
+                        // Bind to local IP Address...
+                        m_Socket.Bind(ipLocal);
+                        // Start listening...
+                        m_Socket.Listen(4);
+                        // Create the call back for any client connections...
+                        m_Socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
+                    }
 #endif
                 }
                 NotifyMediaStateChange(MediaState.Open);
@@ -669,7 +781,7 @@ namespace Gurux.Net
         /// </example>
         public void Close()
         {
-            if (m_Socket != null)
+            if (m_Socket != null || VirtualOpen)
             {
 #if WINDOWS_PHONE
                 if (m_Receiver != null)
@@ -685,7 +797,7 @@ namespace Gurux.Net
                 m_ServerDataBuffers.Clear();
                 try
                 {
-                    if (m_Socket.Connected)
+                    if (VirtualOpen || m_Socket.Connected)
                     {
                         NotifyMediaStateChange(MediaState.Closing);
                     }
@@ -699,18 +811,22 @@ namespace Gurux.Net
                 {
                     try
                     {
-                        m_Socket.Close();
+                        if (m_Socket != null)
+                        {
+                            m_Socket.Close();
+                        }
                     }
                     catch
                     {
                         //Ignore all errors on close.
                     }
+                    VirtualOpen = false;
                     NotifyMediaStateChange(MediaState.Closed);
                     m_Socket = null;
                     m_BytesSend = m_BytesReceived = 0;
                     m_syncBase.m_ReceivedSize = 0;
                     m_syncBase.m_ReceivedEvent.Set();
-                }
+                }                
             }
         }
 
@@ -732,7 +848,7 @@ namespace Gurux.Net
         {
             get
             {
-                return m_Socket != null;
+                return m_Socket != null || VirtualOpen;
             }
         }        
 
@@ -752,6 +868,14 @@ namespace Gurux.Net
         {
             get
             {
+                if (IsVirtual && m_OnGetPropertyValue != null)
+                {
+                    string value = m_OnGetPropertyValue("Protocol");                    
+                    if (value != null)
+                    {
+                        return (NetworkType)int.Parse(value);
+                    }                    
+                }
                 return m_Protocol;
             }
             set
@@ -780,6 +904,14 @@ namespace Gurux.Net
         {
             get
             {
+                if (IsVirtual && m_OnGetPropertyValue != null)
+                {
+                    string value = m_OnGetPropertyValue("HostName");
+                    if (value != null)
+                    {
+                        return value;
+                    }                    
+                }
                 return m_HostName;
             }
             set
@@ -808,6 +940,14 @@ namespace Gurux.Net
         {
             get
             {
+                if (IsVirtual && m_OnGetPropertyValue != null)
+                {
+                    string value = m_OnGetPropertyValue("Port");
+                    if (value != null)
+                    {
+                        return int.Parse(value);
+                    }                    
+                }
                 return m_Port;
             }
             set
@@ -835,6 +975,14 @@ namespace Gurux.Net
         {
             get
             {
+                if (IsVirtual && m_OnGetPropertyValue != null)
+                {
+                    string value = m_OnGetPropertyValue("Server");
+                    if (value != null)
+                    {
+                        return bool.Parse(value);
+                    }                    
+                }
                 return m_Server;
             }
             set
@@ -984,17 +1132,17 @@ namespace Gurux.Net
                 {
                     tmp = "<Server>" + (m_Server ? "1" : "0") + "</Server>" + Environment.NewLine;
                 }
-                if (!string.IsNullOrEmpty(HostName))
+                if (!string.IsNullOrEmpty(m_HostName))
                 {
-                    tmp += "<IP>" + HostName + "</IP>" + Environment.NewLine;
+                    tmp += "<IP>" + m_HostName + "</IP>" + Environment.NewLine;
                 }
-                if (Port != 0)
+                if (m_Port != 0)
                 {
-                    tmp += "<Port>" + Port + "</Port>" + Environment.NewLine;
+                    tmp += "<Port>" + m_Port + "</Port>" + Environment.NewLine;
                 }
-                if (Protocol != NetworkType.Tcp)
+                if (m_Protocol != NetworkType.Tcp)
                 {
-                    tmp += "<Protocol>" + (int)Protocol + "</Protocol>" + Environment.NewLine;
+                    tmp += "<Protocol>" + (int)m_Protocol + "</Protocol>" + Environment.NewLine;
                 }
                 return tmp;
             }
@@ -1013,16 +1161,16 @@ namespace Gurux.Net
                                 switch (xmlReader.Name)
                                 {
                                     case "Protocol":
-                                        Protocol = (NetworkType)xmlReader.ReadElementContentAs(typeof(int), null);
+                                        m_Protocol = (NetworkType)xmlReader.ReadElementContentAs(typeof(int), null);
                                         break;
                                     case "Port":
-                                        Port = (int)(xmlReader.ReadElementContentAs(typeof(int), null));
+                                        m_Port = (int)(xmlReader.ReadElementContentAs(typeof(int), null));
                                         break;
                                     case "Server":
                                         m_Server = (int)xmlReader.ReadElementContentAs(typeof(int), null) == 1;
                                         break;
                                     case "IP":
-                                        HostName = (string)xmlReader.ReadElementContentAs(typeof(string), null);
+                                        m_HostName = (string)xmlReader.ReadElementContentAs(typeof(string), null);
                                         break;
                                 }
                             }
@@ -1163,21 +1311,23 @@ namespace Gurux.Net
         PropertyChangedEventHandler m_OnPropertyChanged;
         MediaStateChangeEventHandler m_OnMediaStateChange;
         TraceEventHandler m_OnTrace;
+        GetPropertyValueEventHandler m_OnGetPropertyValue;
 #if !WINDOWS_PHONE 
         ClientConnectedEventHandler m_OnClientConnected;
         ClientDisconnectedEventHandler m_OnClientDisconnected;        
 #endif
         internal ErrorEventHandler m_OnError;
         internal ReceivedEventHandler m_OnReceived;
+        ReceivedEventHandler m_OnDataSend;
 
         #region IGXMedia Members
 
         void IGXMedia.Copy(object target)
         {
             GXNet tmp = (GXNet)target;
-            Port = tmp.Port;
-            HostName = tmp.HostName;
-            Protocol = tmp.Protocol;
+            m_Port = tmp.m_Port;
+            m_HostName = tmp.m_HostName;
+            m_Protocol = tmp.m_Protocol;
 #if !WINDOWS_PHONE 
             Server = tmp.Server;
 #endif            
@@ -1188,7 +1338,7 @@ namespace Gurux.Net
             get
             {
                 string tmp;
-                tmp = HostName + " " + Port;
+                tmp = HostName + " " + m_Port;
                 if (Protocol == NetworkType.Udp)
                 {
                     tmp += "UDP";
@@ -1287,11 +1437,11 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.Validate"/>
         public void Validate()
         {
-            if (Port == 0)
+            if (m_Port == 0)
             {
                 throw new Exception(Resources.InvalidPortName);
             }
-            if (!m_Server && string.IsNullOrEmpty(HostName))
+            if (!m_Server && string.IsNullOrEmpty(m_HostName))
             {
                 throw new Exception(Resources.InvalidHostName);
             }
