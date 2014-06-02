@@ -334,7 +334,7 @@ namespace Gurux.Net
                 Socket client = null;
                 foreach (var it in m_ServerDataBuffers)
                 {
-                    if (it.Key.LocalEndPoint.ToString() == receiver)
+                    if (it.Key.RemoteEndPoint.ToString() == receiver)
                     {
                         client = it.Key;
                         break;
@@ -393,7 +393,7 @@ namespace Gurux.Net
                 }
                 if (this.Server)
                 {
-                    string sender = socket.LocalEndPoint.ToString();
+                    string sender = socket.RemoteEndPoint.ToString();
                     if (bytes == 0)
                     {
                         //Client has left.
@@ -403,7 +403,7 @@ namespace Gurux.Net
                 }
                 if (bytes != 0)
                 {
-                    string sender = socket.LocalEndPoint.ToString();
+                    string sender = socket.RemoteEndPoint.ToString();
                     bytes = HandleReceivedData(bytes, buff, sender);
                     if (socket.Connected)
                     {
@@ -421,7 +421,7 @@ namespace Gurux.Net
                         m_ServerDataBuffers.Remove(socket);
                         if (m_OnClientDisconnected != null)
                         {
-                            m_OnClientDisconnected(this, new ConnectionEventArgs(socket.LocalEndPoint.ToString()));
+                            m_OnClientDisconnected(this, new ConnectionEventArgs(socket.RemoteEndPoint.ToString()));
                         }
                     }
                     else
@@ -529,7 +529,7 @@ namespace Gurux.Net
                         if (m_Socket != null)
                         {
                             workerSocket = m_Socket.EndAccept(result);
-                            ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.LocalEndPoint.ToString());
+                            ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString());
                             if (m_OnClientConnected != null)
                             {
                                 m_OnClientConnected(this, e);
@@ -542,7 +542,6 @@ namespace Gurux.Net
                             {
                                 byte[] buff = new byte[1024];
                                 m_ServerDataBuffers[workerSocket] = buff;
-                                //Receive(workerSocket);
                                 workerSocket.BeginReceive(buff, 0, buff.Length,
                                     SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
                             }
@@ -562,7 +561,7 @@ namespace Gurux.Net
                     m_ServerDataBuffers.Remove(workerSocket);
                     if (m_OnClientDisconnected != null)
                     {
-                        m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.LocalEndPoint.ToString()));
+                        m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString()));
                     }
                 }
             }
@@ -1091,7 +1090,7 @@ namespace Gurux.Net
         {                        
             foreach (var it in m_ServerDataBuffers)
             {
-                if (it.Key.LocalEndPoint.ToString() == address)
+                if (it.Key.RemoteEndPoint.ToString() == address)
                 {
                     m_ServerDataBuffers.Remove(it.Key);
                     it.Key.Shutdown(SocketShutdown.Both);                    
@@ -1114,7 +1113,7 @@ namespace Gurux.Net
             int pos = -1;
             foreach (var it in m_ServerDataBuffers)
             {
-                clients[++pos] = it.Key.LocalEndPoint.ToString();
+                clients[++pos] = it.Key.RemoteEndPoint.ToString();
             }
             return clients;
         }

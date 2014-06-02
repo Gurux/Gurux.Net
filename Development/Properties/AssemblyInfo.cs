@@ -39,7 +39,7 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("Gurux.Net.Network")]
 [assembly: AssemblyDescription("Gurux Ltd")]
-[assembly: AssemblyConfiguration("Gurux Ltd")]
+[assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Gurux Ltd")]
 [assembly: AssemblyProduct("Gurux.Net")]
 [assembly: AssemblyCopyright("Copyright (c) 1998-2014 Gurux Ltd. All rights reserved.")]
@@ -54,5 +54,5 @@ using System.Runtime.InteropServices;
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("6a71e525-ef4d-4554-83a6-daeadb459ffd")]
 [assembly: AssemblyVersion("7.0.2.1")] //DO NOT CHANGE!
-[assembly: AssemblyFileVersion("7.0.20.1")]
+[assembly: AssemblyFileVersion("7.0.21.1")]
 [assembly: System.Resources.NeutralResourcesLanguage("en")]
