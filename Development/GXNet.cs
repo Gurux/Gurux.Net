@@ -49,9 +49,8 @@ namespace Gurux.Net
 {    
     /// <summary>
     /// The GXNet component determines methods that make the communication possible using Internet. 
+    /// See help in http://www.gurux.org/index.php?q=Gurux.Net
     /// </summary>
-    /// <seealso href="../Net/useNet.html">Using from .NET</seealso>
-    /// <seealso href="../Net/useVB.html">Using from VB</seealso> 
     public class GXNet : IGXMedia, IGXVirtualMedia, INotifyPropertyChanged, IDisposable
     {
 #if WINDOWS_PHONE
@@ -74,6 +73,7 @@ namespace Gurux.Net
         internal Dictionary<Socket, byte[]> m_ServerDataBuffers = new Dictionary<Socket, byte[]>();        
         readonly object m_Synchronous = new object();
         TraceLevel m_Trace;
+        private object m_sync = new object();
 
         // Signaling object used to notify when an asynchronous operation is completed
         static ManualResetEvent m_clientDone = new ManualResetEvent(false);
@@ -99,7 +99,7 @@ namespace Gurux.Net
         {
             m_Protocol = protocol;
             m_HostName = hostName;
-            m_Port = port;
+            m_Port = port;            
         }
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace Gurux.Net
         {
             m_Server = true;
             m_Protocol = protocol;
-            m_Port = port;
+            m_Port = port;         
         }
 
         /// <summary>
@@ -194,6 +194,22 @@ namespace Gurux.Net
         {
             get;
             set;
+        }
+
+        /// <inheritdoc cref="IGXMedia.SyncRoot"/>
+        [Browsable(false), ReadOnly(true)]
+        public object SyncRoot
+        {
+            get
+            {
+                //In some special cases when binary serialization is used this might be null
+                //after deserialize. Just set it.
+                if (m_sync == null)
+                {
+                    m_sync = new object();
+                }
+                return m_sync;
+            }
         }
 
         /// <inheritdoc cref="IGXVirtualMedia.Virtual"/>
@@ -578,22 +594,6 @@ namespace Gurux.Net
         /// <remarks>
         /// Protocol, Port and HostName must be set, before calling the Open method.
         /// </remarks>
-        /// <example>
-        /// <code lang="csharp">
-        /// 'This example shows how to start client connection.
-        /// //Set Protocol
-        /// GXNet1.Protocol = ProtocolType.Tcp;
-        /// //Set client port
-        /// GXNet1.Port = 1234;
-        /// //Set client name
-        /// GXNet1.HostName = "localhost";
-        /// //Make connection
-        /// GXNet1.Open();
-        /// //Send data
-        /// GXNet1.Send("Hello World!", null);
-        /// //The response is received after this through the OnReceived event.
-        /// </code>
-        /// </example>
         /// <seealso cref="Port">Port</seealso>
         /// <seealso cref="HostName">HostName</seealso>
         /// <seealso cref="Protocol">Protocol</seealso>
@@ -775,9 +775,6 @@ namespace Gurux.Net
         }
 
         /// <inheritdoc cref="IGXMedia.Close"/>        
-        /// <example>
-        /// <code lang="csharp" source="..\\GXNet csharp Sample\\Form1.cs" region="Close" />
-        /// </example>
         public void Close()
         {
             if (m_Socket != null || VirtualOpen)
@@ -995,39 +992,7 @@ namespace Gurux.Net
         }
 #endif
 
-        /// <inheritdoc cref="IGXMedia.Receive"/>
-        /// <example>
-        /// <code>
-        /// 'Send long and wait until OK reply is received or 5 seconds.
-        /// 'Data is returned as string.
-        /// lock (GXNet1.Synchronous)
-        /// {        
-        ///     dim params as new Receiveparameters
-        ///     params.Eop = "OK"
-        ///     params.WaitTime = 10000
-        ///     params.Type = typeof(string)
-        ///     GXNet1.Send((byte) 0x13 , null)
-        ///     GXNet1.Receive(params)
-        ///     ' While all data is not received read more data.
-        ///     ' This is done because reply data might include "OK" but all data is not read yet.
-        ///     'While PacketIsNotCompleted
-        ///         GXNet1.Receive(params)
-        ///     'Wend
-        /// }
-        /// 
-        /// 'Send data and wait until 4 bytes is received.
-        /// 'Received data is received as long (Int32)
-        /// lock (GXNet1.Synchronous)
-        /// {           
-        ///     dim params as new Receiveparameters
-        ///     params.Count = 4
-        ///     params.WaitTime = 10000
-        ///     params.Type = typeof(string)
-        ///     GXNet1.Send((byte) 0x13 , null)
-        ///     GXNet1.Receive(params)
-        /// }
-        /// </code>
-        /// </example>        
+        /// <inheritdoc cref="IGXMedia.Receive"/>       
         public bool Receive<T>(ReceiveParameters<T> args)
         {
             return m_syncBase.Receive(args);
