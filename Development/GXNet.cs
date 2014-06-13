@@ -660,7 +660,7 @@ namespace Gurux.Net
                 {
                     if (!IsVirtual)
                     {
-                        m_Socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
+                        m_Socket = new Socket(family, SocketType.Dgram, ProtocolType.Udp);
                     }
                 }
                 else
