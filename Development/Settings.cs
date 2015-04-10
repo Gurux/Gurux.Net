@@ -167,6 +167,7 @@ namespace Gurux.Net
             Target.Port = Convert.ToInt32(this.PortTB.Text);
             Target.HostName = this.IPAddressTB.Text;
 			Target.UseIPv6 = this.UseIPv6CB.Checked;
+            Target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
         }
 
         #endregion

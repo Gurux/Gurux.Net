@@ -320,7 +320,7 @@ namespace Gurux.Net
                         });
 
                         socketEventArg.SetBuffer(value, 0, value.Length);
-                        // Sets the state of the event to nonsignaled, causing threads to block
+                        // Sets the state of the event to non-signaled, causing threads to block
                         m_clientDone.Reset();
                         // Make an asynchronous Send request over the socket
                         m_Socket.SendAsync(socketEventArg);
