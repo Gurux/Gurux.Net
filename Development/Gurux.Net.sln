@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gurux.Net_2010", "Gurux.Net_2010.csproj", "{CB63EA09-D6BC-4B1D-927E-83041A222D54}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gurux.Net", "Gurux.Net.csproj", "{CB63EA09-D6BC-4B1D-927E-83041A222D54}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

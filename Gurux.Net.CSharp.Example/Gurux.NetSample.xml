@@ -1,0 +1,80 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>Gurux.NetSample</name>
+    </assembly>
+    <members>
+        <member name="M:Gurux.NetSample.Form1.CloseBtn_Click(System.Object,System.EventArgs)">
+            <summary>
+            Closes network connection.
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.Form1_Load(System.Object,System.EventArgs)">
+            <summary>
+            Set initial settings.
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.Net1_OnClientConnected(System.Object,Gurux.Common.ConnectionEventArgs)">
+            <summary>
+            When new client has connected in server mode.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.Net1_OnClientDisconnected(System.Object,Gurux.Common.ConnectionEventArgs)">
+            <summary>
+            When new client has disconnected in server mode.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.Net1_OnError(System.Object,System.Exception)">
+            <summary>
+            Show occured error.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.Net1_OnReceived(System.Object,Gurux.Common.ReceiveEventArgs)">
+            <summary>
+            Show received data.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.IntervalBtn_Click(System.Object,System.EventArgs)">
+            <summary>
+            Start read items with selected interval (ms).
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.IntervalTimer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Read selected item.
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.OpenBtn_Click(System.Object,System.EventArgs)">
+            <summary>
+            Open Network connection.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.PacketCounterTimer_Tick(System.Object,System.EventArgs)">
+            <summary>
+            Update packet counters.
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.PropertiesBtn_Click(System.Object,System.EventArgs)">
+            <summary>
+            Show Gurux.Net media properties.
+            </summary>
+        </member>
+        <member name="M:Gurux.NetSample.Form1.SendBtn_Click(System.Object,System.EventArgs)">
+            <summary>
+            Send data.
+            </summary>
+            <param name="eventSender"></param>
+            <param name="eventArgs"></param>
+        </member>
+    </members>
+</doc>
