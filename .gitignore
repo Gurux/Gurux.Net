@@ -19,7 +19,7 @@ local.properties
 # External tool builders
 .externalToolBuilders/
 packages/
-
+Development/Gurux.Net.UnitTests/
 # Locally stored "Eclipse launch configurations"
 *.launch
 
@@ -164,3 +164,5 @@ pip-log.txt
 
 # Mac crap
 .DS_Store
+Development/TraceAndTestImpact.testsettings
+*.testsettings

@@ -189,7 +189,7 @@ namespace Gurux.Shared
                     }
                     else
                     {
-                        int index = 0;//  m_LastPosition != 0 && m_LastPosition < m_ReceivedSize ? m_LastPosition : args.Count;
+                        int index = lastPosition != 0 && lastPosition < receivedSize ? lastPosition : args.Count;
                         //If terminator found.
                         if (args.Eop is Array)
                         {
@@ -214,7 +214,6 @@ namespace Gurux.Shared
                                 index = receivedSize - terminator.Length;
                             }
                             nFound = GXCommon.IndexOf(m_Received, terminator, index, receivedSize);
-                            System.Diagnostics.Debug.WriteLine("B " + nFound);
                         }
                         lastPosition = receivedSize;
                         if (nFound != -1)
@@ -233,6 +232,10 @@ namespace Gurux.Shared
             {
                 nFound = receivedSize;
             }
+            if (nFound == 0)
+            {
+                retValue = false;
+            }
             //Convert bytes to object.
             byte[] tmp = new byte[nFound];
             lock (receivedSync)
@@ -242,13 +245,6 @@ namespace Gurux.Shared
             int readBytes = 0;
             object data = GXCommon.ByteArrayToObject(tmp, typeof(T), out readBytes);
             //Remove read data.
-            //Mikko
-            if (receivedSize - nFound > 0)
-            {
-                byte[] tmp2 = new byte[receivedSize];
-                Array.Copy(m_Received, 0, tmp2, 0, receivedSize);                
-                System.Diagnostics.Debug.WriteLine("A" + GXCommon.ToHex(tmp2, true));
-            }
             receivedSize -= nFound;
             //Received size can go less than zero if we have received data and we try to read more.
             if (receivedSize < 0)

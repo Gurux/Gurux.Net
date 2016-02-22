@@ -62,7 +62,7 @@ namespace Gurux.Net
         // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this 
         // timeout period, the call is aborted.
         const int TIMEOUT_MILLISECONDS = 5000;
-        internal byte[] ReceiveBuffer = new byte[1024];
+        internal byte[] receiveBuffer = new byte[1024];
         /// <summary>
         /// Used protocol.
         /// </summary>
@@ -83,13 +83,24 @@ namespace Gurux.Net
         /// <summary>
         /// Server or client socket.
         /// </summary>
-        Socket socket = null;
-        internal Dictionary<Socket, byte[]> m_ServerDataBuffers = new Dictionary<Socket, byte[]>();        
-        readonly object m_Synchronous = new object();
-        private object m_sync = new object();
+        IDisposable socket = null;
+        /// <summary>
+        /// Connected TCP/IP clients.
+        /// </summary>
+        private Dictionary<Socket, byte[]> tcpIpClients = new Dictionary<Socket, byte[]>();
+        /// <summary>
+        /// Is data send syncronously.
+        /// </summary>
+        readonly object synchronous = new object();
+        /// <summary>
+        /// Sync object.
+        /// </summary>
+        private object sync = new object();
 
-        // Signaling object used to notify when an asynchronous operation is completed
-        static ManualResetEvent m_clientDone = new ManualResetEvent(false);
+        /// <summary>
+        /// Signaling object used to notify when an asynchronous operation is completed
+        /// </summary>
+        static ManualResetEvent clientDone = new ManualResetEvent(false);
 
         /// <summary>
         /// Constructor.
@@ -124,7 +135,7 @@ namespace Gurux.Net
             : this()
         {
             isServer = true;
-            protocol = communicationProtocol;
+            communicationProtocol = protocol;
             port = listeningPort;         
         }
 
@@ -148,7 +159,7 @@ namespace Gurux.Net
             net.port = port;
             net.socket = socket;
             net.Trace = Trace;
-            net.m_ServerDataBuffers = m_ServerDataBuffers;
+            net.tcpIpClients = tcpIpClients;
             net.isClone = true;
             return net;
         }
@@ -242,11 +253,11 @@ namespace Gurux.Net
             {
                 //In some special cases when binary serialization is used this might be null
                 //after deserialize. Just set it.
-                if (m_sync == null)
+                if (sync == null)
                 {
-                    m_sync = new object();
+                    sync = new object();
                 }
-                return m_sync;
+                return sync;
             }
         }
 
@@ -341,39 +352,46 @@ namespace Gurux.Net
                 }
                 if (!isVirtual)
                 {
-                    // Create SocketAsyncEventArgs context object
-                    SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-                    SocketError err = 0;
-                    try
+                    if (socket is UdpClient)
                     {
-                        // Set properties on context object
-                        socketEventArg.RemoteEndPoint = socket.RemoteEndPoint;
-                        socketEventArg.UserToken = null;
-                        // Inline event handler for the Completed event.
-                        // Note: This event handler was implemented inline in order to make this method self-contained.
-                        socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                        (socket as UdpClient).Send(value, value.Length);
+                    }
+                    else
+                    {
+                        // Create SocketAsyncEventArgs context object
+                        SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
+                        SocketError err = 0;
+                        try
                         {
-                            err = e.SocketError;
-                            m_clientDone.Set();
-                        });
+                            // Set properties on context object
+                            socketEventArg.RemoteEndPoint = (socket as Socket).RemoteEndPoint;
+                            socketEventArg.UserToken = null;
+                            // Inline event handler for the Completed event.
+                            // Note: This event handler was implemented inline in order to make this method self-contained.
+                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                            {
+                                err = e.SocketError;
+                                clientDone.Set();
+                            });
 
-                        socketEventArg.SetBuffer(value, 0, value.Length);
-                        // Sets the state of the event to non-signaled, causing threads to block
-                        m_clientDone.Reset();
-                        // Make an asynchronous Send request over the socket
-                        socket.SendAsync(socketEventArg);
+                            socketEventArg.SetBuffer(value, 0, value.Length);
+                            // Sets the state of the event to non-signaled, causing threads to block
+                            clientDone.Reset();
+                            // Make an asynchronous Send request over the socket
+                            (socket as Socket).SendAsync(socketEventArg);
 
-                        // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                        // If no response comes back within this time then proceed
-                        m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
-                    }
-                    finally
-                    {
-                        socketEventArg.Dispose();
-                    }
-                    if (err != 0)
-                    {
-                        throw new SocketException((int)err);
+                            // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                            // If no response comes back within this time then proceed
+                            clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                        }
+                        finally
+                        {
+                            socketEventArg.Dispose();
+                        }
+                        if (err != 0)
+                        {
+                            throw new SocketException((int)err);
+                        }
                     }
                 }
                 else
@@ -385,21 +403,32 @@ namespace Gurux.Net
             else
             {
 #if !WINDOWS_PHONE
-                Socket client = null;
-                foreach (var it in m_ServerDataBuffers)
-                {
-                    if (it.Key.RemoteEndPoint.ToString() == receiver)
-                    {
-                        client = it.Key;
-                        break;
-                    }
-                }
-                if (client == null)
-                {
-                    throw new Exception(Resources.InvalidClient);
-                }
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
-                client.Send(value);
+                if (this.Protocol == NetworkType.Udp)
+                {
+                    Socket client = null;
+                    foreach (var it in tcpIpClients)
+                    {
+                        Socket s = (Socket)it.Key;
+                        if (s.RemoteEndPoint.ToString() == receiver)
+                        {
+                            client = s;
+                            break;
+                        }
+                    }
+                    if (client == null)
+                    {
+                        throw new Exception(Resources.InvalidClient);
+                    }
+                    client.Send(value);
+                }
+                else
+                {
+                    string[] tmp = receiver.Split(':');
+                    IPAddress address = IPAddress.Parse(tmp[0]);
+                    IPEndPoint ep = new IPEndPoint(address, int.Parse(tmp[1]));
+                    (socket as UdpClient).Send(value, value.Length, ep);
+                }
                 this.BytesSent += (ulong)value.Length;
 #endif
             }            
@@ -424,30 +453,68 @@ namespace Gurux.Net
         /// <param name="result"></param>
         void RecieveComplete(IAsyncResult result)
         {
+            int bytes = 0;
+            byte[] buff = null;
             Socket socket = null;
+            string sender = null;
             try
             {
-                int bytes = 0;
-                byte[] buff = null;
-                socket = result.AsyncState as Socket;
-                if (socket.Connected)
+                if (result.AsyncState is UdpClient)
                 {
-                    bytes = socket.EndReceive(result);
-                    if (this.Server)
+                    UdpClient s = result.AsyncState as UdpClient;
+                    if (s.Client != null)
                     {
-                        if (m_ServerDataBuffers.ContainsKey(socket))
-                        {
-                            buff = m_ServerDataBuffers[socket];
-                        }
+                        IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
+                        buff = s.EndReceive(result, ref ipLocal);
+                        sender = ipLocal.ToString();
+                        bytes = buff.Length;
                     }
-                    else
+                }
+                else
+                {
+                    socket = result.AsyncState as Socket;
+                    if (socket.Connected)
                     {
-                        buff = ReceiveBuffer;
+                        sender = socket.RemoteEndPoint.ToString();
+                        SocketError err;
+                        bytes = socket.EndReceive(result, out err);
+                        //If connection is not closed and error is occurred.
+                        if (err != SocketError.Success)
+                        {
+                            if (this.Server)
+                            {
+                                if (err != SocketError.ConnectionReset)
+                                {
+                                    throw new SocketException((int)err);
+                                }
+                            }
+                            else
+                            {
+                                throw new SocketException((int)err);
+                            }
+                        }
+                        else
+                        {
+                            if (this.Server)
+                            {
+                                if (tcpIpClients.ContainsKey(socket))
+                                {
+                                    buff = tcpIpClients[socket];
+                                }
+                                else
+                                {
+                                    bytes = 0;
+                                }
+                            }
+                            else
+                            {
+                                buff = receiveBuffer;
+                            }
+                        }
                     }
                 }
                 if (this.Server)
                 {
-                    string sender = socket.RemoteEndPoint.ToString();
                     if (bytes == 0)
                     {
                         //Client has left.
@@ -457,11 +524,18 @@ namespace Gurux.Net
                 }
                 if (bytes != 0)
                 {
-                    string sender = socket.RemoteEndPoint.ToString();
                     bytes = HandleReceivedData(bytes, buff, sender);
-                    if (socket.Connected)
+                    if (socket != null)
                     {
-                        socket.BeginReceive(buff, 0, buff.Length, SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
+                        if (socket.Connected)
+                        {
+                            socket.BeginReceive(buff, 0, buff.Length, SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
+                        }
+                    }
+                    else
+                    {
+                        UdpClient s = result.AsyncState as UdpClient;
+                        s.BeginReceive(new AsyncCallback(RecieveComplete), s);
                     }
                 }
             }
@@ -472,7 +546,7 @@ namespace Gurux.Net
                 {
                     if (Server)
                     {
-                        m_ServerDataBuffers.Remove(socket);
+                        tcpIpClients.Remove(socket);
                         if (m_OnClientDisconnected != null)
                         {
                             m_OnClientDisconnected(this, new ConnectionEventArgs(socket.RemoteEndPoint.ToString()));
@@ -480,8 +554,16 @@ namespace Gurux.Net
                     }
                     else
                     {
-                        syncBase.Exception = ex;
-                        Close();
+                        if (this.IsSynchronous)
+                        {
+                            syncBase.Exception = ex;
+                            Close();
+                        }
+                        else
+                        {
+                            Close();
+                            NotifyError(ex);
+                        }
                     }
                 }
                 else
@@ -561,6 +643,10 @@ namespace Gurux.Net
         /// <param name="result"></param>
         void OnClientConnect(IAsyncResult result)
         {            
+            if (socket == null)
+            {
+                return;
+            }
             Socket workerSocket = null;
             try
             {
@@ -574,7 +660,7 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    if (MaxClientCount != 0 && m_ServerDataBuffers.Count + 1 > MaxClientCount)
+                    if (MaxClientCount != 0 && tcpIpClients.Count + 1 > MaxClientCount)
                     {
                         Close();
                     }
@@ -582,7 +668,7 @@ namespace Gurux.Net
                     {
                         if (socket != null)
                         {
-                            workerSocket = socket.EndAccept(result);
+                            workerSocket = (socket as Socket).EndAccept(result);
                             ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString());
                             if (m_OnClientConnected != null)
                             {
@@ -595,7 +681,7 @@ namespace Gurux.Net
                             if (e.Accept)
                             {
                                 byte[] buff = new byte[1024];
-                                m_ServerDataBuffers[workerSocket] = buff;
+                                tcpIpClients[workerSocket] = buff;
                                 workerSocket.BeginReceive(buff, 0, buff.Length,
                                     SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
                             }
@@ -604,7 +690,7 @@ namespace Gurux.Net
                     // Wait other clients.
                     if (socket != null)
                     {
-                        socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
+                        (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
                     }
                 }
             }
@@ -612,7 +698,7 @@ namespace Gurux.Net
             {
                 if (workerSocket != null)
                 {
-                    m_ServerDataBuffers.Remove(workerSocket);
+                    tcpIpClients.Remove(workerSocket);
                     if (m_OnClientDisconnected != null)
                     {
                         m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString()));
@@ -693,114 +779,28 @@ namespace Gurux.Net
                     {
                         socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
                     }
+                    if (!this.isServer)
+                    {
+                        ClientConnect(ep);
+                    }
                 }
                 else if (communicationProtocol == NetworkType.Udp)
                 {
-                    if (!isVirtual)
+                    if (!isVirtual && !isServer)
                     {
-                        socket = new Socket(family, SocketType.Dgram, ProtocolType.Udp);
+                        UdpClient s = new UdpClient();
+                        s.Connect((IPEndPoint)ep);
+                        s.BeginReceive(new AsyncCallback(RecieveComplete), s);
+                        socket = s;
                     }
                 }
                 else
                 {
                     throw new ArgumentException(Resources.ProtocolTxt);
                 }
-                if (!this.isServer)
+                if (this.isServer)
                 {
-#if WINDOWS_PHONE 
-                    // Create DnsEndPoint. The hostName and port are passed in to this method.
-                    ep = new DnsEndPoint(HostName, Port);
-#else
-                    if (Trace >= TraceLevel.Info && m_OnTrace != null)
-                    {
-                        string str = string.Format("{0} {1} {2} {3} {4} {5} {6}", 
-                            Resources.ClientSettings, 
-                            Resources.ProtocolTxt, 
-                            communicationProtocol.ToString(), 
-                            Resources.HostNameTxt, 
-                            hostAddress, 
-                            Resources.PortTxt, 
-                            port.ToString());
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
-                    }
-#endif
-                    // Create a SocketAsyncEventArgs object to be used in the connection request
-                    SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-                    socketEventArg.RemoteEndPoint = ep;
-                    SocketError err = 0;
-                    try
-                    {
-                        // Inline event handler for the Completed event.
-                        // Note: This event handler was implemented inline in order to make this method self-contained.
-                        if (!isVirtual)
-                        {
-                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
-                            {
-                                err = e.SocketError;
-                                m_clientDone.Set();
-                            });
-
-                            // Sets the state of the event to nonsignaled, causing threads to block
-                            m_clientDone.Reset();
-
-                            // Make an asynchronous Connect request over the socket
-                            socket.ConnectAsync(socketEventArg);
-
-                            // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
-                            // If no response comes back within this time then proceed
-                            m_clientDone.WaitOne(TIMEOUT_MILLISECONDS);
-                            if (err != 0)
-                            {
-                                throw new SocketException((int)err);
-                            }
-                        }
-                    }
-                    finally
-                    {
-                        if (!isVirtual)
-                        {
-                            socketEventArg.Dispose();
-                        }
-                    }
-
-#if WINDOWS_PHONE
-                    m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
-                    m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
-                    m_ReceiverThread.IsBackground = true;
-                    m_ReceiverThread.Start();
-#else
-                    if (!isVirtual)
-                    {
-                        socket.BeginReceive(ReceiveBuffer, 0, ReceiveBuffer.Length,
-                                                                        SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
-                    }
-                    isVirtualOpen = true;
-#endif
-                }
-                else
-                {
-#if !WINDOWS_PHONE
-                    if (Trace >= TraceLevel.Info && m_OnTrace != null)
-                    {
-                        string str = string.Format("{0} {1} {2} {3} {4}",
-                                    Resources.ServerSettings,
-                                    Resources.ProtocolTxt,
-                                    communicationProtocol,
-                                    Resources.PortTxt,
-                                    port);
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
-                    }
-                    if (!isVirtual)
-                    {
-                        IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
-                        // Bind to local IP Address...
-                        socket.Bind(ipLocal);
-                        // Start listening...
-                        socket.Listen(4);
-                        // Create the call back for any client connections...
-                        socket.BeginAccept(new AsyncCallback(OnClientConnect), null);
-                    }
-#endif
+                    StartServer();
                 }
                 NotifyMediaStateChange(MediaState.Open);
             }
@@ -810,6 +810,121 @@ namespace Gurux.Net
                 throw;
             }
 
+        }
+
+        /// <summary>
+        /// Start server.
+        /// </summary>
+        private void StartServer()
+        {
+#if !WINDOWS_PHONE
+            if (Trace >= TraceLevel.Info && m_OnTrace != null)
+            {
+                string str = string.Format("{0} {1} {2} {3} {4}",
+                            Resources.ServerSettings,
+                            Resources.ProtocolTxt,
+                            communicationProtocol,
+                            Resources.PortTxt,
+                            port);
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
+            }
+            if (!isVirtual)
+            {
+                IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
+                if (this.Protocol == NetworkType.Tcp)
+                {
+                    // Bind to local IP Address...
+                    (socket as Socket).Bind(ipLocal);
+                    // Start listening...
+                    (socket as Socket).Listen(4);
+                    // Create the call back for any client connections...
+                    (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
+                }
+                else
+                {
+                    UdpClient s = new UdpClient(ipLocal);
+                    s.BeginReceive(new AsyncCallback(RecieveComplete), s);
+                    socket = s;
+                }
+            }
+#endif
+        }
+
+        /// <summary>
+        /// Start client.
+        /// </summary>
+        /// <param name="ep"></param>
+        private void ClientConnect(EndPoint ep)
+        {
+#if WINDOWS_PHONE 
+                    // Create DnsEndPoint. The hostName and port are passed in to this method.
+                    ep = new DnsEndPoint(HostName, Port);
+#else
+            if (Trace >= TraceLevel.Info && m_OnTrace != null)
+            {
+                string str = string.Format("{0} {1} {2} {3} {4} {5} {6}",
+                    Resources.ClientSettings,
+                    Resources.ProtocolTxt,
+                    communicationProtocol.ToString(),
+                    Resources.HostNameTxt,
+                    hostAddress,
+                    Resources.PortTxt,
+                    port.ToString());
+                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
+            }
+#endif
+            // Create a SocketAsyncEventArgs object to be used in the connection request
+            SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
+            socketEventArg.RemoteEndPoint = ep;
+            SocketError err = 0;
+            try
+            {
+                // Inline event handler for the Completed event.
+                // Note: This event handler was implemented inline in order to make this method self-contained.
+                if (!isVirtual)
+                {
+                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                    {
+                        err = e.SocketError;
+                        clientDone.Set();
+                    });
+
+                    // Sets the state of the event to nonsignaled, causing threads to block
+                    clientDone.Reset();
+
+                    // Make an asynchronous Connect request over the socket
+                    (socket as Socket).ConnectAsync(socketEventArg);
+
+                    // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                    // If no response comes back within this time then proceed
+                    clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                    if (err != 0)
+                    {
+                        throw new SocketException((int)err);
+                    }
+                }
+            }
+            finally
+            {
+                if (!isVirtual)
+                {
+                    socketEventArg.Dispose();
+                }
+            }
+
+#if WINDOWS_PHONE
+                    m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
+                    m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
+                    m_ReceiverThread.IsBackground = true;
+                    m_ReceiverThread.Start();
+#else
+            if (!isVirtual)
+            {
+                (socket as Socket).BeginReceive(receiveBuffer, 0, receiveBuffer.Length,
+                                                                SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
+            }
+            isVirtualOpen = true;
+#endif
         }
 
         /// <inheritdoc cref="IGXMedia.Close"/>        
@@ -827,13 +942,39 @@ namespace Gurux.Net
                     }
                     m_Receiver = null;
                 }
-#endif
-                m_ServerDataBuffers.Clear();
+#endif      
+                foreach (var it in tcpIpClients)
+                {
+                    try
+                    {
+                        if (m_OnClientDisconnected != null)
+                        {
+                            Socket s = (Socket)it.Key;
+                            m_OnClientDisconnected(this, new ConnectionEventArgs(s.RemoteEndPoint.ToString()));
+                            s.Close();
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //Skip errors.
+                    }
+                }
+                tcpIpClients.Clear();
                 try
                 {
-                    if (isVirtualOpen || socket.Connected)
+                    if (isVirtualOpen)
                     {
-                        NotifyMediaStateChange(MediaState.Closing);
+                        if (socket is Socket)
+                        {
+                            if ((socket as Socket).Connected)
+                            {
+                                NotifyMediaStateChange(MediaState.Closing);
+                            }
+                        }
+                        else if (socket is UdpClient)
+                        {
+                            NotifyMediaStateChange(MediaState.Closing);
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -845,9 +986,15 @@ namespace Gurux.Net
                 {
                     try
                     {
-                        if (socket != null)
+                        if (socket is Socket)
                         {
-                            socket.Close();
+                            (socket as Socket).Close();
+                            socket = null;
+                        }
+                        else if (socket is UdpClient)
+                        {
+                            (socket as UdpClient).Close();
+                            socket = null;
                         }
                     }
                     catch
@@ -856,7 +1003,6 @@ namespace Gurux.Net
                     }
                     isVirtualOpen = false;
                     NotifyMediaStateChange(MediaState.Closed);
-                    socket = null;
                     BytesSent = BytesReceived = 0;
                     syncBase.receivedSize = 0;
                     syncBase.receivedEvent.Set();
@@ -1087,18 +1233,22 @@ namespace Gurux.Net
         /// </summary>
         public void DisconnectClient(string address)
         {                        
-            foreach (var it in m_ServerDataBuffers)
+            foreach (var it in tcpIpClients)
             {
-                if (it.Key.RemoteEndPoint.ToString() == address)
+                if (it.Key is Socket)
                 {
-                    m_ServerDataBuffers.Remove(it.Key);
-                    it.Key.Shutdown(SocketShutdown.Both);                    
-                    it.Key.Close();
-                    if (m_OnClientDisconnected != null)
+                    Socket s = (Socket)it.Key;
+                    if (s.RemoteEndPoint.ToString() == address)
                     {
-                        m_OnClientDisconnected(this, new ConnectionEventArgs(address));
+                        tcpIpClients.Remove(it.Key);
+                        s.Shutdown(SocketShutdown.Both);
+                        s.Close();
+                        if (m_OnClientDisconnected != null)
+                        {
+                            m_OnClientDisconnected(this, new ConnectionEventArgs(address));
+                        }
+                        break;
                     }
-                    break;
                 }
             }
         }
@@ -1108,11 +1258,19 @@ namespace Gurux.Net
         /// </summary>
         public string[] GetActiveClients()
         {
-            string[] clients = new string[m_ServerDataBuffers.Count];
-            int pos = -1;
-            foreach (var it in m_ServerDataBuffers)
+            string[] clients;
+            if (Protocol == NetworkType.Tcp)
             {
-                clients[++pos] = it.Key.RemoteEndPoint.ToString();
+                clients = new string[tcpIpClients.Count];
+                int pos = -1;
+                foreach (var it in tcpIpClients)
+                {
+                    clients[++pos] = (it.Key as Socket).RemoteEndPoint.ToString();
+                }
+            }
+            else
+            {
+                clients = new string[0];
             }
             return clients;
         }
@@ -1405,7 +1563,7 @@ namespace Gurux.Net
         {
             get 
             {
-                return m_Synchronous;
+                return synchronous;
             }
         }
 
@@ -1414,10 +1572,10 @@ namespace Gurux.Net
         {
             get 
             {
-                bool reserved = System.Threading.Monitor.TryEnter(m_Synchronous, 0);
+                bool reserved = System.Threading.Monitor.TryEnter(synchronous, 0);
                 if (reserved)
                 {
-                    System.Threading.Monitor.Exit(m_Synchronous);
+                    System.Threading.Monitor.Exit(synchronous);
                 }
                 return !reserved;
             }

@@ -85,7 +85,6 @@ namespace Gurux.NetSample
                 Net1.OnMediaStateChange += new MediaStateChangeEventHandler(Net1_OnMediaStateChange);
                 Net1.OnClientConnected += new ClientConnectedEventHandler(Net1_OnClientConnected);
                 Net1.OnClientDisconnected += new ClientDisconnectedEventHandler(Net1_OnClientDisconnected);
-                Net1.Protocol = NetworkType.Tcp;
                 if (Net1.IsOpen)
                 {
                     Net1_OnMediaStateChange(Net1, new MediaStateEventArgs(MediaState.Open));
