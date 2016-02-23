@@ -404,7 +404,7 @@ namespace Gurux.Net
             {
 #if !WINDOWS_PHONE
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
-                if (this.Protocol == NetworkType.Udp)
+                if (this.Protocol == NetworkType.Tcp)
                 {
                     Socket client = null;
                     foreach (var it in tcpIpClients)
