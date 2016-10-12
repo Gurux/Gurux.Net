@@ -1,7 +1,7 @@
 //
 // --------------------------------------------------------------------------
 //  Gurux Ltd
-// 
+//
 //
 //
 // Filename:        $HeadURL$
@@ -19,14 +19,14 @@
 // This file is a part of Gurux Device Framework.
 //
 // Gurux Device Framework is Open Source software; you can redistribute it
-// and/or modify it under the terms of the GNU General Public License 
+// and/or modify it under the terms of the GNU General Public License
 // as published by the Free Software Foundation; version 2 of the License.
 // Gurux Device Framework is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of 
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. 
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU General Public License for more details.
 //
-// This code is licensed under the GNU General Public License v2. 
+// This code is licensed under the GNU General Public License v2.
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
 
@@ -46,20 +46,20 @@ using System.Runtime.CompilerServices;
 using Gurux.Net.Properties;
 
 namespace Gurux.Net
-{    
+{
     /// <summary>
-    /// The GXNet component determines methods that make the communication possible using Internet. 
+    /// The GXNet component determines methods that make the communication possible using Internet.
     /// See help in http://www.gurux.org/Gurux.Net
     /// </summary>
     public class GXNet : IGXMedia, IGXVirtualMedia, INotifyPropertyChanged, IDisposable
     {
 #if WINDOWS_PHONE
-        ReceiveThread m_Receiver;
-        Thread m_ReceiverThread;
+    ReceiveThread m_Receiver;
+    Thread m_ReceiverThread;
 #endif
-        
+
         bool isVirtual, isVirtualOpen, isClone;
-        // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this 
+        // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this
         // timeout period, the call is aborted.
         const int TIMEOUT_MILLISECONDS = 5000;
         internal byte[] receiveBuffer = new byte[1024];
@@ -109,7 +109,7 @@ namespace Gurux.Net
         {
             syncBase = new GXSynchronousMediaBase(1024);
             ConfigurableSettings = AvailableMediaSettings.All;
-            Protocol = NetworkType.Tcp;            
+            Protocol = NetworkType.Tcp;
         }
 
         /// <summary>
@@ -119,11 +119,11 @@ namespace Gurux.Net
         /// <param name="hostName">Host name.</param>
         /// <param name="connectionPort">Client connection port.</param>
         public GXNet(NetworkType protocol, string hostName, int connectionPort)
-            : this()
+        : this()
         {
             communicationProtocol = protocol;
             hostAddress = hostName;
-            port = connectionPort;            
+            port = connectionPort;
         }
 
         /// <summary>
@@ -131,19 +131,19 @@ namespace Gurux.Net
         /// </summary>
         /// <param name="protocol">Used protocol.</param>
         /// <param name="listeningPort">Server listening port.</param>
-        public GXNet(NetworkType protocol, int listeningPort) 
-            : this()
+        public GXNet(NetworkType protocol, int listeningPort)
+        : this()
         {
             isServer = true;
             communicationProtocol = protocol;
-            port = listeningPort;         
+            port = listeningPort;
         }
 
         /// <summary>
         /// Make clone from Network component.
         /// </summary>
         /// <remarks>
-        /// This can be used in server side if server 
+        /// This can be used in server side if server
         /// want to start communicating with client using syncronous communication.
         /// Clone do not close connection.
         /// </remarks>
@@ -173,11 +173,11 @@ namespace Gurux.Net
             {
                 Close();
             }
-        }       
+        }
 
         /// <summary>
         /// Is IPv6 used. Default is False (IPv4).
-        /// </summary>        
+        /// </summary>
         public bool UseIPv6
         {
             get;
@@ -289,7 +289,7 @@ namespace Gurux.Net
             }
         }
 
-         /// <summary>
+        /// <summary>
         /// Occurs when data is sent on virtual mode.
         /// </summary>
         event ReceivedEventHandler IGXVirtualMedia.OnDataSend
@@ -314,9 +314,9 @@ namespace Gurux.Net
             HandleReceivedData(data.Length, data, sender);
         }
 
-        /// <summary>   
-        /// Displays the copyright of the control, user license, and version information, in a dialog box. 
-        /// </summary>  
+        /// <summary>
+        /// Displays the copyright of the control, user license, and version information, in a dialog box.
+        /// </summary>
         public void AboutBox()
         {
             throw new NotImplementedException();
@@ -368,7 +368,7 @@ namespace Gurux.Net
                             socketEventArg.UserToken = null;
                             // Inline event handler for the Completed event.
                             // Note: This event handler was implemented inline in order to make this method self-contained.
-                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
                             {
                                 err = e.SocketError;
                                 clientDone.Set();
@@ -424,14 +424,21 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    string[] tmp = receiver.Split(':');
+                    int pos = receiver.LastIndexOf(':');
+                    string[] tmp = new string[2];
+                    if (pos == -1)
+                    {
+
+                    }
+                    tmp[0] = receiver.Substring(0, pos);
+                    tmp[1] = receiver.Substring(pos + 1);
                     IPAddress address = IPAddress.Parse(tmp[0]);
                     IPEndPoint ep = new IPEndPoint(address, int.Parse(tmp[1]));
                     (socket as UdpClient).Send(value, value.Length, ep);
                 }
                 this.BytesSent += (ulong)value.Length;
 #endif
-            }            
+            }
         }
 
         void NotifyMediaStateChange(MediaState state)
@@ -443,7 +450,7 @@ namespace Gurux.Net
             if (m_OnMediaStateChange != null)
             {
                 m_OnMediaStateChange(this, new MediaStateEventArgs(state));
-            }                
+            }
         }
 
 #if !WINDOWS_PHONE
@@ -635,14 +642,14 @@ namespace Gurux.Net
                 }
             }
             return bytes;
-        }              
+        }
 
         /// <summary>
         /// New client is connected to the server.
         /// </summary>
         /// <param name="result"></param>
         void OnClientConnect(IAsyncResult result)
-        {            
+        {
             if (socket == null)
             {
                 return;
@@ -651,8 +658,8 @@ namespace Gurux.Net
             try
             {
                 //Server is closed.
-				if (socket == null)
-                {                    
+                if (socket == null)
+                {
                     if (m_OnMediaStateChange != null)
                     {
                         Close();
@@ -683,7 +690,7 @@ namespace Gurux.Net
                                 byte[] buff = new byte[1024];
                                 tcpIpClients[workerSocket] = buff;
                                 workerSocket.BeginReceive(buff, 0, buff.Length,
-                                    SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
+                                                          SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
                             }
                         }
                     }
@@ -725,13 +732,13 @@ namespace Gurux.Net
         /// <seealso cref="Close">Close</seealso>
         public void Open()
         {
-            Close();            
+            Close();
             try
-            {                
+            {
                 lock (syncBase.receivedSync)
                 {
                     syncBase.lastPosition = 0;
-                }                
+                }
                 EndPoint ep = null;
                 NotifyMediaStateChange(MediaState.Opening);
                 AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
@@ -760,7 +767,7 @@ namespace Gurux.Net
                         foreach (IPAddress ip in host.AddressList)
                         {
                             if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
-                                ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
+                                    ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
                             {
                                 ep = new IPEndPoint(ip, port);
                                 break;
@@ -772,7 +779,7 @@ namespace Gurux.Net
                         ep = new IPEndPoint(address, port);
                     }
                 }
-                // Create a stream-based, TCP socket using the InterNetwork Address Family.                 
+                // Create a stream-based, TCP socket using the InterNetwork Address Family.
                 if (communicationProtocol == NetworkType.Tcp)
                 {
                     if (!isVirtual)
@@ -788,7 +795,7 @@ namespace Gurux.Net
                 {
                     if (!isVirtual && !isServer)
                     {
-                        UdpClient s = new UdpClient();
+                        UdpClient s = new UdpClient(family);
                         s.Connect((IPEndPoint)ep);
                         s.BeginReceive(new AsyncCallback(RecieveComplete), s);
                         socket = s;
@@ -821,11 +828,11 @@ namespace Gurux.Net
             if (Trace >= TraceLevel.Info && m_OnTrace != null)
             {
                 string str = string.Format("{0} {1} {2} {3} {4}",
-                            Resources.ServerSettings,
-                            Resources.ProtocolTxt,
-                            communicationProtocol,
-                            Resources.PortTxt,
-                            port);
+                                           Resources.ServerSettings,
+                                           Resources.ProtocolTxt,
+                                           communicationProtocol,
+                                           Resources.PortTxt,
+                                           port);
                 m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
             }
             if (!isVirtual)
@@ -856,20 +863,20 @@ namespace Gurux.Net
         /// <param name="ep"></param>
         private void ClientConnect(EndPoint ep)
         {
-#if WINDOWS_PHONE 
-                    // Create DnsEndPoint. The hostName and port are passed in to this method.
-                    ep = new DnsEndPoint(HostName, Port);
+#if WINDOWS_PHONE
+        // Create DnsEndPoint. The hostName and port are passed in to this method.
+        ep = new DnsEndPoint(HostName, Port);
 #else
             if (Trace >= TraceLevel.Info && m_OnTrace != null)
             {
                 string str = string.Format("{0} {1} {2} {3} {4} {5} {6}",
-                    Resources.ClientSettings,
-                    Resources.ProtocolTxt,
-                    communicationProtocol.ToString(),
-                    Resources.HostNameTxt,
-                    hostAddress,
-                    Resources.PortTxt,
-                    port.ToString());
+                                           Resources.ClientSettings,
+                                           Resources.ProtocolTxt,
+                                           communicationProtocol.ToString(),
+                                           Resources.HostNameTxt,
+                                           hostAddress,
+                                           Resources.PortTxt,
+                                           port.ToString());
                 m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
             }
 #endif
@@ -883,7 +890,7 @@ namespace Gurux.Net
                 // Note: This event handler was implemented inline in order to make this method self-contained.
                 if (!isVirtual)
                 {
-                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate(object s, SocketAsyncEventArgs e)
+                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
                     {
                         err = e.SocketError;
                         clientDone.Set();
@@ -913,36 +920,36 @@ namespace Gurux.Net
             }
 
 #if WINDOWS_PHONE
-                    m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
-                    m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
-                    m_ReceiverThread.IsBackground = true;
-                    m_ReceiverThread.Start();
+        m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
+        m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
+        m_ReceiverThread.IsBackground = true;
+        m_ReceiverThread.Start();
 #else
             if (!isVirtual)
             {
                 (socket as Socket).BeginReceive(receiveBuffer, 0, receiveBuffer.Length,
-                                                                SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
+                                                SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
             }
             isVirtualOpen = true;
 #endif
         }
 
-        /// <inheritdoc cref="IGXMedia.Close"/>        
+        /// <inheritdoc cref="IGXMedia.Close"/>
         public void Close()
         {
             if (!isClone && (socket != null || isVirtualOpen))
             {
 #if WINDOWS_PHONE
-                if (m_Receiver != null)
+            if (m_Receiver != null)
+            {
+                m_Receiver.Closing.Set();
+                if (m_ReceiverThread.IsAlive)
                 {
-                    m_Receiver.Closing.Set();
-                    if (m_ReceiverThread.IsAlive)
-                    {
-                        m_ReceiverThread.Join();
-                    }
-                    m_Receiver = null;
+                    m_ReceiverThread.Join();
                 }
-#endif      
+                m_Receiver = null;
+            }
+#endif
                 foreach (var it in tcpIpClients)
                 {
                     try
@@ -1006,7 +1013,7 @@ namespace Gurux.Net
                     BytesSent = BytesReceived = 0;
                     syncBase.receivedSize = 0;
                     syncBase.receivedEvent.Set();
-                }                
+                }
             }
         }
 
@@ -1030,7 +1037,7 @@ namespace Gurux.Net
             {
                 return socket != null || isVirtualOpen;
             }
-        }        
+        }
 
         /// <summary>
         /// Retrieves or sets the protocol.
@@ -1050,11 +1057,11 @@ namespace Gurux.Net
             {
                 if (isVirtual && m_OnGetPropertyValue != null)
                 {
-                    string value = m_OnGetPropertyValue("Protocol");                    
+                    string value = m_OnGetPropertyValue("Protocol");
                     if (value != null)
                     {
                         return (NetworkType)int.Parse(value);
-                    }                    
+                    }
                 }
                 return communicationProtocol;
             }
@@ -1066,7 +1073,7 @@ namespace Gurux.Net
                     NotifyPropertyChanged("Protocol");
                 }
             }
-        }        
+        }
 
         /// <summary>
         /// Retrieves or sets the name or IP address of the host.
@@ -1090,7 +1097,7 @@ namespace Gurux.Net
                     if (value != null)
                     {
                         return value;
-                    }                    
+                    }
                 }
                 return hostAddress;
             }
@@ -1100,7 +1107,7 @@ namespace Gurux.Net
                 {
                     hostAddress = value;
                     NotifyPropertyChanged("HostName");
-                }                
+                }
             }
         }
 
@@ -1111,7 +1118,7 @@ namespace Gurux.Net
         /// Host or server port number.
         /// </value>
         /// <seealso cref="Open">Open</seealso>
-        /// <seealso cref="HostName">HostName</seealso>  	
+        /// <seealso cref="HostName">HostName</seealso>
         /// <seealso cref="Protocol">Protocol</seealso>
         [DefaultValue(0)]
         [Category("Communication")]
@@ -1126,7 +1133,7 @@ namespace Gurux.Net
                     if (value != null)
                     {
                         return int.Parse(value);
-                    }                    
+                    }
                 }
                 return port;
             }
@@ -1140,14 +1147,14 @@ namespace Gurux.Net
             }
         }
 
-#if !WINDOWS_PHONE 
+#if !WINDOWS_PHONE
         /// <summary>
         /// Determines if the component is in server, or in client, mode.
         /// </summary>
         /// <value>
         /// True, if component is a server. False, if component is a client.
         /// </value>
-        /// <seealso cref="Open">Open</seealso> 	
+        /// <seealso cref="Open">Open</seealso>
         [DefaultValue(false)]
         [Category("Communication")]
         [Description("Retrieves or sets the component to client or server mode.")]
@@ -1161,7 +1168,7 @@ namespace Gurux.Net
                     if (value != null)
                     {
                         return bool.Parse(value);
-                    }                    
+                    }
                 }
                 return isServer;
             }
@@ -1176,7 +1183,7 @@ namespace Gurux.Net
         }
 #endif
 
-        /// <inheritdoc cref="IGXMedia.Receive"/>       
+        /// <inheritdoc cref="IGXMedia.Receive"/>
         public bool Receive<T>(ReceiveParameters<T> args)
         {
             return syncBase.Receive(args);
@@ -1214,7 +1221,7 @@ namespace Gurux.Net
         public void ResetByteCounters()
         {
             BytesSent = BytesReceived = 0;
-        }       
+        }
 
         /// <summary>
         /// Retrieves or sets maximum count of connected clients.
@@ -1225,14 +1232,14 @@ namespace Gurux.Net
         {
             get;
             set;
-        }      
+        }
 
 #if !WINDOWS_PHONE
         /// <summary>
         /// Disconnect selected client.
         /// </summary>
         public void DisconnectClient(string address)
-        {                        
+        {
             foreach (var it in tcpIpClients)
             {
                 if (it.Key is Socket)
@@ -1300,6 +1307,10 @@ namespace Gurux.Net
                 {
                     tmp += "<Protocol>" + (int)communicationProtocol + "</Protocol>" + Environment.NewLine;
                 }
+                if (UseIPv6)
+                {
+                    tmp += "<IPv6>" + "1" + "</IPv6>" + Environment.NewLine;
+                }
                 return tmp;
             }
             set
@@ -1328,6 +1339,9 @@ namespace Gurux.Net
                                     case "IP":
                                         hostAddress = (string)xmlReader.ReadElementContentAs(typeof(string), null);
                                         break;
+                                    case "IPv6":
+                                        UseIPv6 = (int)xmlReader.ReadElementContentAs(typeof(int), null) == 1;
+                                        break;
                                 }
                             }
                             else
@@ -1338,7 +1352,7 @@ namespace Gurux.Net
                     }
                 }
             }
-        }          
+        }
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -1372,8 +1386,8 @@ namespace Gurux.Net
         }
 
         /// <summary>
-        /// Errors that occur after the connection is established, are sent through this method. 
-        /// </summary>       
+        /// Errors that occur after the connection is established, are sent through this method.
+        /// </summary>
         [Description("Errors that occur after the connection is established, are sent through this method.")]
         public event ErrorEventHandler OnError
         {
@@ -1390,7 +1404,7 @@ namespace Gurux.Net
 
         /// <summary>
         /// Media component sends notification, when its state changes.
-        /// </summary>       
+        /// </summary>
         [Description("Media component sends notification, when its state changes.")]
         public event MediaStateChangeEventHandler OnMediaStateChange
         {
@@ -1403,18 +1417,26 @@ namespace Gurux.Net
                 m_OnMediaStateChange -= value;
             }
         }
-#if WINDOWS_PHONE 
-        event ClientConnectedEventHandler IGXMedia.OnClientConnected
-        {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+#if WINDOWS_PHONE
+    event ClientConnectedEventHandler IGXMedia.OnClientConnected
+    {
+        add {
+            throw new NotImplementedException();
         }
+        remove {
+            throw new NotImplementedException();
+        }
+    }
 
-        event ClientDisconnectedEventHandler IGXMedia.OnClientDisconnected
-        {
-            add { throw new NotImplementedException(); }
-            remove { throw new NotImplementedException(); }
+    event ClientDisconnectedEventHandler IGXMedia.OnClientDisconnected
+    {
+        add {
+            throw new NotImplementedException();
         }
+        remove {
+            throw new NotImplementedException();
+        }
+    }
 #else
         /// <summary>
         /// Called when the client is establishing a connection with a Net Server.
@@ -1447,7 +1469,7 @@ namespace Gurux.Net
                 m_OnClientDisconnected -= value;
             }
         }
-        
+
         /// <inheritdoc cref="TraceEventHandler"/>
         [Description("Called when the Media is sending or receiving data.")]
         public event TraceEventHandler OnTrace
@@ -1460,7 +1482,7 @@ namespace Gurux.Net
             {
                 m_OnTrace -= value;
             }
-        }        
+        }
 
 #endif
         //Events
@@ -1468,9 +1490,9 @@ namespace Gurux.Net
         MediaStateChangeEventHandler m_OnMediaStateChange;
         TraceEventHandler m_OnTrace;
         GetPropertyValueEventHandler m_OnGetPropertyValue;
-#if !WINDOWS_PHONE 
+#if !WINDOWS_PHONE
         ClientConnectedEventHandler m_OnClientConnected;
-        ClientDisconnectedEventHandler m_OnClientDisconnected;        
+        ClientDisconnectedEventHandler m_OnClientDisconnected;
 #endif
         internal ErrorEventHandler m_OnError;
         internal ReceivedEventHandler m_OnReceived;
@@ -1484,9 +1506,9 @@ namespace Gurux.Net
             port = tmp.port;
             hostAddress = tmp.hostAddress;
             communicationProtocol = tmp.communicationProtocol;
-#if !WINDOWS_PHONE 
+#if !WINDOWS_PHONE
             Server = tmp.Server;
-#endif            
+#endif
         }
 
         string IGXMedia.Name
@@ -1509,7 +1531,7 @@ namespace Gurux.Net
 
         string IGXMedia.MediaType
         {
-            get 
+            get
             {
                 return "Net";
             }
@@ -1551,7 +1573,7 @@ namespace Gurux.Net
         /// <seealso cref="Port">Port</seealso>
         /// <seealso cref="HostName">HostName</seealso>
         /// <seealso cref="Protocol">Protocol</seealso>
-        /// <seealso cref="Server">Server</seealso>        
+        /// <seealso cref="Server">Server</seealso>
         /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
         public bool Properties(System.Windows.Forms.Form parent)
         {
@@ -1561,7 +1583,7 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
         {
-            get 
+            get
             {
                 return synchronous;
             }
@@ -1570,7 +1592,7 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.IsSynchronous"/>
         public bool IsSynchronous
         {
-            get 
+            get
             {
                 bool reserved = System.Threading.Monitor.TryEnter(synchronous, 0);
                 if (reserved)
@@ -1615,20 +1637,20 @@ namespace Gurux.Net
         {
             get;
             set;
-        }      
+        }
 
         #endregion
 
         #region IDisposable Members
 
-		/// <summary>
-		/// Closes the connection.
-		/// </summary>
+        /// <summary>
+        /// Closes the connection.
+        /// </summary>
         public void Dispose()
         {
             Close();
         }
 
-        #endregion        
+        #endregion
     }
 }
