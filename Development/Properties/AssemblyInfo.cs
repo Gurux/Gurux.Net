@@ -37,8 +37,8 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Gurux.Net.Network")]
-[assembly: AssemblyDescription("Gurux Ltd")]
+[assembly: AssemblyTitle("Gurux.Network")]
+[assembly: AssemblyDescription("Gurux network component.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Gurux Ltd")]
 [assembly: AssemblyProduct("Gurux.Net")]
@@ -53,6 +53,6 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("6a71e525-ef4d-4554-83a6-daeadb459ffd")]
-[assembly: AssemblyVersion("7.0.29.1")]
-[assembly: AssemblyFileVersion("7.0.29.1")]
+[assembly: AssemblyVersion("7.0.30.1")]
+[assembly: AssemblyFileVersion("7.0.30.1")]
 [assembly: System.Resources.NeutralResourcesLanguage("en")]
