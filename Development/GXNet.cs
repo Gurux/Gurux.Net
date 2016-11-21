@@ -1017,15 +1017,15 @@ namespace Gurux.Net
             }
         }
 
-#if !WINDOWS_PHONE
-        /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
-        public System.Windows.Forms.Form PropertiesForm
+#if !__MOBILE__
+    /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
+    public System.Windows.Forms.Form PropertiesForm
+    {
+        get
         {
-            get
-            {
-                return new Settings(this);
-            }
+            return new Settings(this);
         }
+    }
 #endif
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
         /// <seealso cref="Open">Open</seealso>
@@ -1564,21 +1564,21 @@ namespace Gurux.Net
                 return isConnected;
             }
         }
-#if !WINDOWS_PHONE
-        /// <summary>
-        /// Shows the network Properties dialog.
-        /// </summary>
-        /// <param name="parent">Owner window of the Properties dialog.</param>
-        /// <returns>True, if the user has accepted the changes.</returns>
-        /// <seealso cref="Port">Port</seealso>
-        /// <seealso cref="HostName">HostName</seealso>
-        /// <seealso cref="Protocol">Protocol</seealso>
-        /// <seealso cref="Server">Server</seealso>
-        /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
-        public bool Properties(System.Windows.Forms.Form parent)
-        {
-            return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
-        }
+#if !__MOBILE__
+    /// <summary>
+    /// Shows the network Properties dialog.
+    /// </summary>
+    /// <param name="parent">Owner window of the Properties dialog.</param>
+    /// <returns>True, if the user has accepted the changes.</returns>
+    /// <seealso cref="Port">Port</seealso>
+    /// <seealso cref="HostName">HostName</seealso>
+    /// <seealso cref="Protocol">Protocol</seealso>
+    /// <seealso cref="Server">Server</seealso>
+    /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
+    public bool Properties(System.Windows.Forms.Form parent)
+    {
+        return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
+    }
 #endif
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
