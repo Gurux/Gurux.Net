@@ -14,10 +14,10 @@
         <copyright>Copyright (c) 1998-2016 Gurux Ltd. All rights reserved.</copyright>
         <language>en-US</language>
         <tags>Gurux Device Framework Network TCP/IP UDP</tags>
-    </metadata>
-    <dependencies>
-        <dependency id="Gurux.Common" version="8.0" />
-    </dependencies>
+        <dependencies>
+           <dependency id="Gurux.Common" version="8.0" />
+        </dependencies>
+    </metadata> 
     <files>
         <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net35" />
         <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net35" />
