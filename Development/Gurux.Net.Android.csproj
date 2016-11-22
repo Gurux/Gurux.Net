@@ -36,8 +36,8 @@
     <DocumentationFile>bin\Android\Release\Gurux.Net.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gurux.Common, Version=8.0.8.4, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Common.8.0.8.4\lib\MonoAndroid\Gurux.Common.dll</HintPath>
+    <Reference Include="Gurux.Common, Version=8.0.16327.17, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Gurux.Common.8.0.16327.17\lib\monoandroid\Gurux.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Android" />
@@ -76,9 +76,7 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
