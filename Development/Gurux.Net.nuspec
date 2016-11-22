@@ -16,15 +16,14 @@
         <tags>Gurux Device Framework Network TCP/IP UDP</tags>
     </metadata>
     <files>
-        <file src="bin\Release\*.dll" target="lib\portable-win+net35" />
-        <file src="bin\Release\*.XML" target="lib\portable-win+net35" />
-        <file src="bin\Release\*.pdb" target="lib\portable-win+net35" />
-        <file src="bin\Android\Release\*.dll" target="lib\monoandroid" />
-        <file src="bin\Android\Release\*.XML" target="lib\monoandroid" />
-        <file src="bin\Android\Release\*.pdb" target="lib\monoandroid" />
-        <file src="bin\iOS\Release\*.dll" target="lib\xamarinios" />
-        <file src="bin\iOS\Release\*.XML" target="lib\xamarinios" />
-        <file src="bin\iOS\Release\*.pdb" target="lib\xamarinios" />
-        <file src="**\*.cs" exclude="**\obj\**\*.*" target="src" />
+        <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net35" />
+        <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net35" />
+        <file src="bin\Release\Gurux.Net.pdb" target="lib\portable-win+net35" />
+        <file src="bin\Android\Release\Gurux.Net.dll" target="lib\monoandroid" />
+        <file src="bin\Android\Release\Gurux.Net.XML" target="lib\monoandroid" />
+        <file src="bin\Android\Release\Gurux.Net.pdb" target="lib\monoandroid" />
+        <file src="bin\iOS\Release\Gurux.Net.dll" target="lib\xamarinios" />
+        <file src="bin\iOS\Release\Gurux.Net.XML" target="lib\xamarinios" />
+        <file src="bin\iOS\Release\Gurux.Net.pdb" target="lib\xamarinios" />
      </files>
 </package>
