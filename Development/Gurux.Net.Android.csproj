@@ -33,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Android\Release\Gurux.Net.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Gurux.Common, Version=8.0.8.4, Culture=neutral, processorArchitecture=MSIL">

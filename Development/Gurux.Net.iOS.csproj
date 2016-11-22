@@ -29,6 +29,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <DocumentationFile>bin\iOS\Release\Gurux.Net.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Gurux.Common, Version=8.0.8.4, Culture=neutral, processorArchitecture=MSIL">
