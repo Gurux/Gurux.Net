@@ -36,8 +36,8 @@
     <DocumentationFile>bin\Android\Release\Gurux.Net.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gurux.Common, Version=8.0.16329.9, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Common.8.0.16329.09\lib\monoandroid\Gurux.Common.dll</HintPath>
+    <Reference Include="Gurux.Common, Version=8.1.16.1124, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Gurux.Common.8.1.16.1124\lib\monoandroid\Gurux.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Mono.Android" />
