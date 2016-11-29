@@ -1,32 +1,32 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
-    <metadata>
-        <id>Gurux.Net</id>
-        <version>$version$</version>
-        <title>Gurux.Net</title>
-        <authors>Gurux Ltd</authors>
-        <owners>Gurux Ltd</owners>
-        <licenseUrl>http://www.gnu.org/licenses/gpl-2.0.txt</licenseUrl>
-        <projectUrl>http://www.gurux.fi/index.php?q=GXMedia</projectUrl>
-        <iconUrl>http://www.gurux.org/gurux.ico</iconUrl>
-        <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <description>Open Source GXNet media component, made by Gurux Ltd, is a part of GXMedias set of media components, which programming interfaces help you implement communication by chosen connection type. GXNet is made easy to use. Gurux media components also support the following connection types: serial port and terminal.</description>
-        <copyright>Copyright (c) 1998-2016 Gurux Ltd. All rights reserved.</copyright>
-        <language>en-US</language>
-        <tags>Gurux Device Framework Network TCP/IP UDP</tags>
-        <dependencies>
-           <dependency id="Gurux.Common" version="8.0" />
-        </dependencies>
-    </metadata> 
-    <files>
-        <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net35" />
-        <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net35" />
-        <file src="bin\Release\Gurux.Net.pdb" target="lib\portable-win+net35" />
-        <file src="bin\Android\Release\Gurux.Net.dll" target="lib\monoandroid" />
-        <file src="bin\Android\Release\Gurux.Net.XML" target="lib\monoandroid" />
-        <file src="bin\Android\Release\Gurux.Net.pdb" target="lib\monoandroid" />
-        <file src="bin\iOS\Release\Gurux.Net.dll" target="lib\xamarinios" />
-        <file src="bin\iOS\Release\Gurux.Net.XML" target="lib\xamarinios" />
-        <file src="bin\iOS\Release\Gurux.Net.pdb" target="lib\xamarinios" />
-     </files>
+  <metadata>
+    <id>Gurux.Net</id>
+    <version>$version$</version>
+    <title>Gurux.Net</title>
+    <authors>Gurux Ltd</authors>
+    <owners>Gurux Ltd</owners>
+    <licenseUrl>http://www.gnu.org/licenses/gpl-2.0.txt</licenseUrl>
+    <projectUrl>http://www.gurux.fi/index.php?q=GXMedia</projectUrl>
+    <iconUrl>http://www.gurux.org/gurux.ico</iconUrl>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <description>Open Source GXNet media component, made by Gurux Ltd, is a part of GXMedias set of media components, which programming interfaces help you implement communication by chosen connection type. GXNet is made easy to use. Gurux media components also support the following connection types: serial port and terminal.</description>
+    <copyright>Copyright (c) 1998-2016 Gurux Ltd. All rights reserved.</copyright>
+    <language>en-US</language>
+    <tags>Gurux Device Framework Network TCP/IP UDP</tags>
+    <dependencies>
+      <dependency id="Gurux.Common" version="8.1" />
+    </dependencies>
+  </metadata>
+  <files>
+    <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net35" />
+    <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net35" />
+    <file src="bin\Release\Gurux.Net.pdb" target="lib\portable-win+net35" />
+    <file src="bin\Android\Release\Gurux.Net.dll" target="lib\monoandroid" />
+    <file src="bin\Android\Release\Gurux.Net.XML" target="lib\monoandroid" />
+    <file src="bin\Android\Release\Gurux.Net.pdb" target="lib\monoandroid" />
+    <file src="bin\iOS\Release\Gurux.Net.dll" target="lib\xamarinios" />
+    <file src="bin\iOS\Release\Gurux.Net.XML" target="lib\xamarinios" />
+    <file src="bin\iOS\Release\Gurux.Net.pdb" target="lib\xamarinios" />
+  </files>
 </package>
