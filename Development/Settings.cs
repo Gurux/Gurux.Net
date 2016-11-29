@@ -187,6 +187,7 @@ namespace Gurux.Net
             ProtocolPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Protocol) != 0;
             ServerPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Server) != 0;
             UseIPv6Panel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.UseIPv6) != 0;
+            Dirty = false;
         }
 
         void IGXPropertyPage.Apply()
@@ -196,6 +197,7 @@ namespace Gurux.Net
             target.HostName = this.IPAddressTB.Text;
             target.UseIPv6 = this.UseIPv6CB.Checked;
             target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
+            Dirty = false;
         }
 
         #endregion
