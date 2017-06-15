@@ -121,8 +121,8 @@ namespace Gurux.NetSample
             else if ((e.Type & TraceTypes.Received) != 0)
             {
                 System.Diagnostics.Debug.WriteLine("-> " + e.ToString());
-            }            
-        }       
+            }
+        }
 
         /// <summary>
         /// When new client has connected in server mode.
@@ -224,8 +224,6 @@ namespace Gurux.NetSample
                     {
                         IntervalTB.Enabled = true;
                     }
-                    //Enable echo if media is open and server.
-                    EchoCB.Enabled = Net1.Server && bOpen;
                 }
             }
             catch (Exception Ex)
@@ -325,7 +323,7 @@ namespace Gurux.NetSample
         {
             try
             {
-                Net1.Open();                
+                Net1.Open();
             }
             catch (Exception Ex)
             {
@@ -395,7 +393,7 @@ namespace Gurux.NetSample
                             Gurux.Common.ReceiveParameters<byte[]> p = new Gurux.Common.ReceiveParameters<byte[]>()
                             {
                                 WaitTime = Convert.ToInt32(WaitTimeTB.Text),
-                                Eop = EOPText.Text,                                
+                                Eop = EOPText.Text,
                             };
                             Net1.Send(ASCIIEncoding.ASCII.GetBytes(SendText.Text), null);
                             if (Net1.Receive(p))
@@ -412,7 +410,7 @@ namespace Gurux.NetSample
                             Gurux.Common.ReceiveParameters<string> p = new Gurux.Common.ReceiveParameters<string>()
                             {
                                 WaitTime = Convert.ToInt32(WaitTimeTB.Text),
-                                Eop = EOPText.Text,                                
+                                Eop = EOPText.Text,
                             };
                             Net1.Send(SendText.Text, null);
                             if (Net1.Receive(p))

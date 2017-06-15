@@ -722,11 +722,15 @@ namespace Gurux.Net
                                 m_OnClientConnected(this, e);
                                 if (!e.Accept)
                                 {
+                                    byte[] buff = new byte[0];
+                                    workerSocket.BeginReceive(buff, 0, buff.Length,
+                                                               SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
+                                    workerSocket.Close();
                                     lock (tcpIpClients)
                                     {
                                         tcpIpClients.Remove(workerSocket);
                                     }
-                                    workerSocket.Close();
+                                    workerSocket = null;
                                 }
                             }
                             lock (tcpIpClients)
@@ -1411,6 +1415,35 @@ namespace Gurux.Net
                     }
                 }
             }
+        }
+
+        public override string ToString()
+        {
+            StringBuilder sb = new StringBuilder();
+            if (isServer)
+            {
+                sb.Append("Server: ");
+            }
+            else
+            {
+                sb.Append("Client: ");
+            }
+            sb.Append(communicationProtocol);
+            if (isServer)
+            {
+                sb.Append(port);
+            }
+            else
+            {
+                sb.Append(hostAddress);
+                sb.Append(':');
+                sb.Append(port);
+            }
+            if (UseIPv6)
+            {
+                sb.Append(" IPv6");
+            }
+            return sb.ToString();
         }
 
         /// <summary>
