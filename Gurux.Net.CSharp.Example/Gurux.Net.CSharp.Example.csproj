@@ -55,12 +55,8 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gurux.Common, Version=8.1.1702.602, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Common.8.1.1702.0602\lib\portable-win+net35\Gurux.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Gurux.Net, Version=8.1.1703.3101, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Net.8.1.1703.3101\lib\portable-win+net35\Gurux.Net.dll</HintPath>
+    <Reference Include="Gurux.Common, Version=8.1.1708.2501, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Gurux.Common.8.1.1708.2501\lib\portable-win+net35\Gurux.Common.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="System">
@@ -84,9 +80,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -113,6 +107,12 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Net.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Development\Gurux.Net.csproj">
+      <Project>{cb63ea09-d6bc-4b1d-927e-83041a222d54}</Project>
+      <Name>Gurux.Net</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup>
     <PreBuildEvent>
