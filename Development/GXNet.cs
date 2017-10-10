@@ -766,6 +766,29 @@ namespace Gurux.Net
                     }
                 }
             }
+            catch (SocketException e)
+            {
+                if (e.NativeErrorCode == 10054)
+                {
+                    //Client has left.
+                    if (workerSocket != null)
+                    {
+                        lock (tcpIpClients)
+                        {
+                            tcpIpClients.Remove(workerSocket);
+                        }
+                        if (m_OnClientDisconnected != null)
+                        {
+                            m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString()));
+                        }
+                    }
+                    // Wait other clients.
+                    if (socket != null)
+                    {
+                        (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
+                    }
+                }
+            }
             catch (Exception ex)
             {
                 NotifyError(ex);
