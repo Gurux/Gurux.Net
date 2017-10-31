@@ -100,7 +100,7 @@ namespace Gurux.Net
         /// <summary>
         /// Signaling object used to notify when an asynchronous operation is completed
         /// </summary>
-        static ManualResetEvent clientDone = new ManualResetEvent(false);
+        ManualResetEvent clientDone = new ManualResetEvent(false);
 
         /// <summary>
         /// Constructor.

@@ -395,7 +395,7 @@ namespace Gurux.NetSample
                                 WaitTime = Convert.ToInt32(WaitTimeTB.Text),
                                 Eop = EOPText.Text,
                             };
-                            Net1.Send(ASCIIEncoding.ASCII.GetBytes(SendText.Text), null);
+                            Net1.Send(GXCommon.HexToBytes(SendText.Text), null);
                             if (Net1.Receive(p))
                             {
                                 ReceivedText.Text = Convert.ToString(p.Reply);
@@ -425,7 +425,7 @@ namespace Gurux.NetSample
                     if (HexCB.Checked)
                     {
                         // Sends data as byte array.
-                        Net1.Send(ASCIIEncoding.ASCII.GetBytes(SendText.Text), null);
+                        Net1.Send(GXCommon.HexToBytes(SendText.Text), null);
                     }
                     else
                     {
