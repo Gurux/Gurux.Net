@@ -19,9 +19,9 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net35" />
-    <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net35" />
-    <file src="bin\Release\Gurux.Net.pdb" target="lib\portable-win+net35" />
+    <file src="bin\Release\Gurux.Net.dll" target="lib\portable-win+net40" />
+    <file src="bin\Release\Gurux.Net.XML" target="lib\portable-win+net40" />
+    <file src="bin\Release\Gurux.Net.pdb" target="lib\portable-win+net40" />
     <file src="bin\Android\Release\Gurux.Net.dll" target="lib\monoandroid" />
     <file src="bin\Android\Release\Gurux.Net.XML" target="lib\monoandroid" />
     <file src="bin\Android\Release\Gurux.Net.pdb" target="lib\monoandroid" />

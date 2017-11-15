@@ -19,10 +19,10 @@ namespace Gurux.Net.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
-    public class Resources {
+    internal class Resources {
         
         private static global::System.Resources.ResourceManager resourceMan;
         
@@ -36,7 +36,7 @@ namespace Gurux.Net.Properties {
         ///   Returns the cached ResourceManager instance used by this class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Resources.ResourceManager ResourceManager {
+        internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
                     global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Gurux.Net.Properties.Resources", typeof(Resources).Assembly);
@@ -51,7 +51,7 @@ namespace Gurux.Net.Properties {
         ///   resource lookups using this strongly typed resource class.
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
-        public static global::System.Globalization.CultureInfo Culture {
+        internal static global::System.Globalization.CultureInfo Culture {
             get {
                 return resourceCulture;
             }
@@ -63,7 +63,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Client Settings:.
         /// </summary>
-        public static string ClientSettings {
+        internal static string ClientSettings {
             get {
                 return ResourceManager.GetString("ClientSettings", resourceCulture);
             }
@@ -72,7 +72,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Host:.
         /// </summary>
-        public static string HostNameTxt {
+        internal static string HostNameTxt {
             get {
                 return ResourceManager.GetString("HostNameTxt", resourceCulture);
             }
@@ -81,7 +81,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid client..
         /// </summary>
-        public static string InvalidClient {
+        internal static string InvalidClient {
             get {
                 return ResourceManager.GetString("InvalidClient", resourceCulture);
             }
@@ -90,7 +90,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid connection..
         /// </summary>
-        public static string InvalidConnection {
+        internal static string InvalidConnection {
             get {
                 return ResourceManager.GetString("InvalidConnection", resourceCulture);
             }
@@ -99,7 +99,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid host name..
         /// </summary>
-        public static string InvalidHostName {
+        internal static string InvalidHostName {
             get {
                 return ResourceManager.GetString("InvalidHostName", resourceCulture);
             }
@@ -108,7 +108,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Invalid port name..
         /// </summary>
-        public static string InvalidPortName {
+        internal static string InvalidPortName {
             get {
                 return ResourceManager.GetString("InvalidPortName", resourceCulture);
             }
@@ -117,7 +117,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Port:.
         /// </summary>
-        public static string PortTxt {
+        internal static string PortTxt {
             get {
                 return ResourceManager.GetString("PortTxt", resourceCulture);
             }
@@ -126,7 +126,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Protocol.
         /// </summary>
-        public static string ProtocolTxt {
+        internal static string ProtocolTxt {
             get {
                 return ResourceManager.GetString("ProtocolTxt", resourceCulture);
             }
@@ -135,7 +135,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Server Settings:.
         /// </summary>
-        public static string ServerSettings {
+        internal static string ServerSettings {
             get {
                 return ResourceManager.GetString("ServerSettings", resourceCulture);
             }
@@ -144,7 +144,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Server.
         /// </summary>
-        public static string ServerTxt {
+        internal static string ServerTxt {
             get {
                 return ResourceManager.GetString("ServerTxt", resourceCulture);
             }
@@ -153,7 +153,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Network Settings.
         /// </summary>
-        public static string SettingsTxt {
+        internal static string SettingsTxt {
             get {
                 return ResourceManager.GetString("SettingsTxt", resourceCulture);
             }
@@ -162,7 +162,7 @@ namespace Gurux.Net.Properties {
         /// <summary>
         ///   Looks up a localized string similar to Use IPv6.
         /// </summary>
-        public static string UseIPv6Txt {
+        internal static string UseIPv6Txt {
             get {
                 return ResourceManager.GetString("UseIPv6Txt", resourceCulture);
             }

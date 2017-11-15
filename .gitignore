@@ -166,3 +166,5 @@ pip-log.txt
 .DS_Store
 Development/TraceAndTestImpact.testsettings
 *.testsettings
+*.lock
+*.ide
