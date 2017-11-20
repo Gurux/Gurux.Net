@@ -57,11 +57,11 @@ namespace Gurux.Net
     ReceiveThread m_Receiver;
     Thread m_ReceiverThread;
 #endif
-
-        bool isVirtual, isVirtualOpen;
         // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this
         // timeout period, the call is aborted.
-        const int TIMEOUT_MILLISECONDS = 5000;
+        int WaitTime = 60000;
+        bool isVirtual, isVirtualOpen;
+
         internal byte[] receiveBuffer = new byte[1024];
         /// <summary>
         /// Used protocol.
@@ -402,9 +402,12 @@ namespace Gurux.Net
                             // Make an asynchronous Send request over the socket
                             (socket as Socket).SendAsync(socketEventArg);
 
-                            // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                            // Block the UI thread for a maximum of WaitTime.
                             // If no response comes back within this time then proceed
-                            clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                            if (!clientDone.WaitOne(WaitTime))
+                            {
+                                err = SocketError.NotConnected;
+                            }
                         }
                         finally
                         {
@@ -979,9 +982,12 @@ namespace Gurux.Net
                     // Make an asynchronous Connect request over the socket
                     (socket as Socket).ConnectAsync(socketEventArg);
 
-                    // Block the UI thread for a maximum of TIMEOUT_MILLISECONDS milliseconds.
+                    // Block the UI thread for a maximum of WaitTime.
                     // If no response comes back within this time then proceed
-                    clientDone.WaitOne(TIMEOUT_MILLISECONDS);
+                    if (!clientDone.WaitOne(WaitTime))
+                    {
+                        err = SocketError.NotConnected;
+                    }
                     if (err != 0)
                     {
                         throw new SocketException((int)err);

@@ -4,11 +4,11 @@
 // 
 //
 //
-// Filename:        $HeadURL: svn://utopia/projects/Old/GuruxNet/Gurux.Net%20csharp%20Sample/AssemblyInfo.cs $
+// Filename:        $HeadURL$
 //
 // Version:         $Revision: 3104 $,
 //                  $Date: 2010-12-03 13:43:16 +0200 (pe, 03 joulu 2010) $
-//                  $Author: kurumi $
+//                  $Author$
 //
 // Copyright (c) Gurux Ltd
 //

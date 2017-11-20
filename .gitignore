@@ -168,3 +168,5 @@ Development/TraceAndTestImpact.testsettings
 *.testsettings
 *.lock
 *.ide
+*.ide-shm
+*.ide-wal

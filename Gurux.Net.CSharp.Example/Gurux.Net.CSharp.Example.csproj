@@ -56,8 +56,9 @@
     <DebugType>none</DebugType>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gurux.Common, Version=8.1.1711.1501, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Common.8.1.1711.1501\lib\portable-win+net40\Gurux.Common.dll</HintPath>
+    <Reference Include="Gurux.Common, Version=8.1.1711.2001, Culture=neutral, PublicKeyToken=null">
+      <HintPath>packages\Gurux.Common.8.1.1711.2001\lib\portable-win+net40\Gurux.Common.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System">
       <Name>System</Name>
