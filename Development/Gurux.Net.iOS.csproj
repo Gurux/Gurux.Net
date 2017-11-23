@@ -32,8 +32,8 @@
     <DocumentationFile>bin\iOS\Release\Gurux.Net.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Gurux.Common, Version=8.1.1711.2201, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>packages\Gurux.Common.8.1.1711.2201\lib\xamarinios\Gurux.Common.dll</HintPath>
+    <Reference Include="Gurux.Common, Version=8.1.1711.2301, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>packages\Gurux.Common.8.1.1711.2301\lib\xamarinios\Gurux.Common.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
