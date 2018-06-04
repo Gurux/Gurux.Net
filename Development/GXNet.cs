@@ -815,10 +815,7 @@ namespace Gurux.Net
             Close();
             try
             {
-                lock (syncBase.receivedSync)
-                {
-                    syncBase.lastPosition = 0;
-                }
+                syncBase.Open();
                 EndPoint ep = null;
                 NotifyMediaStateChange(MediaState.Opening);
                 AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
@@ -1022,6 +1019,7 @@ namespace Gurux.Net
         {
             if (socket != null || isVirtualOpen)
             {
+                syncBase.Close();
 #if WINDOWS_PHONE
             if (m_Receiver != null)
             {
@@ -1272,6 +1270,10 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.Receive"/>
         public bool Receive<T>(ReceiveParameters<T> args)
         {
+            if (!IsOpen)
+            {
+                throw new InvalidOperationException("Media is closed.");
+            }
             return syncBase.Receive(args);
         }
 
