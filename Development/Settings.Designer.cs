@@ -1,4 +1,5 @@
-﻿namespace Gurux.Net
+﻿#if !NETCOREAPP2_0 && !NETSTANDARD2_0
+namespace Gurux.Net
 {
 partial class Settings
 {
@@ -19,7 +20,7 @@ partial class Settings
         base.Dispose(disposing);
     }
 
-    #region Windows Form Designer generated code
+#region Windows Form Designer generated code
 
     /// <summary>
     /// Required method for Designer support - do not modify
@@ -209,7 +210,7 @@ partial class Settings
 
     }
 
-    #endregion
+#endregion
 
     private System.Windows.Forms.CheckBox ServerCB;
     private System.Windows.Forms.Panel ServerPanel;
@@ -228,3 +229,4 @@ partial class Settings
 
 }
 }
+#endif //!NETCOREAPP2_0 && !NETSTANDARD2_0

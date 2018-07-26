@@ -29,7 +29,7 @@
 // This code is licensed under the GNU General Public License v2.
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
-
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -68,7 +68,7 @@ namespace Gurux.Net
             InitializeComponent();
         }
 
-        #region Assembly Attribute Accessors
+#region Assembly Attribute Accessors
 
         public string AssemblyTitle
         {
@@ -152,7 +152,7 @@ namespace Gurux.Net
             get;
             set;
         }
-        #endregion
+#endregion
 
         private void ServerCB_CheckedChanged(object sender, EventArgs e)
         {
@@ -165,7 +165,7 @@ namespace Gurux.Net
             }
         }
 
-        #region IGXPropertyPage Members
+#region IGXPropertyPage Members
 
         void IGXPropertyPage.Initialize()
         {
@@ -200,7 +200,7 @@ namespace Gurux.Net
             Dirty = false;
         }
 
-        #endregion
+#endregion
 
         private void UseIPv6CB_CheckedChanged(object sender, EventArgs e)
         {
@@ -239,3 +239,4 @@ namespace Gurux.Net
         }
     }
 }
+#endif //!NETCOREAPP2_0 && !NETSTANDARD2_0

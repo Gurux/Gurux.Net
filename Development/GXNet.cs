@@ -32,7 +32,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.ComponentModel;
 using System.Net.Sockets;
@@ -42,7 +41,6 @@ using System.Xml;
 using Gurux.Shared;
 using Gurux.Common;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Gurux.Net.Properties;
 
 namespace Gurux.Net
@@ -639,7 +637,7 @@ namespace Gurux.Net
                         {
                             foreach (object eop in (Array)Eop)
                             {
-                                bytes = GXCommon.IndexOf(syncBase.m_Received, GXCommon.GetAsByteArray(eop), index, syncBase.receivedSize);
+                                bytes = Gurux.Common.GXCommon.IndexOf(syncBase.m_Received, Gurux.Common.GXCommon.GetAsByteArray(eop), index, syncBase.receivedSize);
                                 if (bytes != -1)
                                 {
                                     break;
@@ -648,7 +646,7 @@ namespace Gurux.Net
                         }
                         else
                         {
-                            bytes = GXCommon.IndexOf(syncBase.m_Received, GXCommon.GetAsByteArray(Eop), index, syncBase.receivedSize);
+                            bytes = Gurux.Common.GXCommon.IndexOf(syncBase.m_Received, Gurux.Common.GXCommon.GetAsByteArray(Eop), index, syncBase.receivedSize);
                         }
                     }
                     if (bytes != -1)
@@ -1101,7 +1099,7 @@ namespace Gurux.Net
             }
         }
 
-#if !__MOBILE__
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0
         /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
         public System.Windows.Forms.Form PropertiesForm
         {
@@ -1110,7 +1108,8 @@ namespace Gurux.Net
                 return new Settings(this);
             }
         }
-#endif
+#endif //!NETCOREAPP2_0 && !NETSTANDARD2_0
+
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
         /// <seealso cref="Open">Open</seealso>
         /// <seealso cref="Close">Close</seealso>
@@ -1687,7 +1686,7 @@ namespace Gurux.Net
                 return isConnected;
             }
         }
-#if !__MOBILE__
+#if !NETCOREAPP2_0 && !NETSTANDARD2_0
         /// <summary>
         /// Shows the network Properties dialog.
         /// </summary>
@@ -1702,7 +1701,8 @@ namespace Gurux.Net
         {
             return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
-#endif
+#endif //!NETCOREAPP2_0 && !NETSTANDARD2_0
+
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
         {
