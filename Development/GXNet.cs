@@ -398,13 +398,14 @@ namespace Gurux.Net
                             // Sets the state of the event to non-signaled, causing threads to block
                             clientDone.Reset();
                             // Make an asynchronous Send request over the socket
-                            (socket as Socket).SendAsync(socketEventArg);
-
-                            // Block the UI thread for a maximum of WaitTime.
-                            // If no response comes back within this time then proceed
-                            if (!clientDone.WaitOne(WaitTime))
+                            if ((socket as Socket).SendAsync(socketEventArg))
                             {
-                                err = SocketError.NotConnected;
+                                // Block the UI thread for a maximum of WaitTime.
+                                // If no response comes back within this time then proceed
+                                if (!clientDone.WaitOne(WaitTime))
+                                {
+                                    err = SocketError.NotConnected;
+                                }
                             }
                         }
                         finally

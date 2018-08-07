@@ -18,6 +18,7 @@
     <PackageTags>Gurux Device Framework Network TCP/IP UDP</PackageTags>
     <PackageId>Gurux.Net</PackageId>
     <ApplicationIcon>Net.ico</ApplicationIcon>
+    <PackageIconUrl>http://www.gurux.org/gurux.ico</PackageIconUrl>
   </PropertyGroup>
  
  <ItemGroup>
