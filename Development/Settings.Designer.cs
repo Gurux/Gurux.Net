@@ -1,4 +1,4 @@
-﻿#if !NETCOREAPP2_0 && !NETSTANDARD2_0
+﻿#if !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
 namespace Gurux.Net
 {
 partial class Settings
@@ -229,4 +229,4 @@ partial class Settings
 
 }
 }
-#endif //!NETCOREAPP2_0 && !NETSTANDARD2_0
+#endif //!NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
