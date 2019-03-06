@@ -1078,6 +1078,10 @@ namespace Gurux.Net
                     {
                         if (socket is Socket)
                         {
+                            if ((socket as Socket).Connected)
+                            {
+                                (socket as Socket).Shutdown(SocketShutdown.Both);
+                            }
                             (socket as Socket).Close();
                             socket = null;
                         }
