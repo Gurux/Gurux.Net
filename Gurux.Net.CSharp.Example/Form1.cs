@@ -425,12 +425,12 @@ namespace Gurux.NetSample
                     if (HexCB.Checked)
                     {
                         // Sends data as byte array.
-                        Net1.Send(GXCommon.HexToBytes(SendText.Text), null);
+                        Net1.Send(GXCommon.HexToBytes(SendText.Text), ClientsList.SelectedItem?.ToString());
                     }
                     else
                     {
                         // Sends data as ASCII string.
-                        Net1.Send(SendText.Text, null);
+                        Net1.Send(SendText.Text, ClientsList.SelectedItem?.ToString());
                     }
                 }
             }
