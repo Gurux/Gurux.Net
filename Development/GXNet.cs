@@ -1104,7 +1104,7 @@ namespace Gurux.Net
             }
         }
 
-#if !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
         /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
         public System.Windows.Forms.Form PropertiesForm
         {
@@ -1113,7 +1113,7 @@ namespace Gurux.Net
                 return new Settings(this);
             }
         }
-#endif //!NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
+#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
 
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
         /// <seealso cref="Open">Open</seealso>
@@ -1691,7 +1691,7 @@ namespace Gurux.Net
                 return isConnected;
             }
         }
-#if !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
+#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
         /// <summary>
         /// Shows the network Properties dialog.
         /// </summary>
@@ -1706,7 +1706,7 @@ namespace Gurux.Net
         {
             return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
-#endif //!NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETSTANDARD2_0
+#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
 
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
