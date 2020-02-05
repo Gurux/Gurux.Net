@@ -451,14 +451,11 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    int pos = receiver.LastIndexOf(':');
-                    if (pos != 2)
+                    string[] tmp = receiver.Split(':');
+                    if (tmp.Length != 2)
                     {
                         throw new ArgumentException("Invalid sender info.");
                     }
-                    string[] tmp = new string[2];
-                    tmp[0] = receiver.Substring(0, pos);
-                    tmp[1] = receiver.Substring(pos + 1);
                     IPAddress address = IPAddress.Parse(tmp[0]);
                     IPEndPoint ep = new IPEndPoint(address, int.Parse(tmp[1]));
                     (socket as UdpClient).Send(value, value.Length, ep);
