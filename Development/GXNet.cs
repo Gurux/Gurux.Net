@@ -86,6 +86,12 @@ namespace Gurux.Net
         /// Connected TCP/IP clients.
         /// </summary>
         private Dictionary<Socket, byte[]> tcpIpClients = new Dictionary<Socket, byte[]>();
+
+        /// <summary>
+        /// Connected UDP clients.
+        /// </summary>
+        private Dictionary<IDisposable, GXNet> udpClients = new Dictionary<IDisposable, GXNet>();
+
         /// <summary>
         /// Is data send syncronously.
         /// </summary>
@@ -99,6 +105,8 @@ namespace Gurux.Net
         /// Signaling object used to notify when an asynchronous operation is completed
         /// </summary>
         ManualResetEvent clientDone = new ManualResetEvent(false);
+
+        private GXNet parent = null;
 
         /// <summary>
         /// Constructor.
@@ -138,40 +146,87 @@ namespace Gurux.Net
         }
 
         /// <summary>
-        /// Attach TCP/IP connection.
+        /// Attach TCP/IP or UDP connection.
         /// </summary>
         /// <remarks>
         /// This can be used in server side if server
         /// want to start communicating with client using syncronous communication.
         /// Close connection after use.
         /// </remarks>
-        public GXNet Attach(string address)
+        public GXNet Attach(object info)
         {
-            if (Protocol != NetworkType.Tcp)
-            {
-                throw new ArgumentException("Attach can be used only with TCP/IP connection.");
-            }
             GXNet net = new GXNet();
             net.ConfigurableSettings = ConfigurableSettings;
             net.Protocol = Protocol;
             net.Trace = Trace;
-            lock (tcpIpClients)
+            net.isServer = isServer;
+            if (info is string)
             {
-                foreach (var it in tcpIpClients)
+                if (Protocol == NetworkType.Tcp)
                 {
-                    if (it.Key is Socket)
+                    lock (tcpIpClients)
                     {
-                        Socket s = (Socket)it.Key;
-                        if (s.RemoteEndPoint.ToString() == address)
+                        foreach (var it in tcpIpClients)
                         {
-                            net.socket = s;
-                            s.RemoteEndPoint.ToString();
-                            net.hostAddress = hostAddress;
-                            net.port = port;
-                            tcpIpClients.Remove(s);
-                            s.BeginReceive(net.receiveBuffer, 0, net.receiveBuffer.Length,
-                                                              SocketFlags.None, new AsyncCallback(net.RecieveComplete), s);
-                            break;
+                            if (it.Key is Socket)
+                            {
+                                Socket s = (Socket)it.Key;
+                                if (s.RemoteEndPoint.ToString() == (string)info)
+                                {
+                                    net.socket = s;
+                                    s.RemoteEndPoint.ToString();
+                                    net.hostAddress = hostAddress;
+                                    net.port = port;
+                                    tcpIpClients.Remove(s);
+                                    s.BeginReceive(net.receiveBuffer, 0, net.receiveBuffer.Length,
+                                                                      SocketFlags.None, new AsyncCallback(net.RecieveComplete), s);
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Attach by string can be used only with TCP/IP connection.");
+                }
+            }
+            else if (info is GXNetReceiveEventArgs)
+            {
+                string tmp = ((GXNetReceiveEventArgs)info).SenderInfo;
+                int pos = tmp.LastIndexOf(':');
+                if (pos == -1)
+                {
+                    throw new ArgumentException("Invalid sender info.");
+                }
+                net.hostAddress = tmp.Substring(0, pos);
+                net.port = int.Parse(tmp.Substring(pos + 1));
+                net.socket = (info as GXNetReceiveEventArgs).socket as IDisposable;
+                udpClients.Add(net.socket, net);
+                (info as GXNetReceiveEventArgs).socket = null;
+                net.parent = this;
+            }
+            else if (info is GXNetConnectionEventArgs)
+            {
+                lock (tcpIpClients)
+                {
+                    foreach (var it in tcpIpClients)
+                    {
+                        if (it.Key is Socket)
+                        {
+                            if (it.Key == (info as GXNetConnectionEventArgs).socket)
+                            {
+                                (info as GXNetConnectionEventArgs).socket = null;
+                                net.socket = it.Key;
+                                it.Key.RemoteEndPoint.ToString();
+                                net.hostAddress = hostAddress;
+                                net.port = port;
+                                net.isServer = false;
+                                tcpIpClients.Remove(it.Key);
+                                it.Key.BeginReceive(net.receiveBuffer, 0, net.receiveBuffer.Length,
+                                                                  SocketFlags.None, new AsyncCallback(net.RecieveComplete), it.Key);
+                                break;
+                            }
                         }
                     }
                 }
@@ -182,7 +237,6 @@ namespace Gurux.Net
             }
             return net;
         }
-
 
         /// <summary>
         /// Destructor.
@@ -331,7 +385,7 @@ namespace Gurux.Net
         /// <param name="sender">Data sender.</param>
         void IGXVirtualMedia.DataReceived(byte[] data, string sender)
         {
-            HandleReceivedData(data.Length, data, sender);
+            HandleReceivedData(data.Length, data, sender, null);
         }
 
         /// <summary>
@@ -374,6 +428,39 @@ namespace Gurux.Net
                 {
                     if (socket is UdpClient)
                     {
+                        /*
+                        IPEndPoint ep;
+                        if (receiver != null)
+                        {
+                            int pos = receiver.LastIndexOf(':');
+                            if (pos == -1)
+                            {
+                                throw new ArgumentException("Invalid sender info.");
+                            }
+                            IPAddress address = IPAddress.Parse(receiver.Substring(0, pos));
+                            ep = new IPEndPoint(address, int.Parse(receiver.Substring(pos + 1)));
+                        }
+                        else
+                        {
+                            IPAddress address;
+                            if (!IPAddress.TryParse(HostName, out address))
+                            {
+                                // Get host related information.
+                                IPHostEntry host = Dns.GetHostEntry(hostAddress);
+                                foreach (IPAddress ip in host.AddressList)
+                                {
+                                    if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
+                                            ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
+                                    {
+                                        address = ip;
+                                        break;
+                                    }
+                                }
+                            }
+                            ep = new IPEndPoint(address, port);
+                        }
+                        (socket as UdpClient).Send(value, value.Length, ep);
+                        */
                         (socket as UdpClient).Send(value, value.Length);
                     }
                     else
@@ -445,19 +532,32 @@ namespace Gurux.Net
                     }
                     if (client == null)
                     {
-                        throw new Exception(Resources.InvalidClient);
+                        if (parent == null)
+                        {
+                            throw new Exception(Resources.InvalidClient);
+                        }
+                        client = (Socket) socket;
                     }
                     client.Send(value);
                 }
                 else
                 {
-                    string[] tmp = receiver.Split(':');
-                    if (tmp.Length != 2)
+                    IPEndPoint ep;
+                    if (receiver != null)
                     {
-                        throw new ArgumentException("Invalid sender info.");
+                        int pos = receiver.LastIndexOf(':');
+                        if (pos == -1)
+                        {
+                            throw new ArgumentException("Invalid sender info.");
+                        }
+                        IPAddress address = IPAddress.Parse(receiver.Substring(0, pos));
+                        ep = new IPEndPoint(address, int.Parse(receiver.Substring(pos + 1)));
                     }
-                    IPAddress address = IPAddress.Parse(tmp[0]);
-                    IPEndPoint ep = new IPEndPoint(address, int.Parse(tmp[1]));
+                    else
+                    {
+                        IPAddress address = IPAddress.Parse(HostName);
+                        ep = new IPEndPoint(address, Port);
+                    }
                     (socket as UdpClient).Send(value, value.Length, ep);
                 }
                 this.BytesSent += (ulong)value.Length;
@@ -504,7 +604,13 @@ namespace Gurux.Net
                 else
                 {
                     socket = result.AsyncState as Socket;
-                    if (socket.Connected)
+                    if (socket.ProtocolType == ProtocolType.Udp)
+                    {
+                        SocketError err;
+                        bytes = socket.EndReceive(result, out err);
+                        buff = receiveBuffer;
+                    }
+                    else if (socket.Connected)
                     {
                         sender = socket.RemoteEndPoint.ToString();
                         SocketError err;
@@ -558,10 +664,10 @@ namespace Gurux.Net
                 }
                 if (bytes != 0)
                 {
-                    bytes = HandleReceivedData(bytes, buff, sender);
+                    HandleReceivedData(bytes, buff, sender, socket != null ? socket : result.AsyncState as IDisposable);
                     if (socket != null)
                     {
-                        if (socket.Connected)
+                        if (socket.Connected || socket.ProtocolType == ProtocolType.Udp)
                         {
                             socket.BeginReceive(buff, 0, buff.Length, SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
                         }
@@ -614,8 +720,13 @@ namespace Gurux.Net
             }
         }
 
-        private int HandleReceivedData(int bytes, byte[] buff, string sender)
+        private void HandleReceivedData(int bytes, byte[] buff, string sender, IDisposable socket)
         {
+            if (udpClients.ContainsKey(socket))
+            {
+                udpClients[socket].HandleReceivedData(bytes, buff, sender, socket);
+                return;
+            }
             BytesReceived += (uint)bytes;
             if (this.IsSynchronous)
             {
@@ -662,16 +773,16 @@ namespace Gurux.Net
                     Array.Copy(buff, data, bytes);
                     if (Trace == TraceLevel.Verbose && m_OnTrace != null)
                     {
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data, null));
+                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data, sender));
                     }
-                    m_OnReceived(this, new ReceiveEventArgs(data, sender));
+                    GXNetReceiveEventArgs r = new GXNetReceiveEventArgs(data, sender, socket);
+                    m_OnReceived(this, r);
                 }
                 else if (Trace == TraceLevel.Verbose && m_OnTrace != null)
                 {
                     m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, buff, 0, bytes, null));
                 }
             }
-            return bytes;
         }
 
         /// <summary>
@@ -711,7 +822,7 @@ namespace Gurux.Net
                         if (socket != null)
                         {
                             workerSocket = (socket as Socket).EndAccept(result);
-                            ConnectionEventArgs e = new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString());
+                            ConnectionEventArgs e = new GXNetConnectionEventArgs(workerSocket.RemoteEndPoint.ToString(), workerSocket);
                             lock (tcpIpClients)
                             {
                                 tcpIpClients[workerSocket] = null;
@@ -1013,6 +1124,16 @@ namespace Gurux.Net
         /// <inheritdoc cref="IGXMedia.Close"/>
         public void Close()
         {
+            if (parent != null)
+            {
+                lock(parent.udpClients)
+                {
+                    parent.udpClients.Remove(this.socket);
+                }
+                socket = null;
+                parent = null;
+                return;
+            }
             if (socket != null || isVirtualOpen)
             {
                 syncBase.Close();

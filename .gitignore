@@ -170,3 +170,4 @@ Development/TraceAndTestImpact.testsettings
 *.ide
 *.ide-shm
 *.ide-wal
+*.zip
