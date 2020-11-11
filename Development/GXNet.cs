@@ -55,9 +55,6 @@ namespace Gurux.Net
     ReceiveThread m_Receiver;
     Thread m_ReceiverThread;
 #endif
-        // Define a timeout in milliseconds for each asynchronous call. If a response is not received within this
-        // timeout period, the call is aborted.
-        int WaitTime = 60000;
         bool isVirtual, isVirtualOpen;
 
         internal byte[] receiveBuffer = new byte[1024];
@@ -109,6 +106,16 @@ namespace Gurux.Net
         private GXNet parent = null;
 
         /// <summary>
+        /// Define a timeout in milliseconds for each asynchronous call. If a response is not received within this
+        /// timeout period, the call is aborted.
+        /// </summary>
+        public int WaitTime
+        {
+            get;
+            set;
+        }
+
+        /// <summary>
         /// Constructor.
         /// </summary>
         public GXNet()
@@ -116,6 +123,7 @@ namespace Gurux.Net
             syncBase = new GXSynchronousMediaBase(1024);
             ConfigurableSettings = AvailableMediaSettings.All;
             Protocol = NetworkType.Tcp;
+            WaitTime = 60000;
         }
 
         /// <summary>
