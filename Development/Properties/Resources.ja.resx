@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>クライアント設定：</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>ホスト：</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>無効なクライアント。</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>無効な接続。</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>無効なホスト名。</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>ポート名が無効です。</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>港：</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>プロトコル</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>サーバー設定：</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>サーバ</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>ネットワーク設定</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6を使用する</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>送信者情報が無効です。</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>文字列による添付は、TCP / IP接続でのみ使用できます。</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>不明なアドレス。</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>クライアント：</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>キャンセル</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

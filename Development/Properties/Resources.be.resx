@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Налады кліента:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Вядучы:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Няправільны кліент.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Няправільнае злучэнне.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Няправільнае імя хаста.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Няслушная назва порта.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Порт:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Пратакол</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Налады сервера:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Сервер</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Налады сеткі</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Выкарыстоўвайце IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Несапраўдная інфармацыя пра адпраўніка.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Далучэнне радком можа выкарыстоўвацца толькі пры падключэнні TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Невядомы адрас.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Кліент:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Адмяніць</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>добра</value>
+  </data>
 </root>

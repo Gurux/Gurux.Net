@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Configuració del client:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Amfitrió:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Client no vàlid.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Connexió no vàlida.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Nom d'amfitrió no vàlid.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>El nom del port no és vàlid.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Port:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Configuració del servidor:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Servidor</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Configuració de xarxa</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Utilitzeu IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>La informació del remitent no és vàlida.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Adjuntar per cadena només es pot utilitzar amb connexió TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Adreça desconeguda.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Client:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel · lar</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>D'acord</value>
+  </data>
 </root>

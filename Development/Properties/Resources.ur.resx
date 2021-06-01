@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>کلائنٹ کی ترتیبات:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>میزبان:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>غلط مؤکل۔</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>غلط کنکشن۔</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>غلط میزبان نام۔</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>پورٹ کا غلط نام۔</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>بندرگاہ:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>پروٹوکول</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>سرور کی ترتیبات:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>سرور</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>نیٹ ورک کی ترتیبات</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 استعمال کریں</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>بھیجنے والوں کی غلط معلومات۔</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>تار کے ذریعے منسلک صرف TCP / IP کنکشن کے ساتھ استعمال کیا جا سکتا ہے۔</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>نامعلوم پتہ۔</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>مؤکل:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>منسوخ کریں</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ٹھیک ہے</value>
+  </data>
 </root>

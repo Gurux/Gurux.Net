@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Mipangilio ya Mteja:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Mwenyeji:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Mteja batili.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Muunganisho batili.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Jina batili la mwenyeji.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Jina batili la bandari.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Bandari:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Itifaki</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Mipangilio ya Seva:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Seva</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Mipangilio ya Mtandao</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Tumia IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Maelezo batili ya mtumaji.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Ambatisha kwa kamba inaweza kutumika tu na unganisho la TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Anwani isiyojulikana.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Mteja:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Ghairi</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>sawa</value>
+  </data>
 </root>

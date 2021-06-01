@@ -196,7 +196,7 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    throw new ArgumentException("Attach by string can be used only with TCP/IP connection.");
+                    throw new ArgumentException(Gurux.Net.Properties.Resources.AttachByStringCanBeUsedOnlyWithTCPIPConnection);
                 }
             }
             else if (info is GXNetReceiveEventArgs)
@@ -205,7 +205,7 @@ namespace Gurux.Net
                 int pos = tmp.LastIndexOf(':');
                 if (pos == -1)
                 {
-                    throw new ArgumentException("Invalid sender info.");
+                    throw new ArgumentException(Gurux.Net.Properties.Resources.InvalidSenderInfo);
                 }
                 net.hostAddress = tmp.Substring(0, pos);
                 net.port = int.Parse(tmp.Substring(pos + 1));
@@ -241,7 +241,7 @@ namespace Gurux.Net
             }
             if (net.socket == null)
             {
-                throw new ArgumentException("Unknown address.");
+                throw new ArgumentException(Gurux.Net.Properties.Resources.UnknownAddress);
             }
             return net;
         }
@@ -544,7 +544,7 @@ namespace Gurux.Net
                         {
                             throw new Exception(Resources.InvalidClient);
                         }
-                        client = (Socket) socket;
+                        client = (Socket)socket;
                     }
                     client.Send(value);
                 }
@@ -556,7 +556,7 @@ namespace Gurux.Net
                         int pos = receiver.LastIndexOf(':');
                         if (pos == -1)
                         {
-                            throw new ArgumentException("Invalid sender info.");
+                            throw new ArgumentException(Gurux.Net.Properties.Resources.InvalidSenderInfo);
                         }
                         IPAddress address = IPAddress.Parse(receiver.Substring(0, pos));
                         ep = new IPEndPoint(address, int.Parse(receiver.Substring(pos + 1)));
@@ -1134,7 +1134,7 @@ namespace Gurux.Net
         {
             if (parent != null)
             {
-                lock(parent.udpClients)
+                lock (parent.udpClients)
                 {
                     parent.udpClients.Remove(this.socket);
                 }
@@ -1583,11 +1583,11 @@ namespace Gurux.Net
             StringBuilder sb = new StringBuilder();
             if (isServer)
             {
-                sb.Append("Server: ");
+                sb.Append(Resources.ServerTxt);
             }
             else
             {
-                sb.Append("Client: ");
+                sb.Append(Resources.ClientTxt);
             }
             sb.Append(communicationProtocol);
             if (isServer)
@@ -1602,7 +1602,8 @@ namespace Gurux.Net
             }
             if (UseIPv6)
             {
-                sb.Append(" IPv6");
+                sb.Append(' ');
+                sb.Append(Resources.IPv6Txt);
             }
             return sb.ToString();
         }
@@ -1772,11 +1773,11 @@ namespace Gurux.Net
                 tmp = HostName + " " + port;
                 if (Protocol == NetworkType.Udp)
                 {
-                    tmp += "UDP";
+                    tmp += " UDP";
                 }
                 else
                 {
-                    tmp += "TCP/IP";
+                    tmp += " TCP/IP";
                 }
                 return tmp;
             }
@@ -1830,7 +1831,8 @@ namespace Gurux.Net
         /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
         public bool Properties(System.Windows.Forms.Form parent)
         {
-            return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen).ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
+            return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen, Resources.OK, Resources.Cancel,
+                "https://www.gurux.fi/GXNetProperties").ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
 #endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
 

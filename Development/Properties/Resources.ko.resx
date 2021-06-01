@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>클라이언트 설정 :</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>주최자:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>잘못된 클라이언트입니다.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>잘못된 연결입니다.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>잘못된 호스트 이름입니다.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>잘못된 포트 이름입니다.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>포트:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>실험 계획안</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>서버 설정 :</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>섬기는 사람</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>네트워크 설정</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 사용</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>발신자 정보가 잘못되었습니다.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>문자열로 첨부는 TCP / IP 연결에서만 사용할 수 있습니다.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>알 수없는 주소입니다.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>고객:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>취소</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>확인</value>
+  </data>
 </root>

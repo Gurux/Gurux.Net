@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Cài đặt Máy khách:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Tổ chức:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Khách hàng không hợp lệ.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Kết nối không hợp lệ.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Tên máy chủ không hợp lệ.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Tên cổng không hợp lệ.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Hải cảng:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Giao thức</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Cài đặt máy chủ:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Người phục vụ</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Thiết lạp mạng lưới</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Sử dụng IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Thông tin người gửi không hợp lệ.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Đính kèm theo chuỗi chỉ có thể được sử dụng với kết nối TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Địa chỉ không xác định.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Khách hàng:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Huỷ bỏ</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>đồng ý</value>
+  </data>
 </root>

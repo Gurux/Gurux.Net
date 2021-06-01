@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>క్లయింట్ సెట్టింగులు:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>హోస్ట్:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>చెల్లని క్లయింట్.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>కనెక్షన్ చెల్లదు.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>చెల్లని హోస్ట్ పేరు.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>పోర్ట్ పేరు చెల్లదు.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>పోర్ట్:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>ప్రోటోకాల్</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>సర్వర్ సెట్టింగులు:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>సర్వర్</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>నెట్వర్క్ అమరికలు</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 ఉపయోగించండి</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>పంపినవారి సమాచారం చెల్లదు.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>అటాచ్ బై స్ట్రింగ్ TCP / IP కనెక్షన్‌తో మాత్రమే ఉపయోగించబడుతుంది.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>తెలియని చిరునామా.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>క్లయింట్:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>రద్దు చేయండి</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>అలాగే</value>
+  </data>
 </root>

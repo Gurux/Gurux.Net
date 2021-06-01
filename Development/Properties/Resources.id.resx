@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Pengaturan Klien:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Tuan rumah:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Klien tidak valid.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Koneksi tidak valid.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Nama host tidak valid.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Nama port tidak valid.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Pelabuhan:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Pengaturan Server:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Pengaturan jaringan</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Gunakan IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Info pengirim tidak valid.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Lampirkan dengan string hanya dapat digunakan dengan koneksi TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Alamat tidak diketahui.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Klien:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Membatalkan</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>baik</value>
+  </data>
 </root>

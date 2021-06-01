@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Tetapan Pelanggan:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Tuan rumah:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Pelanggan tidak sah.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Sambungan tidak sah.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Nama hos tidak sah.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Nama port tidak sah.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Pelabuhan:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Tetapan Pelayan:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Pelayan</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Tetapan rangkaian</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Gunakan IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Maklumat pengirim tidak sah.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Lampirkan dengan tali boleh digunakan hanya dengan sambungan TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Alamat tidak diketahui.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Pelanggan:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Batal</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>okey</value>
+  </data>
 </root>

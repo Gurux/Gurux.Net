@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Nastavenia klienta:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Hostiteľ:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Neplatný klient.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Neplatné pripojenie.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Názov hostiteľa je neplatný.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Neplatný názov portu.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Prístav:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Nastavenia servera:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Nastavenia siete</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Použite protokol IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Neplatné informácie o odosielateľovi.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Pripojiť pomocou reťazca je možné použiť iba pri pripojení TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Neznáma adresa.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Zákazník:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Zrušiť</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Ok</value>
+  </data>
 </root>

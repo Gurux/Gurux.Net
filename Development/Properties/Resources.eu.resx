@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Bezeroaren ezarpenak:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Ostalaria:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Bezero baliogabea.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Konexio baliogabea.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Ostalari izen baliogabea.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Ataka izen baliogabea.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Portua:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokoloa</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Zerbitzariaren ezarpenak:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Zerbitzaria</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Sareko ezarpenak</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Erabili IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Igorlearen informazio baliogabea.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Erantsi katearen bidez TCP / IP konexioarekin soilik erabil daiteke.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Helbide ezezaguna.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Bezeroa:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Utzi</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Ados</value>
+  </data>
 </root>

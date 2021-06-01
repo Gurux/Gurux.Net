@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>קליענט סעטטינגס:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>באַלעבאָס:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>אונגילטיג קליענט.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>אונגילטיג פארבינדונג.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>אונגילטיג באַלעבאָס נאָמען.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>אונגילטיג פּאָרט נאָמען.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>פארט:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>פּראָטאָקאָל</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>סערווירער סעטטינגס:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>סערווירער</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>נעץ סעטטינגס</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>ניצן IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>אונגילטיג סענדער אינפארמאציע.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>צוטשעפּען דורך שטריקל קענען זיין געוויינט בלויז מיט TCP / IP קשר.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>אומבאַקאַנט אַדרעס.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>קליענט:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>באָטל מאַכן</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>אקעי</value>
+  </data>
 </root>

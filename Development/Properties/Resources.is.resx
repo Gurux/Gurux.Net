@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Stillingar viðskiptavinar:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Gestgjafi:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Ógildur viðskiptavinur.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Ógild tenging.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Ógilt gestgjafanafn.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Ógilt hafnarheiti.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Höfn:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Bókun</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Stillingar netþjóns:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Netþjónn</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Netstillingar</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Notaðu IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Ógildar upplýsingar um sendanda.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Hengja við streng er aðeins hægt að nota með TCP / IP tengingu.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Óþekkt heimilisfang.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Viðskiptavinur:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Hætta við</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Allt í lagi</value>
+  </data>
 </root>

@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>إعدادات العميل:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>مضيف:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>عميل غير صالح.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>اتصال غير صحيح.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>اسم مضيف غير صالح.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>اسم المنفذ غير صالح.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>ميناء:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>بروتوكول</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>اعدادات الخادم:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>الخادم</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>اعدادات الشبكة</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>استخدم IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>معلومات المرسل غير صالحة.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>يمكن استخدام إرفاق حسب السلسلة فقط مع اتصال TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>عنوان غير معروف.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>عميل:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>إلغاء</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>حسنا</value>
+  </data>
 </root>

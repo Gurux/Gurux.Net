@@ -19,7 +19,7 @@ namespace Gurux.Net.Properties {
     // class via a tool like ResGen or Visual Studio.
     // To add or remove a member, edit your .ResX file then rerun ResGen
     // with the /str option, or rebuild your VS project.
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "15.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -61,11 +61,29 @@ namespace Gurux.Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Attach by string can be used only with TCP/IP connection..
+        /// </summary>
+        internal static string AttachByStringCanBeUsedOnlyWithTCPIPConnection {
+            get {
+                return ResourceManager.GetString("AttachByStringCanBeUsedOnlyWithTCPIPConnection", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Client Settings:.
         /// </summary>
         internal static string ClientSettings {
             get {
                 return ResourceManager.GetString("ClientSettings", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Client:.
+        /// </summary>
+        internal static string ClientTxt {
+            get {
+                return ResourceManager.GetString("ClientTxt", resourceCulture);
             }
         }
         
@@ -115,6 +133,24 @@ namespace Gurux.Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid sender info..
+        /// </summary>
+        internal static string InvalidSenderInfo {
+            get {
+                return ResourceManager.GetString("InvalidSenderInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to IPv6.
+        /// </summary>
+        internal static string IPv6Txt {
+            get {
+                return ResourceManager.GetString("IPv6Txt", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Port:.
         /// </summary>
         internal static string PortTxt {
@@ -160,11 +196,42 @@ namespace Gurux.Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unknown address..
+        /// </summary>
+        internal static string UnknownAddress {
+            get {
+                return ResourceManager.GetString("UnknownAddress", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Use IPv6.
         /// </summary>
         internal static string UseIPv6Txt {
             get {
                 return ResourceManager.GetString("UseIPv6Txt", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to OK.
+        /// </summary>
+        internal static string OK
+        {
+            get
+            {
+                return ResourceManager.GetString("OK", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Use Cancel.
+        /// </summary>
+        internal static string Cancel
+        {
+            get
+            {
+                return ResourceManager.GetString("Cancel", resourceCulture);
             }
         }
     }

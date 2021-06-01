@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Postavke klijenta:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Domaćin:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Nevažeći klijent.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Nevažeća veza.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Nevažeće ime hosta.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Nevažeće ime priključka.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Luka:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Postavke poslužitelja:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Poslužitelj</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Mrežne postavke</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Upotrijebite IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Nevažeće informacije o pošiljatelju.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Priloži nizom može se koristiti samo s TCP / IP vezom.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Nepoznata adresa.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Klijent:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Otkazati</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>u redu</value>
+  </data>
 </root>

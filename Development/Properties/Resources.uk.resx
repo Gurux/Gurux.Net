@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Налаштування клієнта:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Ведучий:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Недійсний клієнт.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Недійсне з’єднання.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Недійсна назва хосту.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Недійсна назва порту.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Порт:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Протокол</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Налаштування сервера:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Сервер</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Мережеві налаштування</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Використовуйте IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Недійсна інформація про відправника.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Вкласти за допомогою рядка можна лише з TCP / IP-з'єднанням.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Невідома адреса.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Клієнт:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Скасувати</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>гаразд</value>
+  </data>
 </root>

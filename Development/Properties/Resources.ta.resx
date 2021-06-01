@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>வாடிக்கையாளர் அமைப்புகள்:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>தொகுப்பாளர்:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>தவறான கிளையன்ட்.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>தவறான இணைப்பு.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>தவறான ஹோஸ்ட் பெயர்.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>போர்ட் பெயர் தவறானது.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>துறைமுகம்:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>நெறிமுறை</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>சேவையக அமைப்புகள்:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>சேவையகம்</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>பிணைய அமைப்புகள்</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 ஐப் பயன்படுத்தவும்</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>தவறான அனுப்புநர் தகவல்.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>சரம் மூலம் இணைத்தல் TCP / IP இணைப்புடன் மட்டுமே பயன்படுத்தப்பட முடியும்.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>தெரியாத முகவரி.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>வாடிக்கையாளர்:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ரத்துசெய்</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>சரி</value>
+  </data>
 </root>

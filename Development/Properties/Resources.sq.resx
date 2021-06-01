@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Cilësimet e klientit:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Mikpritës:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Klient i pavlefshëm.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Lidhje e pavlefshme.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Emri i hostit është i pavlefshëm.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Emër porti i pavlefshëm.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Porti:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokolli</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Cilësimet e serverit:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Serveri</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Cilësimet e Rrjetit</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Përdorni IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Informacion i pavlefshëm për dërguesin.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Bashkëngjitja me varg mund të përdoret vetëm me lidhjen TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Adresa e panjohur.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Klienti:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Anulo</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Ne rregull</value>
+  </data>
 </root>

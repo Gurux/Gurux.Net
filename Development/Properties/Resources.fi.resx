@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Asiakkaan asetukset:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Palvelinnimi:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Virheellinen asiakas.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Virheellinen yhteys.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Virheellinen Isäntä.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Virheellinen portin nimi.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Portti:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokolla</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Palvelimen asetukset:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Palvelin</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Verkkoasetukset</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Käytä IPv6:ta</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Virheelliset lähettäjän tiedot.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Kiinnitystä merkkijonolla voidaan käyttää vain TCP / IP-yhteyden kanssa.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Tuntematon osoite.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Asiakas:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Peruuta</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

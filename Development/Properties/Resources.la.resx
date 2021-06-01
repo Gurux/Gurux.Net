@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Optiones clientem:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>host:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Aliquam client.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Aliquam et nexu.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Aliquam exercitum nomine.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Aliquam portum nomine.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Portus:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>protocol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Servo Occasus:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Servo</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Network Occasus</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>usus IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Aliquam info Mittens.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Documentum affigere per filum potest esse nisi per TCP / IP nexu.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Oratio ignotum.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>client:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Bene</value>
+  </data>
 </root>

@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>ಗ್ರಾಹಕ ಸೆಟ್ಟಿಂಗ್‌ಗಳು:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>ಅತಿಥೆಯ:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>ಅಮಾನ್ಯ ಕ್ಲೈಂಟ್.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>ಅಮಾನ್ಯ ಸಂಪರ್ಕ.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>ಅಮಾನ್ಯ ಹೋಸ್ಟ್ ಹೆಸರು.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>ಅಮಾನ್ಯ ಪೋರ್ಟ್ ಹೆಸರು.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>ಬಂದರು:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>ಶಿಷ್ಟಾಚಾರ</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>ಸರ್ವರ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>ಸರ್ವರ್</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>ನೆಟ್‌ವರ್ಕ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 ಬಳಸಿ</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>ಕಳುಹಿಸುವವರ ಮಾಹಿತಿ ಅಮಾನ್ಯವಾಗಿದೆ.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>ಸ್ಟ್ರಿಂಗ್ ಬೈ ಲಗತ್ತನ್ನು ಟಿಸಿಪಿ / ಐಪಿ ಸಂಪರ್ಕದೊಂದಿಗೆ ಮಾತ್ರ ಬಳಸಬಹುದು.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>ಅಜ್ಞಾತ ವಿಳಾಸ.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>ಗ್ರಾಹಕ:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>ಐಪಿವಿ 6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ರದ್ದುಮಾಡಿ</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ಸರಿ</value>
+  </data>
 </root>

@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Clientinstellingen:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Gastheer:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Ongeldige klant.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Ongeldige verbinding.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Ongeldige hostnaam.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Ongeldige poortnaam.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Haven:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Server instellingen:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Server</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Netwerkinstellingen</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Gebruik IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Ongeldige afzenderinfo.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Attach by string kan alleen worden gebruikt met een TCP / IP-verbinding.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Onbekend adres.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Cliënt:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>annuleren</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

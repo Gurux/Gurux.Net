@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Gosodiadau Cleientiaid:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Gwesteiwr:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Cleient annilys.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Cysylltiad annilys.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Enw gwesteiwr annilys.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Enw porthladd annilys.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Porthladd:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protocol</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Gosodiadau Gweinydd:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Gweinydd</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Gosodiadau Rhwydwaith</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Defnyddiwch IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Gwybodaeth anfonwr annilys.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Dim ond gyda chysylltiad TCP / IP y gellir defnyddio atodi trwy linyn.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Cyfeiriad anhysbys.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Cleient:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Canslo</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>iawn</value>
+  </data>
 </root>

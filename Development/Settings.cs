@@ -29,12 +29,8 @@
 // This code is licensed under the GNU General Public License v2.
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
-using System.Drawing;
-using System.Linq;
 using System.Reflection;
 using Gurux.Common;
 using System.Windows.Forms;
@@ -83,7 +79,11 @@ namespace Gurux.Net
                         return titleAttribute.Title;
                     }
                 }
+#if NET35 || NET40 || NET45 || NET46 || NET5_0
                 return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
+#else
+                return System.IO.Path.GetFileNameWithoutExtension(Assembly.Location);
+#endif            
             }
         }
 
@@ -187,7 +187,45 @@ namespace Gurux.Net
             ProtocolPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Protocol) != 0;
             ServerPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Server) != 0;
             UseIPv6Panel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.UseIPv6) != 0;
+            UpdateEditBoxSizes();
             Dirty = false;
+        }
+
+        /// <summary>
+        /// Because label lenght depends from the localization string, edit box sizes must be update.
+        /// </summary>
+        private void UpdateEditBoxSizes()
+        {
+            //Find max length of the localization string.
+            int maxLength = 0;
+            foreach (Control it in this.Controls)
+            {
+                if (it.Enabled)
+                {
+                    foreach (Control it2 in it.Controls)
+                    {
+                        if (it2 is Label && it2.Right > maxLength)
+                        {
+                            maxLength = it2.Right;
+                        }
+                    }
+                }
+            }
+            //Increase edit control length.
+            foreach (Control it in this.Controls)
+            {
+                if (it.Enabled)
+                {
+                    foreach (Control it2 in it.Controls)
+                    {
+                        if (it2 is ComboBox || it2 is TextBox)
+                        {
+                            it2.Width += it2.Left - maxLength - 10;
+                            it2.Left = maxLength + 10;
+                        }
+                    }
+                }
+            }
         }
 
         void IGXPropertyPage.Apply()
@@ -239,4 +277,3 @@ namespace Gurux.Net
         }
     }
 }
-#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1

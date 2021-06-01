@@ -153,4 +153,25 @@
   <data name="UseIPv6Txt" xml:space="preserve">
     <value>Use IPv6</value>
   </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Invalid sender info.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Attach by string can be used only with TCP/IP connection.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Unknown address.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Client:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>OK</value>
+  </data>
 </root>

@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>تنظیمات مشتری:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>میزبان:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>مشتری نامعتبر است.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>اتصال نامعتبر است.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>نام میزبان نامعتبر است.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>نام بندر نامعتبر است.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>بندر:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>پروتکل</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>تنظیمات سرور:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>سرور</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>تنظیمات شبکه</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>از IPv6 استفاده کنید</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>اطلاعات ارسال کننده نامعتبر است.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>پیوست با رشته فقط با اتصال TCP / IP قابل استفاده است.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>آدرس ناشناخته</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>مشتری:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>لغو</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>خوب</value>
+  </data>
 </root>

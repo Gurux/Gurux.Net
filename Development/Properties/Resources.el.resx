@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Ρυθμίσεις πελάτη:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Πλήθος:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Μη έγκυρος πελάτης.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Μη έγκυρη σύνδεση.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Μη έγκυρο όνομα κεντρικού υπολογιστή.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Μη έγκυρο όνομα θύρας.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Λιμάνι:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Πρωτόκολλο</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Ρυθμίσεις διακομιστή:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Υπηρέτης</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Ρυθμίσεις δικτύου</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Χρησιμοποιήστε το IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Μη έγκυρες πληροφορίες αποστολέα.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Η σύνδεση με συμβολοσειρά μπορεί να χρησιμοποιηθεί μόνο με σύνδεση TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Άγνωστη διεύθυνση.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Πελάτης:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Ματαίωση</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Εντάξει</value>
+  </data>
 </root>

@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>ক্লায়েন্ট সেটিংস:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>হোস্ট:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>অবৈধ ক্লায়েন্ট।</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>অবৈধ সংযোগ।</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>অবৈধ হোস্ট.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>অবৈধ পোর্ট নাম।</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>বন্দর:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>প্রোটোকল</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>সার্ভার সেটিংস:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>সার্ভার</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>নেটওয়ার্ক সেটিংস</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>আইপিভি 6 ব্যবহার করুন</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>অবৈধ প্রেরকের তথ্য।</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>স্ট্রিং দ্বারা সংযুক্তি কেবলমাত্র টিসিপি / আইপি সংযোগের সাথে ব্যবহার করা যেতে পারে।</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>অজানা ঠিকানা।</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>ক্লায়েন্ট:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>আইপিভি 6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>বাতিল</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ঠিক আছে</value>
+  </data>
 </root>

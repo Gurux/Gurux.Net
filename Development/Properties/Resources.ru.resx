@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Настройки клиента:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Хост:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Неверный клиент.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Неверное соединение.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Неверный адрес.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Неверное имя порта.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Порт:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Протокол</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Настройки сервера:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Сервер</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Настройки сети</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Использовать IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Неверная информация об отправителе.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Прикрепить по строке можно только при подключении TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Неизвестный адрес.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Клиент:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>отменить</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Хорошо</value>
+  </data>
 </root>

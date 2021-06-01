@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Configurações do cliente:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Hospedeiro:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Cliente inválido.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Conexão inválida.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Hostname inválido.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Nome de porta inválido.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Porta:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protocolo</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Configurações do servidor:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Servidor</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Configurações de rede</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Use IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Informação do remetente inválida.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Anexar por string pode ser usado apenas com conexão TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Endereço desconhecido.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Cliente:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancelar</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Está bem</value>
+  </data>
 </root>

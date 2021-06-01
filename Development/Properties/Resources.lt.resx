@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Kliento nustatymai:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Priimančioji:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Neteisingas klientas.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Neteisingas ryšys.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Netinkamas pagrindinio kompiuterio vardas.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Netinkamas prievado pavadinimas.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Uostas:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protokolas</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Serverio nustatymai:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>Serveris</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Ryšio nustatymai</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Naudokite IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Neteisinga siuntėjo informacija.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Priedus pagal eilutę galima naudoti tik su TCP / IP ryšiu.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Nežinomas adresas.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Klientas:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>„IPv6“</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Atšaukti</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>Gerai</value>
+  </data>
 </root>

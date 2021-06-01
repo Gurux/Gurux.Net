@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>ક્લાયંટ સેટિંગ્સ:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>હોસ્ટ:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>અમાન્ય ક્લાયંટ.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>અમાન્ય જોડાણ.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>અમાન્ય હોસ્ટ નામ.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>અમાન્ય બંદર નામ.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>બંદર:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>પ્રોટોકોલ</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>સર્વર સેટિંગ્સ:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>સર્વર</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>નેટવર્ક સેટિંગ્સ</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>IPv6 નો ઉપયોગ કરો</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>અમાન્ય પ્રેષક માહિતી.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>શબ્દમાળા દ્વારા જોડાણનો ઉપયોગ ફક્ત TCP / IP કનેક્શન સાથે થઈ શકે છે.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>અજ્ Unknownાત સરનામું.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>ગ્રાહક:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>આઇપીવી 6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>રદ કરો</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>બરાબર</value>
+  </data>
 </root>

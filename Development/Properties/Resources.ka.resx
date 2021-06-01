@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>კლიენტის პარამეტრები:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>მასპინძელი:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>არასწორი კლიენტი.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>არასწორი კავშირი.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>არასწორი ჰოსტის სახელი.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>პორტის სახელი არასწორია.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>პორტი:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Ოქმი</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>სერვერის პარამეტრები:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>სერვერი</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Ქსელის პარამეტრები</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>გამოიყენეთ IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>არასწორი ინფორმაცია გამგზავნის შესახებ.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>სტრიქონით მიმაგრება შეიძლება გამოყენებულ იქნას მხოლოდ TCP / IP კავშირით.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>უცნობი მისამართი.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>კლიენტი:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>გაუქმება</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>კარგი</value>
+  </data>
 </root>

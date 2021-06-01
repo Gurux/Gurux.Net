@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>Impostazioni client:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>Ospite:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>Cliente non valido.</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>Connessione non valida.</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>Hostname non valido.</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>Nome della porta non valido.</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>Porta:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>Protocollo</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>Impostazioni del server:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>server</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>Impostazioni di rete</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>Usa IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>Informazioni sul mittente non valide.</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>Allega tramite stringa può essere utilizzato solo con connessione TCP / IP.</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>Indirizzo sconosciuto.</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>Cliente:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Annulla</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ok</value>
+  </data>
 </root>

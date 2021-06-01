@@ -117,4 +117,61 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="ClientSettings" xml:space="preserve">
+    <value>การตั้งค่าไคลเอนต์:</value>
+  </data>
+  <data name="HostNameTxt" xml:space="preserve">
+    <value>โฮสต์:</value>
+  </data>
+  <data name="InvalidClient" xml:space="preserve">
+    <value>ไคลเอนต์ไม่ถูกต้อง</value>
+  </data>
+  <data name="InvalidConnection" xml:space="preserve">
+    <value>การเชื่อมต่อไม่ถูกต้อง</value>
+  </data>
+  <data name="InvalidHostName" xml:space="preserve">
+    <value>ชื่อโฮสต์ไม่ถูกต้อง</value>
+  </data>
+  <data name="InvalidPortName" xml:space="preserve">
+    <value>ชื่อพอร์ตไม่ถูกต้อง</value>
+  </data>
+  <data name="PortTxt" xml:space="preserve">
+    <value>ท่าเรือ:</value>
+  </data>
+  <data name="ProtocolTxt" xml:space="preserve">
+    <value>มาตรการ</value>
+  </data>
+  <data name="ServerSettings" xml:space="preserve">
+    <value>การตั้งค่าเซิร์ฟเวอร์:</value>
+  </data>
+  <data name="ServerTxt" xml:space="preserve">
+    <value>เซิร์ฟเวอร์</value>
+  </data>
+  <data name="SettingsTxt" xml:space="preserve">
+    <value>การตั้งค่าเครือข่าย</value>
+  </data>
+  <data name="UseIPv6Txt" xml:space="preserve">
+    <value>ใช้ IPv6</value>
+  </data>
+  <data name="InvalidSenderInfo" xml:space="preserve">
+    <value>ข้อมูลผู้ส่งไม่ถูกต้อง</value>
+  </data>
+  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
+    <value>แนบด้วยสตริงสามารถใช้ได้เฉพาะกับการเชื่อมต่อ TCP / IP</value>
+  </data>
+  <data name="UnknownAddress" xml:space="preserve">
+    <value>ไม่ทราบที่อยู่</value>
+  </data>
+  <data name="ClientTxt" xml:space="preserve">
+    <value>ลูกค้า:</value>
+  </data>
+  <data name="IPv6Txt" xml:space="preserve">
+    <value>IPv6</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>ยกเลิก</value>
+  </data>
+  <data name="OK" xml:space="preserve">
+    <value>ตกลง</value>
+  </data>
 </root>
