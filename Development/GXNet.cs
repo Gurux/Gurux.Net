@@ -416,16 +416,52 @@ namespace Gurux.Net
         /// <seealso cref="Synchronous"/>
         public void Send(object data, string receiver)
         {
+            SendInternal(data, receiver);
+        }
+
+        /// <summary>
+        /// Sends data asynchronously. <br/>
+        /// No reply from the receiver, whether or not the operation was successful, is expected.
+        /// </summary>
+        /// <param name="data">Data to send to the device.</param>
+        /// <param name="receiver">IP address of the receiver (optional).</param>
+        /// <remarks>Reply data is received through OnReceived event.<br/>
+        /// If data is send synchronously use Synchronous</remarks>
+        /// <seealso cref="OnReceived"/>
+        /// <seealso cref="Synchronous"/>
+        public void Send(object data, object receiver)
+        {
+            SendInternal(data, receiver);
+        }
+
+        /// <summary>
+        /// Sends data asynchronously. <br/>
+        /// No reply from the receiver, whether or not the operation was successful, is expected.
+        /// </summary>
+        /// <param name="data">Data to send to the device.</param>
+        /// <param name="receiver">IP address of the receiver (optional).</param>
+        /// <remarks>Reply data is received through OnReceived event.<br/>
+        /// If data is send synchronously use Synchronous</remarks>
+        /// <seealso cref="OnReceived"/>
+        /// <seealso cref="Synchronous"/>
+        private void SendInternal(object data, object receiver)
+        {
             if (socket == null && !isVirtualOpen)
             {
                 throw new Exception(Resources.InvalidConnection);
             }
-            if (!this.isServer)
+            string target = null;
+            if (receiver is string)
+            {
+                target = receiver.ToString();
+            }
+
+            if (!isServer)
             {
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
                 if (Trace == TraceLevel.Verbose && m_OnTrace != null)
                 {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value, receiver));
+                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value, target));
                 }
                 //Reset last position if Eop is used.
                 lock (syncBase.receivedSync)
@@ -515,7 +551,7 @@ namespace Gurux.Net
                 }
                 else
                 {
-                    m_OnDataSend(this, new ReceiveEventArgs(data, receiver));
+                    m_OnDataSend(this, new ReceiveEventArgs(data, target));
                 }
                 this.BytesSent += (ulong)value.Length;
             }
@@ -523,15 +559,26 @@ namespace Gurux.Net
             {
 #if !WINDOWS_PHONE
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
-                if (this.Protocol == NetworkType.Tcp)
+                if (receiver is GXNetReceiveEventArgs a)
+                {
+                    if (this.Protocol == NetworkType.Tcp)
+                    {
+                        (a.socket as Socket).Send(value);
+                    }
+                    else
+                    {
+                        (a.socket as UdpClient).Send(value, value.Length);
+                    }
+                }
+                else if (this.Protocol == NetworkType.Tcp)
                 {
                     Socket client = null;
                     lock (tcpIpClients)
                     {
                         foreach (var it in tcpIpClients)
                         {
-                            Socket s = (Socket)it.Key;
-                            if (s.RemoteEndPoint.ToString() == receiver)
+                            Socket s = it.Key;
+                            if (s.RemoteEndPoint.ToString() == target)
                             {
                                 client = s;
                                 break;
@@ -553,13 +600,13 @@ namespace Gurux.Net
                     IPEndPoint ep;
                     if (receiver != null)
                     {
-                        int pos = receiver.LastIndexOf(':');
+                        int pos = target.LastIndexOf(':');
                         if (pos == -1)
                         {
-                            throw new ArgumentException(Gurux.Net.Properties.Resources.InvalidSenderInfo);
+                            throw new ArgumentException(Resources.InvalidSenderInfo);
                         }
-                        IPAddress address = IPAddress.Parse(receiver.Substring(0, pos));
-                        ep = new IPEndPoint(address, int.Parse(receiver.Substring(pos + 1)));
+                        IPAddress address = IPAddress.Parse(target.Substring(0, pos));
+                        ep = new IPEndPoint(address, int.Parse(target.Substring(pos + 1)));
                     }
                     else
                     {
@@ -1230,7 +1277,7 @@ namespace Gurux.Net
             }
         }
 
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
+#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
         /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
         public System.Windows.Forms.Form PropertiesForm
         {
@@ -1239,7 +1286,7 @@ namespace Gurux.Net
                 return new Settings(this);
             }
         }
-#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
+#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
 
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
         /// <seealso cref="Open">Open</seealso>
@@ -1818,7 +1865,7 @@ namespace Gurux.Net
                 return isConnected;
             }
         }
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
+#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
         /// <summary>
         /// Shows the network Properties dialog.
         /// </summary>
@@ -1834,7 +1881,7 @@ namespace Gurux.Net
             return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen, Resources.OK, Resources.Cancel,
                 "https://www.gurux.fi/GXNetProperties").ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
-#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1
+#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
 
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
