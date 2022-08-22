@@ -79,7 +79,7 @@ namespace Gurux.Net
                         return titleAttribute.Title;
                     }
                 }
-#if NET35 || NET40 || NET45 || NET46 || NET5_0
+#if NET46 || NET6_0// !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NET6_0
                 return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
 #else
                 return System.IO.Path.GetFileNameWithoutExtension(Assembly.Location);
