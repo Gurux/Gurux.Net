@@ -4,11 +4,11 @@
 //
 //
 //
-// Filename:        $HeadURL: svn://utopia/projects/Old/GuruxNet/Gurux.Net%20csharp%20Sample/Form1.cs $
+// Filename:        $HeadURL$
 //
-// Version:         $Revision: 3587 $,
-//                  $Date: 2011-05-02 12:02:16 +0300 (ma, 02 touko 2011) $
-//                  $Author: kurumi $
+// Version:         $Revision$,
+//                  $Date$
+//                  $Author$
 //
 // Copyright (c) Gurux Ltd
 //
@@ -26,8 +26,6 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 // See the GNU General Public License for more details.
 //
-// More information of Gurux Network solution (TCP/IP and UDP) : http://www.gurux.org/Gurux.Net
-//
 // This code is licensed under the GNU General Public License v2.
 // Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
 //---------------------------------------------------------------------------
@@ -41,6 +39,7 @@ using System.Drawing;
 using System.Data;
 using System.Text;
 using Gurux.Common;
+using System.Threading;
 
 namespace Gurux.NetSample
 {
@@ -425,7 +424,12 @@ namespace Gurux.NetSample
                     if (HexCB.Checked)
                     {
                         // Sends data as byte array.
-                        Net1.Send(GXCommon.HexToBytes(SendText.Text), null);
+                        byte[] tmp = GXCommon.HexToBytes(SendText.Text);
+                        foreach(byte it in tmp)
+                        {
+                            Net1.Send(it, null);
+                            Thread.Sleep(100);
+                        }
                     }
                     else
                     {

@@ -44,7 +44,8 @@ namespace Gurux.Net
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="info"></param>
+        /// <param name="info">Sender info</param>
+        /// <param name="s">Socket.</param>
         public GXNetConnectionEventArgs(string info, Socket s) : base(info)
         {
             socket = s;

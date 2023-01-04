@@ -1625,6 +1625,7 @@ namespace Gurux.Net
             }
         }
 
+        /// <inheritdoc />
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
