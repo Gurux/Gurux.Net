@@ -31,7 +31,6 @@
 //---------------------------------------------------------------------------
 using System;
 using System.ComponentModel;
-using System.Reflection;
 using Gurux.Common;
 using System.Windows.Forms;
 using Gurux.Net.Properties;
@@ -40,8 +39,9 @@ namespace Gurux.Net
 {
     partial class Settings : Form, IGXPropertyPage, INotifyPropertyChanged
     {
-        GXNet target;
-        PropertyChangedEventHandler propertyChanged;
+        private bool _initialize = true;
+        private GXNet _target;
+        private PropertyChangedEventHandler propertyChanged;
 
         /// <summary>
         /// Occurs when a property value changes.
@@ -60,91 +60,8 @@ namespace Gurux.Net
 
         public Settings(GXNet target)
         {
-            this.target = target;
+            _target = target;
             InitializeComponent();
-        }
-
-#region Assembly Attribute Accessors
-
-        public string AssemblyTitle
-        {
-            get
-            {
-                object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyTitleAttribute), false);
-                if (attributes.Length > 0)
-                {
-                    AssemblyTitleAttribute titleAttribute = (AssemblyTitleAttribute)attributes[0];
-                    if (titleAttribute.Title != "")
-                    {
-                        return titleAttribute.Title;
-                    }
-                }
-#if NET462 || NET6_0// !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NET6_0
-                return System.IO.Path.GetFileNameWithoutExtension(Assembly.GetExecutingAssembly().CodeBase);
-#else
-                return System.IO.Path.GetFileNameWithoutExtension(Assembly.Location);
-#endif            
-            }
-        }
-
-        public string AssemblyVersion
-        {
-            get
-            {
-                return Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            }
-        }
-
-        public string AssemblyDescription
-        {
-            get
-            {
-                object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyDescriptionAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyDescriptionAttribute)attributes[0]).Description;
-            }
-        }
-
-        public string AssemblyProduct
-        {
-            get
-            {
-                object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyProductAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyProductAttribute)attributes[0]).Product;
-            }
-        }
-
-        public string AssemblyCopyright
-        {
-            get
-            {
-                object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCopyrightAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyCopyrightAttribute)attributes[0]).Copyright;
-            }
-        }
-
-        public string AssemblyCompany
-        {
-            get
-            {
-                object[] attributes = Assembly.GetExecutingAssembly().GetCustomAttributes(typeof(AssemblyCompanyAttribute), false);
-                if (attributes.Length == 0)
-                {
-                    return "";
-                }
-                return ((AssemblyCompanyAttribute)attributes[0]).Company;
-            }
         }
 
         public bool Dirty
@@ -152,43 +69,32 @@ namespace Gurux.Net
             get;
             set;
         }
-#endregion
 
-        private void ServerCB_CheckedChanged(object sender, EventArgs e)
-        {
-            Dirty = true;
-            UseIPv6CB.Enabled = ServerCB.Checked;
-            IPAddressTB.Enabled = !ServerCB.Checked;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("Server"));
-            }
-        }
-
-#region IGXPropertyPage Members
+        #region IGXPropertyPage Members
 
         void IGXPropertyPage.Initialize()
         {
-            this.ServerCB.Text = Resources.ServerTxt;
-            this.IPAddressLbl.Text = Resources.HostNameTxt;
-            this.PortLbl.Text = Resources.PortTxt;
-            this.ProtocolLbl.Text = Resources.ProtocolTxt;
-            this.UseIPv6CB.Text = Resources.UseIPv6Txt;
+            ServerCB.Text = Resources.ServerTxt;
+            IPAddressLbl.Text = Resources.HostNameTxt;
+            PortLbl.Text = Resources.PortTxt;
+            ProtocolLbl.Text = Resources.ProtocolTxt;
+            UseIPv6CB.Text = Resources.UseIPv6Txt;
             ProtocolCB.Items.Add(NetworkType.Tcp);
             ProtocolCB.Items.Add(NetworkType.Udp);
-            this.ServerCB.Checked = target.Server;
-            this.PortTB.Text = target.Port.ToString();
-            this.IPAddressTB.Text = target.HostName;
-            ProtocolCB.SelectedItem = target.Protocol;
-            this.UseIPv6CB.Checked = target.UseIPv6;
+            ServerCB.Checked = _target.Server;
+            PortTB.Text = _target.Port.ToString();
+            IPAddressTB.Text = _target.HostName;
+            ProtocolCB.SelectedItem = _target.Protocol;
+            UseIPv6CB.Checked = _target.UseIPv6;
             //Hide controls which user do not want to show.
-            HostPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Host) != 0;
-            PortPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Port) != 0;
-            ProtocolPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Protocol) != 0;
-            ServerPanel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.Server) != 0;
-            UseIPv6Panel.Enabled = (target.ConfigurableSettings & AvailableMediaSettings.UseIPv6) != 0;
+            HostPanel.Enabled = (_target.ConfigurableSettings & AvailableMediaSettings.Host) != 0;
+            PortPanel.Enabled = (_target.ConfigurableSettings & AvailableMediaSettings.Port) != 0;
+            ProtocolPanel.Enabled = (_target.ConfigurableSettings & AvailableMediaSettings.Protocol) != 0;
+            ServerPanel.Enabled = (_target.ConfigurableSettings & AvailableMediaSettings.Server) != 0;
+            UseIPv6Panel.Enabled = (_target.ConfigurableSettings & AvailableMediaSettings.UseIPv6) != 0;
             UpdateEditBoxSizes();
             Dirty = false;
+            _initialize = false;
         }
 
         /// <summary>
@@ -198,7 +104,7 @@ namespace Gurux.Net
         {
             //Find max length of the localization string.
             int maxLength = 0;
-            foreach (Control it in this.Controls)
+            foreach (Control it in Controls)
             {
                 if (it.Enabled)
                 {
@@ -212,7 +118,7 @@ namespace Gurux.Net
                 }
             }
             //Increase edit control length.
-            foreach (Control it in this.Controls)
+            foreach (Control it in Controls)
             {
                 if (it.Enabled)
                 {
@@ -230,15 +136,30 @@ namespace Gurux.Net
 
         void IGXPropertyPage.Apply()
         {
-            target.Server = this.ServerCB.Checked;
-            target.Port = Convert.ToInt32(this.PortTB.Text);
-            target.HostName = this.IPAddressTB.Text;
-            target.UseIPv6 = this.UseIPv6CB.Checked;
-            target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
+            _target.Server = ServerCB.Checked;
+            _target.Port = Convert.ToInt32(PortTB.Text);
+            _target.HostName = IPAddressTB.Text;
+            _target.UseIPv6 = UseIPv6CB.Checked;
+            _target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
             Dirty = false;
         }
 
-#endregion
+        #endregion
+
+        private void ServerCB_CheckedChanged(object sender, EventArgs e)
+        {
+            Dirty = true;
+            UseIPv6CB.Enabled = ServerCB.Checked;
+            IPAddressTB.Enabled = !ServerCB.Checked;
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("Server"));
+            }
+            if (!_initialize)
+            {
+                _target.Server = ServerCB.Checked;
+            }
+        }
 
         private void UseIPv6CB_CheckedChanged(object sender, EventArgs e)
         {
@@ -246,6 +167,10 @@ namespace Gurux.Net
             if (propertyChanged != null)
             {
                 propertyChanged(this, new PropertyChangedEventArgs("UseIPv6"));
+            }
+            if (!_initialize)
+            {
+                _target.UseIPv6 = UseIPv6CB.Checked;
             }
         }
 
@@ -256,6 +181,10 @@ namespace Gurux.Net
             {
                 propertyChanged(this, new PropertyChangedEventArgs("IPAddress"));
             }
+            if (!_initialize)
+            {
+                _target.HostName = IPAddressTB.Text;
+            }
         }
 
         private void PortTB_TextChanged(object sender, EventArgs e)
@@ -265,6 +194,10 @@ namespace Gurux.Net
             {
                 propertyChanged(this, new PropertyChangedEventArgs("Port"));
             }
+            if (!_initialize)
+            {
+                _target.Port = Convert.ToInt32(PortTB.Text);
+            }
         }
 
         private void ProtocolCB_SelectedIndexChanged(object sender, EventArgs e)
@@ -273,6 +206,10 @@ namespace Gurux.Net
             if (propertyChanged != null)
             {
                 propertyChanged(this, new PropertyChangedEventArgs("Protocol"));
+            }
+            if (!_initialize)
+            {
+                _target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
             }
         }
     }

@@ -313,21 +313,21 @@ namespace Gurux.Net
             }
         }
 
-        /// <inheritdoc cref="IGXMedia.Tag"/>
+        /// <inheritdoc />
         public object Tag
         {
             get;
             set;
         }
 
-        /// <inheritdoc cref="IGXMedia.MediaContainer"/>
+        /// <inheritdoc />
         IGXMediaContainer IGXMedia.MediaContainer
         {
             get;
             set;
         }
 
-        /// <inheritdoc cref="IGXMedia.SyncRoot"/>
+        /// <inheritdoc />
         [Browsable(false), ReadOnly(true)]
         public object SyncRoot
         {
@@ -343,7 +343,7 @@ namespace Gurux.Net
             }
         }
 
-        /// <inheritdoc cref="IGXVirtualMedia.Virtual"/>
+        /// <inheritdoc />
         bool IGXVirtualMedia.Virtual
         {
             get
@@ -493,8 +493,8 @@ namespace Gurux.Net
                                 IPHostEntry host = Dns.GetHostEntry(hostAddress);
                                 foreach (IPAddress ip in host.AddressList)
                                 {
-                                    if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
-                                            ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
+                                    if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && UseIPv6) ||
+                                            ip.AddressFamily == AddressFamily.InterNetwork && !UseIPv6)
                                     {
                                         address = ip;
                                         break;
@@ -553,7 +553,7 @@ namespace Gurux.Net
                 {
                     m_OnDataSend(this, new ReceiveEventArgs(data, target));
                 }
-                this.BytesSent += (ulong)value.Length;
+                BytesSent += (ulong)value.Length;
             }
             else
             {
@@ -561,7 +561,7 @@ namespace Gurux.Net
                 byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
                 if (receiver is GXNetReceiveEventArgs a)
                 {
-                    if (this.Protocol == NetworkType.Tcp)
+                    if (Protocol == NetworkType.Tcp)
                     {
                         (a.socket as Socket).Send(value);
                     }
@@ -570,7 +570,7 @@ namespace Gurux.Net
                         (a.socket as UdpClient).Send(value, value.Length);
                     }
                 }
-                else if (this.Protocol == NetworkType.Tcp)
+                else if (Protocol == NetworkType.Tcp)
                 {
                     Socket client = null;
                     lock (tcpIpClients)
@@ -615,7 +615,7 @@ namespace Gurux.Net
                     }
                     (socket as UdpClient).Send(value, value.Length, ep);
                 }
-                this.BytesSent += (ulong)value.Length;
+                BytesSent += (ulong)value.Length;
 #endif
             }
         }
@@ -650,7 +650,7 @@ namespace Gurux.Net
                     UdpClient s = result.AsyncState as UdpClient;
                     if (s.Client != null)
                     {
-                        IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
+                        IPEndPoint ipLocal = new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
                         buff = s.EndReceive(result, ref ipLocal);
                         sender = ipLocal.ToString();
                         bytes = buff.Length;
@@ -673,7 +673,7 @@ namespace Gurux.Net
                         //If connection is not closed and error is occurred.
                         if (err != SocketError.Success)
                         {
-                            if (this.Server)
+                            if (Server)
                             {
                                 if (err != SocketError.ConnectionReset)
                                 {
@@ -687,7 +687,7 @@ namespace Gurux.Net
                         }
                         else
                         {
-                            if (this.Server)
+                            if (Server)
                             {
                                 lock (tcpIpClients)
                                 {
@@ -708,7 +708,7 @@ namespace Gurux.Net
                         }
                     }
                 }
-                if (this.Server)
+                if (Server)
                 {
                     if (bytes == 0)
                     {
@@ -752,7 +752,7 @@ namespace Gurux.Net
                     }
                     else
                     {
-                        if (this.IsSynchronous)
+                        if (IsSynchronous)
                         {
                             syncBase.Exception = ex;
                             Close();
@@ -783,7 +783,7 @@ namespace Gurux.Net
                 return;
             }
             BytesReceived += (uint)bytes;
-            if (this.IsSynchronous)
+            if (IsSynchronous)
             {
                 TraceEventArgs arg = null;
                 lock (syncBase.receivedSync)
@@ -980,8 +980,8 @@ namespace Gurux.Net
                 syncBase.Open();
                 EndPoint ep = null;
                 NotifyMediaStateChange(MediaState.Opening);
-                AddressFamily family = this.UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
-                if (!this.isServer && !isVirtual)
+                AddressFamily family = UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
+                if (!isServer && !isVirtual)
                 {
                     IPAddress address;
                     if (IPAddress.TryParse(HostName, out address))
@@ -1005,8 +1005,8 @@ namespace Gurux.Net
                         IPHostEntry host = Dns.GetHostEntry(hostAddress);
                         foreach (IPAddress ip in host.AddressList)
                         {
-                            if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && this.UseIPv6) ||
-                                    ip.AddressFamily == AddressFamily.InterNetwork && !this.UseIPv6)
+                            if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && UseIPv6) ||
+                                    ip.AddressFamily == AddressFamily.InterNetwork && !UseIPv6)
                             {
                                 ep = new IPEndPoint(ip, port);
                                 break;
@@ -1025,7 +1025,7 @@ namespace Gurux.Net
                     {
                         socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
                     }
-                    if (!this.isServer)
+                    if (!isServer)
                     {
                         ClientConnect(ep);
                     }
@@ -1044,7 +1044,7 @@ namespace Gurux.Net
                 {
                     throw new ArgumentException(Resources.ProtocolTxt);
                 }
-                if (this.isServer)
+                if (isServer)
                 {
                     StartServer();
                 }
@@ -1076,8 +1076,8 @@ namespace Gurux.Net
             }
             if (!isVirtual)
             {
-                IPEndPoint ipLocal = new IPEndPoint(this.UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
-                if (this.Protocol == NetworkType.Tcp)
+                IPEndPoint ipLocal = new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
+                if (Protocol == NetworkType.Tcp)
                 {
                     // Bind to local IP Address...
                     (socket as Socket).Bind(ipLocal);
@@ -1183,7 +1183,7 @@ namespace Gurux.Net
             {
                 lock (parent.udpClients)
                 {
-                    parent.udpClients.Remove(this.socket);
+                    parent.udpClients.Remove(socket);
                 }
                 socket = null;
                 parent = null;
@@ -1277,8 +1277,8 @@ namespace Gurux.Net
             }
         }
 
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
-        /// <inheritdoc cref="IGXMedia.PropertiesForm"/>
+#if NET462_OR_GREATER || WINDOWS
+        /// <inheritdoc />
         public System.Windows.Forms.Form PropertiesForm
         {
             get
@@ -1286,7 +1286,7 @@ namespace Gurux.Net
                 return new Settings(this);
             }
         }
-#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
+#endif //NET462_OR_GREATER || WINDOWS
 
         /// <inheritdoc cref="IGXMedia.IsOpen"/>
         /// <seealso cref="Open">Open</seealso>

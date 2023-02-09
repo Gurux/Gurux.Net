@@ -5,7 +5,7 @@
     <Company>Gurux Ltd</Company>
     <Authors>Gurux Ltd</Authors>
     <Copyright>Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.</Copyright>
-    <PackageProjectUrl>www.gurux.fi/index.php?q=GXMedia</PackageProjectUrl>
+    <PackageProjectUrl>www.gurux.fi/GXNet</PackageProjectUrl>
     <PackageLicenseUrl></PackageLicenseUrl>
     <Description>Network media component, for TCP/IP or UDP connections.</Description>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">0.0.1-local</Version>
@@ -44,7 +44,7 @@
  <ItemGroup>
     <PackageReference Include="Gurux.Common" Version="8.4.2301.402" />
  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net46'">
+  <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Data.Linq" />
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>

@@ -45,8 +45,10 @@ namespace Gurux.Net
         /// <summary>
         /// Constructor.
         /// </summary>
-        /// <param name="info"></param>
-        public GXNetReceiveEventArgs(object data, string senderInfo, object s) :
+        /// <param name="data">Received data.</param>
+        /// <param name="senderInfo">Sender info.</param>
+        /// <param name="s">Sender socket.</param>
+        internal GXNetReceiveEventArgs(object data, string senderInfo, object s) :
             base(data, senderInfo)
         {
             socket = s;
