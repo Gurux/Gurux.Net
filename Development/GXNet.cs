@@ -1866,7 +1866,7 @@ namespace Gurux.Net
                 return isConnected;
             }
         }
-#if !NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
+#if NET462_OR_GREATER || WINDOWS
         /// <summary>
         /// Shows the network Properties dialog.
         /// </summary>
@@ -1882,7 +1882,7 @@ namespace Gurux.Net
             return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen, Resources.OK, Resources.Cancel,
                 "https://www.gurux.fi/GXNetProperties").ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
         }
-#endif //!NETSTANDARD2_0 && !NETSTANDARD2_1 && !NETCOREAPP2_0 && !NETCOREAPP2_1 && !NETCOREAPP3_1 && !NET6_0
+#endif //NET462_OR_GREATER || WINDOWS
 
         /// <inheritdoc cref="IGXMedia.Synchronous"/>
         public object Synchronous
