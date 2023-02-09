@@ -151,65 +151,65 @@ namespace Gurux.Net
             Dirty = true;
             UseIPv6CB.Enabled = ServerCB.Checked;
             IPAddressTB.Enabled = !ServerCB.Checked;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("Server"));
-            }
             if (!_initialize)
             {
                 _target.Server = ServerCB.Checked;
+            }
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("Server"));
             }
         }
 
         private void UseIPv6CB_CheckedChanged(object sender, EventArgs e)
         {
             Dirty = true;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("UseIPv6"));
-            }
             if (!_initialize)
             {
                 _target.UseIPv6 = UseIPv6CB.Checked;
+            }
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("UseIPv6"));
             }
         }
 
         private void IPAddressTB_TextChanged(object sender, EventArgs e)
         {
             Dirty = true;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("IPAddress"));
-            }
             if (!_initialize)
             {
                 _target.HostName = IPAddressTB.Text;
+            }
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("IPAddress"));
             }
         }
 
         private void PortTB_TextChanged(object sender, EventArgs e)
         {
             Dirty = true;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("Port"));
-            }
             if (!_initialize)
             {
                 _target.Port = Convert.ToInt32(PortTB.Text);
+            }
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("Port"));
             }
         }
 
         private void ProtocolCB_SelectedIndexChanged(object sender, EventArgs e)
         {
             Dirty = true;
-            if (propertyChanged != null)
-            {
-                propertyChanged(this, new PropertyChangedEventArgs("Protocol"));
-            }
             if (!_initialize)
             {
                 _target.Protocol = (NetworkType)ProtocolCB.SelectedItem;
+            }
+            if (propertyChanged != null)
+            {
+                propertyChanged(this, new PropertyChangedEventArgs("Protocol"));
             }
         }
     }
