@@ -4,7 +4,7 @@
     <AssemblyName>Gurux.Net</AssemblyName>
     <Company>Gurux Ltd</Company>
     <Authors>Gurux Ltd</Authors>
-    <Copyright>Copyright (c) 1998-2023 Gurux Ltd. All rights reserved.</Copyright>
+    <Copyright>Copyright (c) 1998-2024 Gurux Ltd. All rights reserved.</Copyright>
     <PackageProjectUrl>www.gurux.fi/GXNet</PackageProjectUrl>
     <PackageLicenseUrl></PackageLicenseUrl>
     <Description>Network media component, for TCP/IP or UDP connections.</Description>

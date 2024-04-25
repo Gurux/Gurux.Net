@@ -34,12 +34,7 @@ using Gurux.Net;
 using System.Diagnostics;
 using System;
 using System.Windows.Forms;
-using System.Collections;
-using System.Drawing;
-using System.Data;
-using System.Text;
 using Gurux.Common;
-using System.Threading;
 
 namespace Gurux.NetSample
 {
@@ -425,11 +420,7 @@ namespace Gurux.NetSample
                     {
                         // Sends data as byte array.
                         byte[] tmp = GXCommon.HexToBytes(SendText.Text);
-                        foreach(byte it in tmp)
-                        {
-                            Net1.Send(it, null);
-                            Thread.Sleep(100);
-                        }
+                        Net1.Send(tmp, null);
                     }
                     else
                     {

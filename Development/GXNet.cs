@@ -57,7 +57,10 @@ namespace Gurux.Net
 #endif
         bool isVirtual, isVirtualOpen;
 
-        internal byte[] receiveBuffer = new byte[1024];
+        /// <summary>
+        /// The ethernet maximum frame size is 1518 bytes.
+        /// </summary>
+        internal byte[] receiveBuffer = new byte[1518];
         /// <summary>
         /// Used protocol.
         /// </summary>
@@ -1638,6 +1641,7 @@ namespace Gurux.Net
                 sb.Append(Resources.ClientTxt);
             }
             sb.Append(communicationProtocol);
+            sb.Append(' ');
             if (isServer)
             {
                 sb.Append(port);
