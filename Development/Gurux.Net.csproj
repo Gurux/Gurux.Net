@@ -4,14 +4,14 @@
     <AssemblyName>Gurux.Net</AssemblyName>
     <Company>Gurux Ltd</Company>
     <Authors>Gurux Ltd</Authors>
-    <Copyright>Copyright (c) 1998-2024 Gurux Ltd. All rights reserved.</Copyright>
+    <Copyright>Copyright (c) 1998-2025 Gurux Ltd. All rights reserved.</Copyright>
     <PackageProjectUrl>www.gurux.fi/GXNet</PackageProjectUrl>
     <PackageLicenseUrl></PackageLicenseUrl>
     <Description>Network media component, for TCP/IP or UDP connections.</Description>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">0.0.1-local</Version>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <TargetFrameworks>net6.0-windows;net60;net462;netcoreapp3.1;netstandard2.1;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net90;net80;net6.0-windows;net60;net462;netcoreapp3.1;netstandard2.1;netstandard2.0</TargetFrameworks>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <RepositoryUrl>https://github.com/gurux/gurux.net</RepositoryUrl>
     <PackageTags>Gurux Device Framework Network TCP/IP UDP</PackageTags>
@@ -32,7 +32,7 @@
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
 
-<ItemGroup Condition="'$(TargetFramework)' == 'net60' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
+<ItemGroup Condition="'$(TargetFramework)' == 'net90' or'$(TargetFramework)' == 'net80' or '$(TargetFramework)' == 'net60' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
      <Compile Remove="Settings.cs" />
      <Compile Remove="Settings.Designer.cs" />
      <Compile Remove="Connecting.cs" />
@@ -42,8 +42,8 @@
   </ItemGroup>
 
  <ItemGroup>
-    <PackageReference Include="Gurux.Common" Version="8.4.2302.901" />
-    <PackageReference Include="System.Resources.Extensions" Version="7.0.0" />
+    <PackageReference Include="Gurux.Common" Version="8.4.2503.601" />
+    <PackageReference Include="System.Resources.Extensions" Version="9.0.2" />
  </ItemGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'net462'">
     <Reference Include="System.Data.Linq" />
