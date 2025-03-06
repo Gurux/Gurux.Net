@@ -42,7 +42,6 @@ namespace Gurux.Net
         private bool _initialize = true;
         private GXNet _target;
         private PropertyChangedEventHandler propertyChanged;
-        private bool dirty;
 
         /// <summary>
         /// Occurs when a property value changes.
