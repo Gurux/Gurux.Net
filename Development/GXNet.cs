@@ -1567,7 +1567,7 @@ namespace Gurux.Net
                 string tmp = "";
                 if (isServer)
                 {
-                    tmp = "<Server>" + (isServer ? "1" : "0") + "</Server>" + Environment.NewLine;
+                    tmp = "<Server>1</Server>" + Environment.NewLine;
                 }
                 if (!string.IsNullOrEmpty(hostAddress))
                 {
@@ -1579,11 +1579,11 @@ namespace Gurux.Net
                 }
                 if (communicationProtocol != NetworkType.Tcp)
                 {
-                    tmp += "<Protocol>" + (int)communicationProtocol + "</Protocol>" + Environment.NewLine;
+                    tmp += "<Protocol>" + Convert.ToString((int)communicationProtocol) + "</Protocol>" + Environment.NewLine;
                 }
                 if (UseIPv6)
                 {
-                    tmp += "<IPv6>" + "1" + "</IPv6>" + Environment.NewLine;
+                    tmp += "<IPv6>1</IPv6>" + Environment.NewLine;
                 }
                 return tmp;
             }
