@@ -74,6 +74,10 @@ namespace Gurux.Net
         /// </summary>
         int port;
         /// <summary>
+        /// Local port.
+        /// </summary>
+        int localPort;
+        /// <summary>
         /// Is this server or client.
         /// </summary>
         internal bool isServer;
@@ -141,6 +145,7 @@ namespace Gurux.Net
             communicationProtocol = protocol;
             hostAddress = hostName;
             port = connectionPort;
+            localPort = 0;
         }
 
         /// <summary>
@@ -1037,7 +1042,7 @@ namespace Gurux.Net
                 {
                     if (!isVirtual && !isServer)
                     {
-                        UdpClient s = new UdpClient(family);
+                        UdpClient s = new UdpClient(localPort, family);
                         s.Connect((IPEndPoint)ep);
                         s.BeginReceive(new AsyncCallback(RecieveComplete), s);
                         socket = s;
@@ -1111,14 +1116,15 @@ namespace Gurux.Net
 #else
             if (Trace >= TraceLevel.Info && m_OnTrace != null)
             {
-                string str = string.Format("{0} {1} {2} {3} {4} {5} {6}",
+                string str = string.Format("{0} {1} {2} {3} {4} {5} {6} {7}",
                                            Resources.ClientSettings,
                                            Resources.ProtocolTxt,
                                            communicationProtocol.ToString(),
                                            Resources.HostNameTxt,
                                            hostAddress,
                                            Resources.PortTxt,
-                                           port.ToString());
+                                           port.ToString(),
+                                           localPort.ToString());
                 m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
             }
 #endif
@@ -1141,6 +1147,9 @@ namespace Gurux.Net
                     // Sets the state of the event to nonsignaled, causing threads to block
                     clientDone.Reset();
 
+                    // Bind to local IP Address...
+                    IPEndPoint ipLocal = new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, localPort);
+                    (socket as Socket).Bind(ipLocal);
                     // Make an asynchronous Connect request over the socket
                     (socket as Socket).ConnectAsync(socketEventArg);
 
@@ -1347,6 +1356,7 @@ namespace Gurux.Net
         /// </value>
         /// <seealso cref="Open">Open</seealso>
         /// <seealso cref="Port">Port</seealso>
+        /// <seealso cref="LocalPort">LocalPort</seealso>
         /// <seealso cref="Protocol">Protocol</seealso>
         [DefaultValue("")]
         [Category("Communication")]
@@ -1383,6 +1393,7 @@ namespace Gurux.Net
         /// </value>
         /// <seealso cref="Open">Open</seealso>
         /// <seealso cref="HostName">HostName</seealso>
+        /// <seealso cref="LocalPort">LocalPort</seealso>
         /// <seealso cref="Protocol">Protocol</seealso>
         [DefaultValue(0)]
         [Category("Communication")]
@@ -1407,6 +1418,43 @@ namespace Gurux.Net
                 {
                     port = value;
                     NotifyPropertyChanged("Port");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves or sets the local port number connecting to host.
+        /// </summary>
+        /// <value>
+        /// Local port number connectiong to host.
+        /// </value>
+        /// <seealso cref="Open">Open</seealso>
+        /// <seealso cref="HostName">HostName</seealso>
+        /// <seealso cref="Port">Port</seealso>
+        /// <seealso cref="Protocol">Protocol</seealso>
+        [DefaultValue(0)]
+        [Category("Communication")]
+        [Description("Retrieves or sets the local port number connecting to host.")]
+        public int LocalPort
+        {
+            get
+            {
+                if (isVirtual && m_OnGetPropertyValue != null)
+                {
+                    string value = m_OnGetPropertyValue("LocalPort");
+                    if (value != null)
+                    {
+                        return int.Parse(value);
+                    }
+                }
+                return localPort;
+            }
+            set
+            {
+                if (localPort != value)
+                {
+                    localPort = value;
+                    NotifyPropertyChanged("LocalPort");
                 }
             }
         }
@@ -1577,6 +1625,10 @@ namespace Gurux.Net
                 {
                     tmp += "<Port>" + port + "</Port>" + Environment.NewLine;
                 }
+                if (localPort != 0)
+                {
+                    tmp += "<LocalPort>" + localPort + "</LocalPort>" + Environment.NewLine;
+                }
                 if (communicationProtocol != NetworkType.Tcp)
                 {
                     tmp += "<Protocol>" + Convert.ToString((int)communicationProtocol) + "</Protocol>" + Environment.NewLine;
@@ -1612,6 +1664,9 @@ namespace Gurux.Net
                                         break;
                                     case "IP":
                                         hostAddress = (string)xmlReader.ReadElementContentAs(typeof(string), null);
+                                        break;
+                                    case "LocalPort":
+                                        localPort = (int)(xmlReader.ReadElementContentAs(typeof(int), null));
                                         break;
                                     case "IPv6":
                                         UseIPv6 = (int)xmlReader.ReadElementContentAs(typeof(int), null) == 1;
@@ -1651,6 +1706,8 @@ namespace Gurux.Net
                 sb.Append(hostAddress);
                 sb.Append(':');
                 sb.Append(port);
+                sb.Append(' ');
+                sb.Append(localPort);
             }
             if (UseIPv6)
             {
@@ -1811,6 +1868,7 @@ namespace Gurux.Net
             GXNet tmp = (GXNet)target;
             port = tmp.port;
             hostAddress = tmp.hostAddress;
+            localPort = tmp.localPort;
             communicationProtocol = tmp.communicationProtocol;
 #if !WINDOWS_PHONE
             Server = tmp.Server;
@@ -1822,7 +1880,7 @@ namespace Gurux.Net
             get
             {
                 string tmp;
-                tmp = HostName + " " + port;
+                tmp = HostName + " " + port + " " + localPort;
                 if (Protocol == NetworkType.Udp)
                 {
                     tmp += " UDP";
@@ -1927,9 +1985,16 @@ namespace Gurux.Net
             {
                 throw new Exception(Resources.InvalidPortName);
             }
-            if (!isServer && string.IsNullOrEmpty(hostAddress))
+            if (!isServer)
             {
-                throw new Exception(Resources.InvalidHostName);
+                if (string.IsNullOrEmpty(hostAddress))
+                {
+                    throw new Exception(Resources.InvalidHostName);
+                }
+                if (localPort == 0)
+                {
+                    throw new Exception(Resources.InvalidPortName);
+                }
             }
         }
 
