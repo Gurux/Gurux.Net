@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Nevažeće ime priključka.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Nevažeći naziv lokalnog porta.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Luka:</value>
   </data>

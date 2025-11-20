@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Nederīgs porta nosaukums.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Nederīgs lokālā porta nosaukums.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Osta:</value>
   </data>

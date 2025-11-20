@@ -1993,7 +1993,7 @@ namespace Gurux.Net
                 }
                 if (localPort == 0)
                 {
-                    throw new Exception(Resources.InvalidPortName);
+                    throw new Exception(Resources.InvalidLocalPortName);
                 }
             }
         }

@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Ógilt hafnarheiti.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Ógilt heiti á staðbundnu tengi.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Höfn:</value>
   </data>

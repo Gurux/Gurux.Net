@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Emër porti i pavlefshëm.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Emër i pavlefshëm i portit lokal.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Porti:</value>
   </data>

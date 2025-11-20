@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Ugyldig portnavn.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Ugyldig lokalt portnavn.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Havn:</value>
   </data>
