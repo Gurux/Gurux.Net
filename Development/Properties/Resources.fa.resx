@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>نام بندر نامعتبر است.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>نام پورت محلی نامعتبر است.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>بندر:</value>
   </data>

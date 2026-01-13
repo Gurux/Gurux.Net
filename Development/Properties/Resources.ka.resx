@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>პორტის სახელი არასწორია.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>ადგილობრივი პორტის სახელი არასწორია.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>პორტი:</value>
   </data>

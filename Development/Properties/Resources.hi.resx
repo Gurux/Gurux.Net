@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>अमान्य पोर्ट नाम।</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>स्थानीय पोर्ट नाम अमान्य है.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>बंदरगाह:</value>
   </data>

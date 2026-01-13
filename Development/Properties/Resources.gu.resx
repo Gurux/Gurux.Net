@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>અમાન્ય બંદર નામ.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>અમાન્ય સ્થાનિક પોર્ટ નામ.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>બંદર:</value>
   </data>
