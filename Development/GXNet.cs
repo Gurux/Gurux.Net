@@ -716,6 +716,10 @@ namespace Gurux.Net
                     if (bytes == 0)
                     {
                         //Client has left.
+                        if (m_OnClientDisconnected != null)
+                        {
+                            m_OnClientDisconnected(this, new ConnectionEventArgs(sender));
+                        }
                         DisconnectClient(sender);
                         return;
                     }
