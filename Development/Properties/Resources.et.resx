@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Vale pordi nimi.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Kohaliku pordi nimi on sobimatu.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Sadam:</value>
   </data>

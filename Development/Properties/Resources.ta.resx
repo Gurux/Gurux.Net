@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>போர்ட் பெயர் தவறானது.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>உள்ளூர் போர்ட் பெயர் தவறானது.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>துறைமுகம்:</value>
   </data>

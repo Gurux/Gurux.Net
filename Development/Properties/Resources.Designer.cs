@@ -133,6 +133,15 @@ namespace Gurux.Net.Properties {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Invalid local port name..
+        /// </summary>
+        internal static string InvalidLocalPortName {
+            get {
+                return ResourceManager.GetString("InvalidLocalPortName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Invalid sender info..
         /// </summary>
         internal static string InvalidSenderInfo {

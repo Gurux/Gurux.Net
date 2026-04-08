@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>잘못된 포트 이름입니다.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>잘못된 로컬 포트 ​​이름입니다.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>포트:</value>
   </data>

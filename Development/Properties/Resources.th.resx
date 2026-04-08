@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>ชื่อพอร์ตไม่ถูกต้อง</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>ชื่อพอร์ตท้องถิ่นไม่ถูกต้อง</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>ท่าเรือ:</value>
   </data>

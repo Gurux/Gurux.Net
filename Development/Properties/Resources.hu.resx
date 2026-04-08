@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Érvénytelen portnév.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Érvénytelen helyi portnév.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Kikötő:</value>
   </data>

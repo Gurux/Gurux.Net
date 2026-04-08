@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Ataka izen baliogabea.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Tokiko ataka izen baliogabea.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Portua:</value>
   </data>

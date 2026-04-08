@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Nome della porta non valido.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Nome della porta locale non valido.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Porta:</value>
   </data>

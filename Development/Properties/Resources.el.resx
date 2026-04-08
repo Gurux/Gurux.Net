@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Μη έγκυρο όνομα θύρας.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Μη έγκυρο όνομα τοπικής θύρας.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Λιμάνι:</value>
   </data>

@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Netinkamas prievado pavadinimas.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Neteisingas vietinio prievado pavadinimas.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Uostas:</value>
   </data>

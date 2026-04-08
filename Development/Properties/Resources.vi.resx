@@ -135,6 +135,9 @@
   <data name="InvalidPortName" xml:space="preserve">
     <value>Tên cổng không hợp lệ.</value>
   </data>
+  <data name="InvalidLocalPortName" xml:space="preserve">
+    <value>Tên cổng cục bộ không hợp lệ.</value>
+  </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Hải cảng:</value>
   </data>
