@@ -1,80 +1,28 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <RootNamespace>Gurux.Net</RootNamespace>
-    <AssemblyName>Gurux.Net</AssemblyName>
-    <Company>Gurux Ltd</Company>
-    <Authors>Gurux Ltd</Authors>
-    <Copyright>Copyright (c) 1998-2025 Gurux Ltd. All rights reserved.</Copyright>
-    <PackageProjectUrl>www.gurux.fi/GXNet</PackageProjectUrl>
-    <PackageLicenseUrl></PackageLicenseUrl>
-    <Description>Network media component, for TCP/IP or UDP connections.</Description>
-    <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">0.0.1-local</Version>
-    <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <TargetFrameworks>net90;net9.0-windows;net80;net8.0-windows;net6.0-windows;net60;net462;netcoreapp3.1;netstandard2.1;netstandard2.0</TargetFrameworks>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <RepositoryUrl>https://github.com/gurux/gurux.net</RepositoryUrl>
-    <PackageTags>Gurux Device Framework Network TCP/IP UDP</PackageTags>
+    <TargetFrameworks>net11.0;net10.0</TargetFrameworks><ImplicitUsings>enable</ImplicitUsings><Nullable>enable</Nullable>
     <PackageId>Gurux.Net</PackageId>
-    <ApplicationIcon>Net.ico</ApplicationIcon>
-    <PackageIconUrl>http://www.gurux.org/gurux.ico</PackageIconUrl>
-    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression>
-    <PackageIcon>Net.png</PackageIcon>
+    <RootNamespace>Gurux.Net</RootNamespace><AssemblyName>Gurux.Net</AssemblyName>
+    <Company>Gurux Ltd</Company><Authors>Gurux Ltd</Authors>
+    <Version Condition="'$(BUILD_BUILDNUMBER)' == ''">0.0.1-local</Version>
+    <Version Condition="'$(BUILD_BUILDNUMBER)' != ''">$(BUILD_BUILDNUMBER)</Version>
+    <Description>Cross-platform asynchronous TCP and UDP media.</Description>
+    <PackageLicenseExpression>GPL-2.0-only</PackageLicenseExpression><PackageIcon>Net.png</PackageIcon>
+    <RepositoryUrl>https://github.com/gurux/gurux.net</RepositoryUrl>
+    <PackageProjectUrl>https://www.gurux.org/GXNet</PackageProjectUrl>
+    <PackageTags>Gurux Device Framework Network TCP/IP UDP</PackageTags>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild><IncludeSymbols>true</IncludeSymbols><SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems><EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <GuruxCommonVersion Condition="'$(GuruxCommonVersion)' == ''">9.0.2611.1302</GuruxCommonVersion>
   </PropertyGroup>
-  <PropertyGroup>
-    <IncludeSymbols>true</IncludeSymbols>
-    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-    <GenerateDocumentationFile>True</GenerateDocumentationFile>
-  </PropertyGroup>
-
- <PropertyGroup Condition="'$(TargetFramework)' == 'net6.0-windows'">
-    <TargetFramework>net60-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
- <PropertyGroup Condition="'$(TargetFramework)' == 'net8.0-windows'">
-    <TargetFramework>net80-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
- <PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-windows'">
-    <TargetFramework>net90-windows</TargetFramework>
-    <UseWindowsForms>true</UseWindowsForms>
-  </PropertyGroup>
-
-<ItemGroup Condition="'$(TargetFramework)' == 'net90' or '$(TargetFramework)' == 'net80' or '$(TargetFramework)' == 'net60' or '$(TargetFramework)' == 'netcoreapp3.1' or '$(TargetFramework)' == 'netstandard2.0' or '$(TargetFramework)' == 'netstandard2.1'">
-     <Compile Remove="Settings.cs" />
-     <Compile Remove="Settings.Designer.cs" />
-     <Compile Remove="Connecting.cs" />
-     <Compile Remove="Connecting.Designer.cs" />
-     <Compile Remove="Shared\PropertiesForm.cs" />
-     <Compile Remove="Shared\PropertiesForm.Designer.cs" />
+  <ItemGroup><Compile Include="GXNet.cs;NetSettings.cs;NetJsonContext.cs;Enums/NetworkType.cs;AvailableMediaSettings.cs;Properties/Resources.cs" /><None Include="Net.png" Pack="true" PackagePath="/" /><None Include="../README.md" Pack="true" PackagePath="/" /></ItemGroup>
+  <ItemGroup><EmbeddedResource Include="Properties/Resources.resx" /></ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Gurux.Common" Version="9.0.2611.1601" />
   </ItemGroup>
-
- <ItemGroup>
-    <PackageReference Include="Gurux.Common" Version="8.4.2503.602" />
-    <PackageReference Include="System.Resources.Extensions" Version="9.0.2" />
- </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)' == 'net90-windows' or '$(TargetFramework)' == 'net80-windows' or '$(TargetFramework)' == 'net462'">
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Windows.Forms" />
-  </ItemGroup>
- <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
-   <PackageReference Include="System.Resources.Extensions">
-     <Version>5.0.0</Version>
-   </PackageReference>
- </ItemGroup>
-<ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.1'">
-   <PackageReference Include="System.Resources.Extensions">
-     <Version>5.0.0</Version>
-   </PackageReference>
- </ItemGroup>
- <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
-   <PackageReference Include="System.Resources.Extensions">
-     <Version>5.0.0</Version>
-   </PackageReference>
- </ItemGroup>
-<ItemGroup>
-    <None Include="Net.png" Pack="true" PackagePath="\" />
+  <ItemGroup>
+    <EmbeddedResource Include="Net.png" LogicalName="Gurux.Net.MediaIcon.png" />
   </ItemGroup>
 </Project>

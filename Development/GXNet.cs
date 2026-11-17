@@ -1,1968 +1,783 @@
-//
 // --------------------------------------------------------------------------
-//  Gurux Ltd
+// Gurux Ltd
 //
+// Copyright (c) Gurux Ltd.
 //
+// This file is part of Gurux Device Framework.
 //
-// Filename:        $HeadURL$
+// Commit: $Format:%H$
+// Date:   $Format:%cI$
 //
-// Version:         $Revision$,
-//                  $Date$
-//                  $Author$
+// This software is available under either of the following licenses:
 //
-// Copyright (c) Gurux Ltd
+// 1. GNU General Public License, version 2 only (GPL-2.0-only).
+//    See the LICENSE file included with this distribution.
 //
-//---------------------------------------------------------------------------
+// 2. A commercial license granted by Gurux Ltd under a separate written
+//    agreement. Use under this option requires a valid commercial license
+//    and is governed by the terms of that agreement.
 //
-//  DESCRIPTION
+// If you have not obtained a commercial license from Gurux Ltd,
+// use of this software is governed by GPL-2.0-only.
 //
-// This file is a part of Gurux Device Framework.
+// Commercial licensing: https://www.gurux.fi/
 //
-// Gurux Device Framework is Open Source software; you can redistribute it
-// and/or modify it under the terms of the GNU General Public License
-// as published by the Free Software Foundation; version 2 of the License.
-// Gurux Device Framework is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-// See the GNU General Public License for more details.
-//
-// This code is licensed under the GNU General Public License v2.
-// Full text may be retrieved at http://www.gnu.org/licenses/gpl-2.0.txt
-//---------------------------------------------------------------------------
+// SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-Gurux-Commercial
+// --------------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.Net.Sockets;
-using System.Threading;
+using Gurux.Net.Enums;
+using System.Collections.Concurrent;
 using System.Net;
-using System.Xml;
-using Gurux.Shared;
+using System.Net.Sockets;
+using System.Xml.Linq;
+using System.Text.Json;
 using Gurux.Common;
-using System.Diagnostics;
-using Gurux.Net.Properties;
 
-namespace Gurux.Net
+namespace Gurux.Net;
+
+/// <summary>Cross-platform TCP and UDP communication using asynchronous sockets.</summary>
+public class GXNet : GXMediaBase, IGXMediaIconProvider
 {
-    /// <summary>
-    /// The GXNet component determines methods that make the communication possible using Internet.
-    /// See help in http://www.gurux.org/Gurux.Net
-    /// </summary>
-    public class GXNet : IGXMedia, IGXVirtualMedia, INotifyPropertyChanged, IDisposable
+    /// <summary>Opens the embedded PNG icon for this media without loading a UI framework.</summary>
+    /// <returns>A new readable stream positioned at the beginning, or null if the embedded icon is unavailable.</returns>
+    /// <remarks>The caller owns the stream and must dispose it. Each call returns an independent stream.</remarks>
+    public Stream? OpenIcon()
     {
-#if WINDOWS_PHONE
-    ReceiveThread m_Receiver;
-    Thread m_ReceiverThread;
-#endif
-        bool isVirtual, isVirtualOpen;
+        return typeof(GXNet).Assembly.GetManifestResourceStream("Gurux.Net.MediaIcon.png");
+    }
 
-        /// <summary>
-        /// The ethernet maximum frame size is 1518 bytes.
-        /// </summary>
-        internal byte[] receiveBuffer = new byte[1518];
-        /// <summary>
-        /// Used protocol.
-        /// </summary>
-        NetworkType communicationProtocol;
-        /// <summary>
-        /// Connection host name.
-        /// </summary>
-        string hostAddress;
-        /// <summary>
-        /// Host port.
-        /// </summary>
-        int port;
-        /// <summary>
-        /// Is this server or client.
-        /// </summary>
-        internal bool isServer;
-        internal GXSynchronousMediaBase syncBase;
-        /// <summary>
-        /// Server or client socket.
-        /// </summary>
-        IDisposable socket = null;
-        /// <summary>
-        /// Connected TCP/IP clients.
-        /// </summary>
-        private Dictionary<Socket, byte[]> tcpIpClients = new Dictionary<Socket, byte[]>();
+    /// <summary>Occurs when a server reports a client connection attempt.</summary>
+    public event EventHandler<ConnectionEventArgs>? OnClientConnected;
+    /// <summary>Occurs when a tracked server client disconnects.</summary>
+    public event EventHandler<ConnectionEventArgs>? OnClientDisconnected;
 
-        /// <summary>
-        /// Connected UDP clients.
-        /// </summary>
-        private Dictionary<IDisposable, GXNet> udpClients = new Dictionary<IDisposable, GXNet>();
+    /// <summary>Raises the connection admission event and returns whether subscribers accepted the client.</summary>
+    /// <param name="info">The remote endpoint identifying the connecting client.</param>
+    /// <returns>Whether the client is accepted.</returns>
+    private bool NotifyClientConnected(string info)
+    {
+        var args = new ConnectionEventArgs(info);
+        OnClientConnected?.Invoke(this, args);
+        return args.Accept;
+    }
 
-        /// <summary>
-        /// Is data send syncronously.
-        /// </summary>
-        readonly object synchronous = new object();
-        /// <summary>
-        /// Sync object.
-        /// </summary>
-        private object sync = new object();
+    /// <summary>Raises the disconnection event for a removed remote endpoint.</summary>
+    /// <param name="info">The address of the disconnected client.</param>
+    private void NotifyClientDisconnected(string info)
+        => OnClientDisconnected?.Invoke(this, new ConnectionEventArgs(info));
 
-        /// <summary>
-        /// Signaling object used to notify when an asynchronous operation is completed
-        /// </summary>
-        ManualResetEvent clientDone = new ManualResetEvent(false);
+    /// <summary>Owns a connected socket, its framing buffer and its serialized send operations.</summary>
+    /// <param name="socket">The accepted TCP socket.</param>
+    /// <param name="address">The remote endpoint identifying the client.</param>
+    sealed class Peer(Socket socket, string address)
+    {
+        /// <summary>Stores the connected socket owned by this client.</summary>
+        internal readonly Socket Socket = socket;
+        /// <summary>Stores the remote endpoint used to identify this client.</summary>
+        internal readonly string Address = address;
+        /// <summary>Prevents concurrent sends from interleaving on this socket.</summary>
+        internal readonly SemaphoreSlim SendLock = new(1);
+        /// <summary>Separates this client's incoming stream framing from other clients.</summary>
+        internal readonly GXSynchronousMediaBase PacketBuffer = new();
+        /// <summary>References the media receiving this client's data after attachment.</summary>
+        internal GXNet? Attached;
+        /// <summary>Records whether removal and socket cleanup have already started.</summary>
+        internal int Removed;
+        /// <summary>Completes after admission and this peer's receive callbacks and removal notifications have unwound.</summary>
+        internal readonly TaskCompletionSource ReceiveDone = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        /// <summary>Completes after the single removal owner finishes child state and listener disconnect callbacks.</summary>
+        internal readonly TaskCompletionSource RemovalDone = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    }
+    /// <summary>Maps connected remote endpoints to their socket state.</summary>
+    readonly ConcurrentDictionary<string, Peer> clients = new();
+    /// <summary>Protects connection admission and lifecycle transitions.</summary>
+    readonly object admission = new();
+    /// <summary>Serializes writes from an unbound client connection.</summary>
+    readonly SemaphoreSlim clientSend = new(1);
+    /// <summary>Tracks background operations that shutdown must await.</summary>
+    readonly HashSet<Task> workers = new();
+    /// <summary>Identifies callbacks whose reentrant shutdown must avoid awaiting themselves.</summary>
+    static readonly AsyncLocal<GXNet?> callbackOwner = new();
+    /// <summary>Tracks the current lifecycle transition under the admission lock.</summary>
+    MediaState phase = MediaState.Closed;
+    /// <summary>Distinguishes current connection work from earlier open attempts.</summary>
+    long generation;
+    /// <summary>Signals when the current opening operation has unwound.</summary>
+    TaskCompletionSource? openingDone;
+    /// <summary>Signals when the current closing operation has completed.</summary>
+    TaskCompletionSource? closingDone;
+    /// <summary>Cancels socket operations belonging to the active connection.</summary>
+    CancellationTokenSource? stopping;
+    /// <summary>Stores the listener or directly connected client socket.</summary>
+    Socket? socket;
+    /// <summary>Identifies the accepted client owned by an attached media.</summary>
+    Peer? attached;
+    /// <summary>References the listener that owns an attached client socket.</summary>
+    GXNet? parent;
+    /// <summary>Publishes whether data operations may use the connection.</summary>
+    volatile bool open;
 
-        private GXNet parent = null;
+    /// <summary>Creates a closed TCP client with default transport options.</summary>
+    public GXNet()
+    {
+        ConfigurableSettings = (int)(AvailableMediaSettings.Server | AvailableMediaSettings.Protocol | AvailableMediaSettings.Port | AvailableMediaSettings.Host | AvailableMediaSettings.UseIPv6);
+    }
 
-        /// <summary>
-        /// Define a timeout in milliseconds for each asynchronous call. If a response is not received within this
-        /// timeout period, the call is aborted.
-        /// </summary>
-        public int WaitTime
+    /// <summary>Creates a closed client for a remote network endpoint.</summary>
+    /// <param name="protocol">The transport protocol.</param>
+    /// <param name="hostName">The remote host name or IP address.</param>
+    /// <param name="connectionPort">The remote port, validated when opening.</param>
+    public GXNet(NetworkType protocol, string hostName, int connectionPort) : this()
+    {
+        Protocol = protocol;
+        HostName = hostName;
+        Port = connectionPort;
+    }
+
+    /// <summary>Creates a closed server listening on the selected protocol and port.</summary>
+    /// <param name="protocol">The transport protocol.</param>
+    /// <param name="listeningPort">The local port, validated when opening.</param>
+    public GXNet(NetworkType protocol, int listeningPort) : this()
+    {
+        Protocol = protocol;
+        Port = listeningPort;
+        Server = true;
+    }
+
+    /// <summary>Gets or sets whether communication uses TCP streams or UDP datagrams.</summary>
+    public NetworkType Protocol { get; set; } = NetworkType.Tcp;
+
+    /// <summary>Gets or sets the remote client host or the local server bind address.</summary>
+    public string HostName { get; set; } = "";
+    /// <summary>Gets or sets the remote client port or local listening port in the range 1 through 65535.</summary>
+    public int Port { get; set; }
+    /// <summary>Gets or sets whether this instance listens for remote clients.</summary>
+    public bool Server { get; set; }
+    /// <summary>Gets or sets whether name resolution and wildcard binding use IPv6.</summary>
+    public bool UseIPv6 { get; set; }
+    /// <summary>Gets or sets the opening timeout in milliseconds; zero and minus one disable the deadline.</summary>
+    public int WaitTime { get; set; } = 60000;
+    /// <summary>Gets or sets the maximum admitted TCP clients; zero allows an unlimited number.</summary>
+    public int MaxClientCount { get; set; }
+    /// <summary>Gets or sets whether operating-system TCP keepalive probes are enabled on clients and accepted connections.</summary>
+    public bool EnableTcpKeepAlive { get; set; } = true;
+    /// <summary>Gets or sets the positive idle time in seconds before the first TCP keepalive probe, where supported.</summary>
+    public int TcpKeepAliveIdleSeconds { get; set; } = 60;
+    /// <summary>Gets or sets the positive interval in seconds between unanswered TCP keepalive probes, where supported.</summary>
+    public int TcpKeepAliveIntervalSeconds { get; set; } = 10;
+    /// <summary>Gets or sets the positive number of unanswered TCP keepalive probes before OS failure detection, where supported.</summary>
+    public int TcpKeepAliveRetryCount { get; set; } = 3;
+    /// <inheritdoc/>
+    public override bool IsOpen => open;
+    /// <inheritdoc/>
+    public override string Name => $"{HostName}:{Port}";
+    /// <inheritdoc/>
+    public override string MediaType => "Net";
+    /// <summary>Returns a snapshot of the endpoints currently tracked by a TCP server.</summary>
+    /// <returns>The connected client endpoint strings.</returns>
+    public string[] GetActiveClients() => clients.Keys.ToArray();
+    /// <summary>Reports all invalid network settings without opening a connection.</summary>
+    /// <returns>Localized, property-specific errors, or an empty list when the settings are valid.</returns>
+    public override IReadOnlyList<GXValidationError> Validate()
+    {
+        List<GXValidationError> errors = new();
+        if (Port <= 0 || Port > 65535)
         {
-            get;
-            set;
+            errors.Add(new(nameof(Port), "OutOfRange", global::Gurux.Net.Properties.Resources.PortOutOfRange));
         }
-
-        /// <summary>
-        /// Constructor.
-        /// </summary>
-        public GXNet()
+        if (!Server && string.IsNullOrWhiteSpace(HostName))
         {
-            syncBase = new GXSynchronousMediaBase(1024);
-            ConfigurableSettings = AvailableMediaSettings.All;
-            Protocol = NetworkType.Tcp;
-            WaitTime = 60000;
+            errors.Add(new(nameof(HostName), "Required", global::Gurux.Net.Properties.Resources.RemoteHostRequired));
         }
-
-        /// <summary>
-        /// Client Constructor.
-        /// </summary>
-        /// <param name="protocol">Used protocol.</param>
-        /// <param name="hostName">Host name.</param>
-        /// <param name="connectionPort">Client connection port.</param>
-        public GXNet(NetworkType protocol, string hostName, int connectionPort)
-        : this()
+        if (!Enum.IsDefined(Protocol))
         {
-            communicationProtocol = protocol;
-            hostAddress = hostName;
-            port = connectionPort;
+            errors.Add(new(nameof(Protocol), "InvalidValue", global::Gurux.Net.Properties.Resources.InvalidProtocol));
         }
-
-        /// <summary>
-        /// Constructor used when server is started.
-        /// </summary>
-        /// <param name="protocol">Used protocol.</param>
-        /// <param name="listeningPort">Server listening port.</param>
-        public GXNet(NetworkType protocol, int listeningPort)
-        : this()
+        if (MaxClientCount < 0)
         {
-            isServer = true;
-            communicationProtocol = protocol;
-            port = listeningPort;
+            errors.Add(new(nameof(MaxClientCount), "OutOfRange", global::Gurux.Net.Properties.Resources.InvalidMaxClientCount));
         }
-
-        /// <summary>
-        /// Attach TCP/IP or UDP connection.
-        /// </summary>
-        /// <remarks>
-        /// This can be used in server side if server
-        /// want to start communicating with client using syncronous communication.
-        /// Close connection after use.
-        /// </remarks>
-        public GXNet Attach(object info)
+        if (WaitTime < -1)
         {
-            GXNet net = new GXNet();
-            net.ConfigurableSettings = ConfigurableSettings;
-            net.Protocol = Protocol;
-            net.Trace = Trace;
-            net.isServer = isServer;
-            if (info is string)
+            errors.Add(new(nameof(WaitTime), "OutOfRange", global::Gurux.Net.Properties.Resources.InvalidWaitTime));
+        }
+        if (TcpKeepAliveIdleSeconds <= 0)
+        {
+            errors.Add(new(nameof(TcpKeepAliveIdleSeconds), "OutOfRange", global::Gurux.Net.Properties.Resources.InvalidKeepAliveIdle));
+        }
+        if (TcpKeepAliveIntervalSeconds <= 0)
+        {
+            errors.Add(new(nameof(TcpKeepAliveIntervalSeconds), "OutOfRange", global::Gurux.Net.Properties.Resources.InvalidKeepAliveInterval));
+        }
+        if (TcpKeepAliveRetryCount <= 0)
+        {
+            errors.Add(new(nameof(TcpKeepAliveRetryCount), "OutOfRange", global::Gurux.Net.Properties.Resources.InvalidKeepAliveRetryCount));
+        }
+        if (Protocol == NetworkType.Udp && Eop != null)
+        {
+            errors.Add(new(nameof(Eop), "InvalidCombination", global::Gurux.Net.Properties.Resources.UdpFramingUnsupported));
+        }
+        return errors;
+    }
+    /// <summary>Rejects invalid settings before starting a connection attempt.</summary>
+    /// <exception cref="ArgumentOutOfRangeException">A numeric setting is outside its supported range or the protocol is undefined.</exception>
+    /// <exception cref="ArgumentException">A client has no remote host.</exception>
+    /// <exception cref="InvalidOperationException">UDP is configured with TCP packet framing.</exception>
+    private void ValidateForOpen()
+    {
+        IReadOnlyList<GXValidationError> errors = Validate();
+        if (errors.Count != 0)
+        {
+            GXValidationError error = errors[0];
+            if (error.Code == "InvalidCombination")
             {
-                if (Protocol == NetworkType.Tcp)
+                throw new InvalidOperationException(error.Message);
+            }
+            if (error.Code == "OutOfRange" || error.PropertyName == nameof(Protocol))
+            {
+                throw new ArgumentOutOfRangeException(error.PropertyName, error.Message);
+            }
+            throw new ArgumentException(error.Message, error.PropertyName);
+        }
+    }
+    /// <inheritdoc/>
+    public override async Task OpenAsync(CancellationToken cancellationToken = default)
+    {
+        CancellationTokenSource attempt;
+        TaskCompletionSource completion;
+        long currentGeneration;
+        lock (admission)
+        {
+            if (phase == MediaState.Open) { return; }
+            if (parent != null) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.AttachedReconnect); }
+            if (phase != MediaState.Closed) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.LifecycleInProgress); }
+            ValidateForOpen();
+            phase = MediaState.Opening;
+            currentGeneration = ++generation;
+            attempt = new CancellationTokenSource();
+            if (WaitTime > 0) { attempt.CancelAfter(WaitTime); }
+            stopping = attempt;
+            openingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+        GXNet? previousOwner = callbackOwner.Value;
+        callbackOwner.Value = this;
+        var cancellationRegistration = cancellationToken.Register(() => attempt.Cancel());
+        Socket? pending = null;
+        try
+        {
+            SetState(MediaState.Opening);
+            attempt.Token.ThrowIfCancellationRequested();
+            var address = string.IsNullOrWhiteSpace(HostName) ? (UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any) : (await Dns.GetHostAddressesAsync(HostName, attempt.Token).ConfigureAwait(false)).First(a => a.AddressFamily == (UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork));
+            pending = new Socket(address.AddressFamily, Protocol == NetworkType.Tcp ? SocketType.Stream : SocketType.Dgram, Protocol == NetworkType.Tcp ? ProtocolType.Tcp : ProtocolType.Udp);
+            if (Protocol == NetworkType.Tcp && !Server) { ConfigureTcpKeepAlive(pending); }
+            if (Server)
+            {
+                pending.Bind(new IPEndPoint(address, Port));
+                if (Protocol == NetworkType.Tcp) { pending.Listen(128); }
+            }
+            else { await pending.ConnectAsync(new IPEndPoint(address, Port), attempt.Token).ConfigureAwait(false); }
+            lock (admission)
+            {
+                attempt.Token.ThrowIfCancellationRequested();
+                if (generation != currentGeneration || phase != MediaState.Opening) { throw new OperationCanceledException(attempt.Token); }
+                socket = pending;
+                attempt.CancelAfter(Timeout.Infinite);
+                if (Server) { Port = ((IPEndPoint)pending.LocalEndPoint!).Port; }
+                ReceiveBuffer.Open(); open = true; phase = MediaState.Open;
+            }
+            SetState(MediaState.Open);
+            lock (admission)
+            {
+                if (generation == currentGeneration && phase == MediaState.Open)
                 {
-                    lock (tcpIpClients)
-                    {
-                        foreach (var it in tcpIpClients)
-                        {
-                            if (it.Key is Socket)
-                            {
-                                Socket s = (Socket)it.Key;
-                                if (s.RemoteEndPoint.ToString() == (string)info)
-                                {
-                                    net.socket = s;
-                                    s.RemoteEndPoint.ToString();
-                                    net.hostAddress = hostAddress;
-                                    net.port = port;
-                                    tcpIpClients.Remove(s);
-                                    s.BeginReceive(net.receiveBuffer, 0, net.receiveBuffer.Length,
-                                                                      SocketFlags.None, new AsyncCallback(net.RecieveComplete), s);
-                                    break;
-                                }
-                            }
-                        }
-                    }
+                    var activeSocket = pending;
+                    StartWorker(() => Server && Protocol == NetworkType.Tcp ? AcceptLoop(activeSocket, attempt.Token) : ReceiveLoop(activeSocket, null, attempt.Token, currentGeneration));
                 }
-                else
+            }
+        }
+        catch
+        {
+            pending?.Dispose();
+            bool reportClosed = false;
+            lock (admission)
+            {
+                if (generation == currentGeneration && (phase == MediaState.Opening || (phase == MediaState.Open && ReferenceEquals(socket, pending))))
                 {
-                    throw new ArgumentException(Gurux.Net.Properties.Resources.AttachByStringCanBeUsedOnlyWithTCPIPConnection);
+                    socket = null; open = false; phase = MediaState.Closed; stopping = null;
+                    attempt.Cancel(); ReceiveBuffer.Close();
+                    reportClosed = true;
                 }
             }
-            else if (info is GXNetReceiveEventArgs)
+            if (reportClosed) { SetState(MediaState.Closed); }
+            throw;
+        }
+        finally
+        {
+            cancellationRegistration.Dispose();
+            callbackOwner.Value = previousOwner;
+            completion.TrySetResult();
+            lock (admission) { if (openingDone == completion) { openingDone = null; } }
+            // The active connection owns the token source until shutdown.
+            if (!open || generation != currentGeneration) { attempt.Dispose(); }
+        }
+    }
+    /// <summary>Tracks and starts an asynchronous socket worker whose errors are reported through media events.</summary>
+    /// <param name="action">The asynchronous operation to run.</param>
+    void StartWorker(Func<Task> action)
+    {
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        lock (admission)
+        {
+            workers.Add(completion.Task);
+        }
+        _ = Task.Run(Run);
+        // Runs the registered worker, reports failures and signals cleanup completion.
+        // A task completing after the worker and tracking cleanup finish.
+        async Task Run()
+        {
+            var previous = callbackOwner.Value;
+            callbackOwner.Value = this;
+            try { await action().ConfigureAwait(false); }
+            catch (Exception error) { ReportBackgroundError(error); }
+            finally
             {
-                string tmp = ((GXNetReceiveEventArgs)info).SenderInfo;
-                int pos = tmp.LastIndexOf(':');
-                if (pos == -1)
+                callbackOwner.Value = previous;
+                lock (admission)
                 {
-                    throw new ArgumentException(Gurux.Net.Properties.Resources.InvalidSenderInfo);
+                    workers.Remove(completion.Task);
                 }
-                net.hostAddress = tmp.Substring(0, pos);
-                net.port = int.Parse(tmp.Substring(pos + 1));
-                net.socket = (info as GXNetReceiveEventArgs).socket as IDisposable;
-                udpClients.Add(net.socket, net);
-                (info as GXNetReceiveEventArgs).socket = null;
-                net.parent = this;
-            }
-            else if (info is GXNetConnectionEventArgs)
-            {
-                lock (tcpIpClients)
-                {
-                    foreach (var it in tcpIpClients)
-                    {
-                        if (it.Key is Socket)
-                        {
-                            if (it.Key == (info as GXNetConnectionEventArgs).socket)
-                            {
-                                (info as GXNetConnectionEventArgs).socket = null;
-                                net.socket = it.Key;
-                                it.Key.RemoteEndPoint.ToString();
-                                net.hostAddress = hostAddress;
-                                net.port = port;
-                                net.isServer = false;
-                                tcpIpClients.Remove(it.Key);
-                                it.Key.BeginReceive(net.receiveBuffer, 0, net.receiveBuffer.Length,
-                                                                  SocketFlags.None, new AsyncCallback(net.RecieveComplete), it.Key);
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
-            if (net.socket == null)
-            {
-                throw new ArgumentException(Gurux.Net.Properties.Resources.UnknownAddress);
-            }
-            return net;
-        }
-
-        /// <summary>
-        /// Destructor.
-        /// </summary>
-        ~GXNet()
-        {
-            if (IsOpen)
-            {
-                Close();
+                completion.TrySetResult();
             }
         }
-
-        /// <summary>
-        /// Is IPv6 used. Default is False (IPv4).
-        /// </summary>
-        public bool UseIPv6
+    }
+    /// <summary>Accepts TCP clients, applies admission limits and starts independent receive operations.</summary>
+    /// <param name="listener">The listening TCP socket.</param>
+    /// <param name="token">The connection lifetime cancellation token.</param>
+    /// <returns>A task completing when client acceptance stops.</returns>
+    async Task AcceptLoop(Socket listener, CancellationToken token)
+    {
+        while (!token.IsCancellationRequested)
         {
-            get;
-            set;
-        }
-
-        /// <summary>
-        /// What level of tracing is used.
-        /// </summary>
-        public TraceLevel Trace
-        {
-            get
-            {
-                return syncBase.Trace;
-            }
-            set
-            {
-                syncBase.Trace = value;
-            }
-        }
-        private void NotifyPropertyChanged(string info)
-        {
-            if (m_OnPropertyChanged != null)
-            {
-                m_OnPropertyChanged(this, new PropertyChangedEventArgs(info));
-            }
-        }
-
-        void NotifyError(Exception ex)
-        {
-            if (m_OnError != null)
-            {
-                m_OnError(this, ex);
-            }
-            if (Trace >= TraceLevel.Error && m_OnTrace != null)
-            {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Error, ex, null));
-            }
-        }
-
-        /// <inheritdoc cref="IGXMedia.ConfigurableSettings"/>
-        public AvailableMediaSettings ConfigurableSettings
-        {
-            get
-            {
-                return (AvailableMediaSettings)((IGXMedia)this).ConfigurableSettings;
-            }
-            set
-            {
-                ((IGXMedia)this).ConfigurableSettings = (int)value;
-            }
-        }
-
-        /// <inheritdoc />
-        public object Tag
-        {
-            get;
-            set;
-        }
-
-        /// <inheritdoc />
-        IGXMediaContainer IGXMedia.MediaContainer
-        {
-            get;
-            set;
-        }
-
-        /// <inheritdoc />
-        [Browsable(false), ReadOnly(true)]
-        public object SyncRoot
-        {
-            get
-            {
-                //In some special cases when binary serialization is used this might be null
-                //after deserialize. Just set it.
-                if (sync == null)
-                {
-                    sync = new object();
-                }
-                return sync;
-            }
-        }
-
-        /// <inheritdoc />
-        bool IGXVirtualMedia.Virtual
-        {
-            get
-            {
-                return isVirtual;
-            }
-            set
-            {
-                isVirtual = value;
-            }
-        }
-
-        /// <summary>
-        /// Occurs when a property value is asked.
-        /// </summary>
-        event GetPropertyValueEventHandler IGXVirtualMedia.OnGetPropertyValue
-        {
-            add
-            {
-                m_OnGetPropertyValue += value;
-            }
-            remove
-            {
-                m_OnGetPropertyValue -= value;
-            }
-        }
-
-        /// <summary>
-        /// Occurs when data is sent on virtual mode.
-        /// </summary>
-        event ReceivedEventHandler IGXVirtualMedia.OnDataSend
-        {
-            add
-            {
-                m_OnDataSend += value;
-            }
-            remove
-            {
-                m_OnDataSend -= value;
-            }
-        }
-
-        /// <summary>
-        /// Called when new data is received to the virtual media.
-        /// </summary>
-        /// <param name="data">received data</param>
-        /// <param name="sender">Data sender.</param>
-        void IGXVirtualMedia.DataReceived(byte[] data, string sender)
-        {
-            HandleReceivedData(data.Length, data, sender, null);
-        }
-
-        /// <summary>
-        /// Displays the copyright of the control, user license, and version information, in a dialog box.
-        /// </summary>
-        public void AboutBox()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Sends data asynchronously. <br/>
-        /// No reply from the receiver, whether or not the operation was successful, is expected.
-        /// </summary>
-        /// <param name="data">Data to send to the device.</param>
-        /// <param name="receiver">IP address of the receiver (optional).</param>
-        /// <remarks>Reply data is received through OnReceived event.<br/>
-        /// If data is send synchronously use Synchronous</remarks>
-        /// <seealso cref="OnReceived"/>
-        /// <seealso cref="Synchronous"/>
-        public void Send(object data, string receiver)
-        {
-            SendInternal(data, receiver);
-        }
-
-        /// <summary>
-        /// Sends data asynchronously. <br/>
-        /// No reply from the receiver, whether or not the operation was successful, is expected.
-        /// </summary>
-        /// <param name="data">Data to send to the device.</param>
-        /// <param name="receiver">IP address of the receiver (optional).</param>
-        /// <remarks>Reply data is received through OnReceived event.<br/>
-        /// If data is send synchronously use Synchronous</remarks>
-        /// <seealso cref="OnReceived"/>
-        /// <seealso cref="Synchronous"/>
-        public void Send(object data, object receiver)
-        {
-            SendInternal(data, receiver);
-        }
-
-        /// <summary>
-        /// Sends data asynchronously. <br/>
-        /// No reply from the receiver, whether or not the operation was successful, is expected.
-        /// </summary>
-        /// <param name="data">Data to send to the device.</param>
-        /// <param name="receiver">IP address of the receiver (optional).</param>
-        /// <remarks>Reply data is received through OnReceived event.<br/>
-        /// If data is send synchronously use Synchronous</remarks>
-        /// <seealso cref="OnReceived"/>
-        /// <seealso cref="Synchronous"/>
-        private void SendInternal(object data, object receiver)
-        {
-            if (socket == null && !isVirtualOpen)
-            {
-                throw new Exception(Resources.InvalidConnection);
-            }
-            string target = null;
-            if (receiver is string)
-            {
-                target = receiver.ToString();
-            }
-
-            if (!isServer)
-            {
-                byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
-                if (Trace == TraceLevel.Verbose && m_OnTrace != null)
-                {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Sent, value, target));
-                }
-                //Reset last position if Eop is used.
-                lock (syncBase.receivedSync)
-                {
-                    syncBase.lastPosition = 0;
-                }
-                if (!isVirtual)
-                {
-                    if (socket is UdpClient)
-                    {
-                        /*
-                        IPEndPoint ep;
-                        if (receiver != null)
-                        {
-                            int pos = receiver.LastIndexOf(':');
-                            if (pos == -1)
-                            {
-                                throw new ArgumentException("Invalid sender info.");
-                            }
-                            IPAddress address = IPAddress.Parse(receiver.Substring(0, pos));
-                            ep = new IPEndPoint(address, int.Parse(receiver.Substring(pos + 1)));
-                        }
-                        else
-                        {
-                            IPAddress address;
-                            if (!IPAddress.TryParse(HostName, out address))
-                            {
-                                // Get host related information.
-                                IPHostEntry host = Dns.GetHostEntry(hostAddress);
-                                foreach (IPAddress ip in host.AddressList)
-                                {
-                                    if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && UseIPv6) ||
-                                            ip.AddressFamily == AddressFamily.InterNetwork && !UseIPv6)
-                                    {
-                                        address = ip;
-                                        break;
-                                    }
-                                }
-                            }
-                            ep = new IPEndPoint(address, port);
-                        }
-                        (socket as UdpClient).Send(value, value.Length, ep);
-                        */
-                        (socket as UdpClient).Send(value, value.Length);
-                    }
-                    else
-                    {
-                        // Create SocketAsyncEventArgs context object
-                        SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-                        SocketError err = 0;
-                        try
-                        {
-                            // Set properties on context object
-                            socketEventArg.RemoteEndPoint = (socket as Socket).RemoteEndPoint;
-                            socketEventArg.UserToken = null;
-                            // Inline event handler for the Completed event.
-                            // Note: This event handler was implemented inline in order to make this method self-contained.
-                            socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
-                            {
-                                err = e.SocketError;
-                                clientDone.Set();
-                            });
-
-                            socketEventArg.SetBuffer(value, 0, value.Length);
-                            // Sets the state of the event to non-signaled, causing threads to block
-                            clientDone.Reset();
-                            // Make an asynchronous Send request over the socket
-                            if ((socket as Socket).SendAsync(socketEventArg))
-                            {
-                                // Block the UI thread for a maximum of WaitTime.
-                                // If no response comes back within this time then proceed
-                                if (!clientDone.WaitOne(WaitTime))
-                                {
-                                    err = SocketError.NotConnected;
-                                }
-                            }
-                        }
-                        finally
-                        {
-                            socketEventArg.Dispose();
-                        }
-                        if (err != 0)
-                        {
-                            throw new SocketException((int)err);
-                        }
-                    }
-                }
-                else
-                {
-                    m_OnDataSend(this, new ReceiveEventArgs(data, target));
-                }
-                BytesSent += (ulong)value.Length;
-            }
-            else
-            {
-#if !WINDOWS_PHONE
-                byte[] value = Gurux.Common.GXCommon.GetAsByteArray(data);
-                if (receiver is GXNetReceiveEventArgs a)
-                {
-                    if (Protocol == NetworkType.Tcp)
-                    {
-                        (a.socket as Socket).Send(value);
-                    }
-                    else
-                    {
-                        (a.socket as UdpClient).Send(value, value.Length);
-                    }
-                }
-                else if (Protocol == NetworkType.Tcp)
-                {
-                    Socket client = null;
-                    lock (tcpIpClients)
-                    {
-                        foreach (var it in tcpIpClients)
-                        {
-                            Socket s = it.Key;
-                            if (s.RemoteEndPoint.ToString() == target)
-                            {
-                                client = s;
-                                break;
-                            }
-                        }
-                    }
-                    if (client == null)
-                    {
-                        if (parent == null)
-                        {
-                            throw new Exception(Resources.InvalidClient);
-                        }
-                        client = (Socket)socket;
-                    }
-                    client.Send(value);
-                }
-                else
-                {
-                    IPEndPoint ep;
-                    if (receiver != null)
-                    {
-                        int pos = target.LastIndexOf(':');
-                        if (pos == -1)
-                        {
-                            throw new ArgumentException(Resources.InvalidSenderInfo);
-                        }
-                        IPAddress address = IPAddress.Parse(target.Substring(0, pos));
-                        ep = new IPEndPoint(address, int.Parse(target.Substring(pos + 1)));
-                    }
-                    else
-                    {
-                        IPAddress address = IPAddress.Parse(HostName);
-                        ep = new IPEndPoint(address, Port);
-                    }
-                    (socket as UdpClient).Send(value, value.Length, ep);
-                }
-                BytesSent += (ulong)value.Length;
-#endif
-            }
-        }
-
-        void NotifyMediaStateChange(MediaState state)
-        {
-            if (Trace >= TraceLevel.Info && m_OnTrace != null)
-            {
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, state, null));
-            }
-            if (m_OnMediaStateChange != null)
-            {
-                m_OnMediaStateChange(this, new MediaStateEventArgs(state));
-            }
-        }
-
-#if !WINDOWS_PHONE
-        /// <summary>
-        /// New data is received.
-        /// </summary>
-        /// <param name="result"></param>
-        void RecieveComplete(IAsyncResult result)
-        {
-            int bytes = 0;
-            byte[] buff = null;
-            Socket socket = null;
-            string sender = null;
+            Socket? accepted = null;
+            Peer? admitted = null;
+            bool receiveStarted = false;
             try
             {
-                if (result.AsyncState is UdpClient)
+                accepted = await listener.AcceptAsync(token).ConfigureAwait(false);
+                ConfigureTcpKeepAlive(accepted);
+                var peer = new Peer(accepted, accepted.RemoteEndPoint!.ToString()!);
+                lock (admission)
                 {
-                    UdpClient s = result.AsyncState as UdpClient;
-                    if (s.Client != null)
+                    if (!open || token.IsCancellationRequested || (MaxClientCount != 0 && clients.Count >= MaxClientCount)) { accepted.Dispose(); continue; }
+                    clients[peer.Address] = peer;
+                    admitted = peer;
+                }
+                if (!NotifyClientConnected(peer.Address)) { RemovePeer(peer); continue; }
+                bool startReceive;
+                lock (admission)
+                {
+                    startReceive = open && !token.IsCancellationRequested && Volatile.Read(ref peer.Removed) == 0;
+                    if (startReceive)
                     {
-                        IPEndPoint ipLocal = new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
-                        buff = s.EndReceive(result, ref ipLocal);
-                        sender = ipLocal.ToString();
-                        bytes = buff.Length;
+                        StartWorker(() => ReceiveLoop(accepted, peer, token, generation));
+                        receiveStarted = true;
                     }
                 }
-                else
-                {
-                    socket = result.AsyncState as Socket;
-                    if (socket.ProtocolType == ProtocolType.Udp)
-                    {
-                        SocketError err;
-                        bytes = socket.EndReceive(result, out err);
-                        buff = receiveBuffer;
-                    }
-                    else if (socket.Connected)
-                    {
-                        sender = socket.RemoteEndPoint.ToString();
-                        SocketError err;
-                        bytes = socket.EndReceive(result, out err);
-                        //If connection is not closed and error is occurred.
-                        if (err != SocketError.Success)
-                        {
-                            if (Server)
-                            {
-                                if (err != SocketError.ConnectionReset)
-                                {
-                                    throw new SocketException((int)err);
-                                }
-                            }
-                            else
-                            {
-                                throw new SocketException((int)err);
-                            }
-                        }
-                        else
-                        {
-                            if (Server)
-                            {
-                                lock (tcpIpClients)
-                                {
-                                    if (tcpIpClients.ContainsKey(socket))
-                                    {
-                                        buff = tcpIpClients[socket];
-                                    }
-                                    else
-                                    {
-                                        bytes = 0;
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                buff = receiveBuffer;
-                            }
-                        }
-                    }
-                }
-                if (Server)
-                {
-                    if (bytes == 0)
-                    {
-                        //Client has left.
-                        if (m_OnClientDisconnected != null)
-                        {
-                            m_OnClientDisconnected(this, new ConnectionEventArgs(sender));
-                        }
-                        DisconnectClient(sender);
-                        return;
-                    }
-                }
-                if (bytes != 0)
-                {
-                    HandleReceivedData(bytes, buff, sender, socket != null ? socket : result.AsyncState as IDisposable);
-                    if (socket != null)
-                    {
-                        if (socket.Connected || socket.ProtocolType == ProtocolType.Udp)
-                        {
-                            socket.BeginReceive(buff, 0, buff.Length, SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
-                        }
-                    }
-                    else
-                    {
-                        UdpClient s = result.AsyncState as UdpClient;
-                        s.BeginReceive(new AsyncCallback(RecieveComplete), s);
-                    }
-                }
+                if (!startReceive) { RemovePeer(peer); }
             }
-            catch (SocketException ex)
-            {
-                //If client has close connection.
-                if (ex.ErrorCode == 10054)
-                {
-                    if (Server)
-                    {
-                        lock (tcpIpClients)
-                        {
-                            tcpIpClients.Remove(socket);
-                        }
-                        if (m_OnClientDisconnected != null)
-                        {
-                            m_OnClientDisconnected(this, new ConnectionEventArgs(socket.RemoteEndPoint.ToString()));
-                        }
-                    }
-                    else
-                    {
-                        if (IsSynchronous)
-                        {
-                            syncBase.Exception = ex;
-                            Close();
-                        }
-                        else
-                        {
-                            Close();
-                            NotifyError(ex);
-                        }
-                    }
-                }
-                else
-                {
-                    NotifyError(ex);
-                }
-            }
+            catch (Exception) when (token.IsCancellationRequested) { accepted?.Dispose(); break; }
             catch (Exception ex)
             {
-                NotifyError(ex);
-            }
-        }
-
-        private void HandleReceivedData(int bytes, byte[] buff, string sender, IDisposable socket)
-        {
-            if (udpClients.ContainsKey(socket))
-            {
-                udpClients[socket].HandleReceivedData(bytes, buff, sender, socket);
-                return;
-            }
-            BytesReceived += (uint)bytes;
-            if (IsSynchronous)
-            {
-                TraceEventArgs arg = null;
-                lock (syncBase.receivedSync)
-                {
-                    int index = syncBase.receivedSize;
-                    syncBase.AppendData(buff, 0, bytes);
-                    if (bytes != 0 && Trace == TraceLevel.Verbose && m_OnTrace != null)
-                    {
-                        arg = new TraceEventArgs(TraceTypes.Received, buff, 0, bytes, null);
-                        m_OnTrace(this, arg);
-                    }
-                    if (bytes != 0 && Eop != null) //Search Eop if given.
-                    {
-                        if (Eop is Array)
-                        {
-                            foreach (object eop in (Array)Eop)
-                            {
-                                bytes = Gurux.Common.GXCommon.IndexOf(syncBase.m_Received, Gurux.Common.GXCommon.GetAsByteArray(eop), index, syncBase.receivedSize);
-                                if (bytes != -1)
-                                {
-                                    break;
-                                }
-                            }
-                        }
-                        else
-                        {
-                            bytes = Gurux.Common.GXCommon.IndexOf(syncBase.m_Received, Gurux.Common.GXCommon.GetAsByteArray(Eop), index, syncBase.receivedSize);
-                        }
-                    }
-                    if (bytes != -1)
-                    {
-                        syncBase.receivedEvent.Set();
-                    }
-                }
-            }
-            else
-            {
-                if (m_OnReceived != null)
-                {
-                    syncBase.receivedSize = 0;
-                    byte[] data = new byte[bytes];
-                    Array.Copy(buff, data, bytes);
-                    if (Trace == TraceLevel.Verbose && m_OnTrace != null)
-                    {
-                        m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, data, sender));
-                    }
-                    GXNetReceiveEventArgs r = new GXNetReceiveEventArgs(data, sender, socket);
-                    m_OnReceived(this, r);
-                }
-                else if (Trace == TraceLevel.Verbose && m_OnTrace != null)
-                {
-                    m_OnTrace(this, new TraceEventArgs(TraceTypes.Received, buff, 0, bytes, null));
-                }
-            }
-        }
-
-        /// <summary>
-        /// New client is connected to the server.
-        /// </summary>
-        /// <param name="result"></param>
-        void OnClientConnect(IAsyncResult result)
-        {
-            if (socket == null)
-            {
-                return;
-            }
-            Socket workerSocket = null;
-            try
-            {
-                //Server is closed.
-                if (socket == null)
-                {
-                    if (m_OnMediaStateChange != null)
-                    {
-                        Close();
-                    }
-                }
-                else
-                {
-                    int cnt = 0;
-                    lock (tcpIpClients)
-                    {
-                        cnt = tcpIpClients.Count + 1;
-                    }
-                    if (MaxClientCount != 0 && cnt > MaxClientCount)
-                    {
-                        Close();
-                    }
-                    else
-                    {
-                        if (socket != null)
-                        {
-                            workerSocket = (socket as Socket).EndAccept(result);
-                            ConnectionEventArgs e = new GXNetConnectionEventArgs(workerSocket.RemoteEndPoint.ToString(), workerSocket);
-                            lock (tcpIpClients)
-                            {
-                                tcpIpClients[workerSocket] = null;
-                            }
-                            if (m_OnClientConnected != null)
-                            {
-                                m_OnClientConnected(this, e);
-                                if (!e.Accept)
-                                {
-                                    byte[] buff = new byte[0];
-                                    workerSocket.BeginReceive(buff, 0, buff.Length,
-                                                               SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
-                                    workerSocket.Close();
-                                    lock (tcpIpClients)
-                                    {
-                                        tcpIpClients.Remove(workerSocket);
-                                    }
-                                    workerSocket = null;
-                                }
-                            }
-                            lock (tcpIpClients)
-                            {
-                                if (e.Accept && tcpIpClients.ContainsKey(workerSocket))
-                                {
-                                    byte[] buff = new byte[1024];
-                                    tcpIpClients[workerSocket] = buff;
-                                    workerSocket.BeginReceive(buff, 0, buff.Length,
-                                                                SocketFlags.None, new AsyncCallback(RecieveComplete), workerSocket);
-                                }
-                            }
-                        }
-                    }
-                    // Wait other clients.
-                    if (socket != null)
-                    {
-                        (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
-                    }
-                }
-            }
-            catch (ObjectDisposedException)//Server has left.
-            {
-                if (workerSocket != null)
-                {
-                    lock (tcpIpClients)
-                    {
-                        tcpIpClients.Remove(workerSocket);
-                    }
-                    if (m_OnClientDisconnected != null)
-                    {
-                        m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString()));
-                    }
-                }
-            }
-            catch (SocketException e)
-            {
-                if (e.NativeErrorCode == 10054)
-                {
-                    //Client has left.
-                    if (workerSocket != null)
-                    {
-                        lock (tcpIpClients)
-                        {
-                            tcpIpClients.Remove(workerSocket);
-                        }
-                        if (m_OnClientDisconnected != null)
-                        {
-                            m_OnClientDisconnected(this, new ConnectionEventArgs(workerSocket.RemoteEndPoint.ToString()));
-                        }
-                    }
-                    // Wait other clients.
-                    if (socket != null)
-                    {
-                        (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                NotifyError(ex);
-            }
-        }
-#endif
-
-        /// <summary>
-        /// Opens the connection.
-        /// </summary>
-        /// <remarks>
-        /// Protocol, Port and HostName must be set, before calling the Open method.
-        /// </remarks>
-        /// <seealso cref="Port">Port</seealso>
-        /// <seealso cref="HostName">HostName</seealso>
-        /// <seealso cref="Protocol">Protocol</seealso>
-        /// <seealso cref="Server">Server</seealso>
-        /// <seealso cref="Close">Close</seealso>
-        public void Open()
-        {
-            Close();
-            try
-            {
-                syncBase.Open();
-                EndPoint ep = null;
-                NotifyMediaStateChange(MediaState.Opening);
-                AddressFamily family = UseIPv6 ? AddressFamily.InterNetworkV6 : AddressFamily.InterNetwork;
-                if (!isServer && !isVirtual)
-                {
-                    IPAddress address;
-                    if (IPAddress.TryParse(HostName, out address))
-                    {
-                        switch (address.AddressFamily)
-                        {
-                            case AddressFamily.InterNetwork:
-                                family = address.AddressFamily;
-                                break;
-                            case AddressFamily.InterNetworkV6:
-                                family = address.AddressFamily;
-                                break;
-                            default:
-                                family = address.AddressFamily;
-                                break;
-                        }
-                    }
-                    else
-                    {
-                        // Get host related information.
-                        IPHostEntry host = Dns.GetHostEntry(hostAddress);
-                        foreach (IPAddress ip in host.AddressList)
-                        {
-                            if ((ip.AddressFamily == AddressFamily.InterNetworkV6 && UseIPv6) ||
-                                    ip.AddressFamily == AddressFamily.InterNetwork && !UseIPv6)
-                            {
-                                ep = new IPEndPoint(ip, port);
-                                break;
-                            }
-                        }
-                    }
-                    if (ep == null)
-                    {
-                        ep = new IPEndPoint(address, port);
-                    }
-                }
-                // Create a stream-based, TCP socket using the InterNetwork Address Family.
-                if (communicationProtocol == NetworkType.Tcp)
-                {
-                    if (!isVirtual)
-                    {
-                        socket = new Socket(family, SocketType.Stream, ProtocolType.Tcp);
-                    }
-                    if (!isServer)
-                    {
-                        ClientConnect(ep);
-                    }
-                }
-                else if (communicationProtocol == NetworkType.Udp)
-                {
-                    if (!isVirtual && !isServer)
-                    {
-                        UdpClient s = new UdpClient(family);
-                        s.Connect((IPEndPoint)ep);
-                        s.BeginReceive(new AsyncCallback(RecieveComplete), s);
-                        socket = s;
-                    }
-                }
-                else
-                {
-                    throw new ArgumentException(Resources.ProtocolTxt);
-                }
-                if (isServer)
-                {
-                    StartServer();
-                }
-                NotifyMediaStateChange(MediaState.Open);
-            }
-            catch
-            {
-                Close();
-                throw;
-            }
-
-        }
-
-        /// <summary>
-        /// Start server.
-        /// </summary>
-        private void StartServer()
-        {
-#if !WINDOWS_PHONE
-            if (Trace >= TraceLevel.Info && m_OnTrace != null)
-            {
-                string str = string.Format("{0} {1} {2} {3} {4}",
-                                           Resources.ServerSettings,
-                                           Resources.ProtocolTxt,
-                                           communicationProtocol,
-                                           Resources.PortTxt,
-                                           port);
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
-            }
-            if (!isVirtual)
-            {
-                IPEndPoint ipLocal = new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, port);
-                if (Protocol == NetworkType.Tcp)
-                {
-                    // Bind to local IP Address...
-                    (socket as Socket).Bind(ipLocal);
-                    // Start listening...
-                    (socket as Socket).Listen(4);
-                    // Create the call back for any client connections...
-                    (socket as Socket).BeginAccept(new AsyncCallback(OnClientConnect), null);
-                }
-                else
-                {
-                    UdpClient s = new UdpClient(ipLocal);
-                    s.BeginReceive(new AsyncCallback(RecieveComplete), s);
-                    socket = s;
-                }
-            }
-#endif
-        }
-
-        /// <summary>
-        /// Start client.
-        /// </summary>
-        /// <param name="ep"></param>
-        private void ClientConnect(EndPoint ep)
-        {
-#if WINDOWS_PHONE
-        // Create DnsEndPoint. The hostName and port are passed in to this method.
-        ep = new DnsEndPoint(HostName, Port);
-#else
-            if (Trace >= TraceLevel.Info && m_OnTrace != null)
-            {
-                string str = string.Format("{0} {1} {2} {3} {4} {5} {6}",
-                                           Resources.ClientSettings,
-                                           Resources.ProtocolTxt,
-                                           communicationProtocol.ToString(),
-                                           Resources.HostNameTxt,
-                                           hostAddress,
-                                           Resources.PortTxt,
-                                           port.ToString());
-                m_OnTrace(this, new TraceEventArgs(TraceTypes.Info, str, null));
-            }
-#endif
-            // Create a SocketAsyncEventArgs object to be used in the connection request
-            SocketAsyncEventArgs socketEventArg = new SocketAsyncEventArgs();
-            socketEventArg.RemoteEndPoint = ep;
-            SocketError err = 0;
-            try
-            {
-                // Inline event handler for the Completed event.
-                // Note: This event handler was implemented inline in order to make this method self-contained.
-                if (!isVirtual)
-                {
-                    socketEventArg.Completed += new EventHandler<SocketAsyncEventArgs>(delegate (object s, SocketAsyncEventArgs e)
-                    {
-                        err = e.SocketError;
-                        clientDone.Set();
-                    });
-
-                    // Sets the state of the event to nonsignaled, causing threads to block
-                    clientDone.Reset();
-
-                    // Make an asynchronous Connect request over the socket
-                    (socket as Socket).ConnectAsync(socketEventArg);
-
-                    // Block the UI thread for a maximum of WaitTime.
-                    // If no response comes back within this time then proceed
-                    if (!clientDone.WaitOne(WaitTime))
-                    {
-                        err = SocketError.NotConnected;
-                    }
-                    if (err != 0)
-                    {
-                        throw new SocketException((int)err);
-                    }
-                }
+                accepted?.Dispose();
+                if (admitted != null) { try { RemovePeer(admitted); } catch (Exception cleanupError) { ReportBackgroundError(cleanupError); } }
+                ReportBackgroundError(ex);
             }
             finally
             {
-                if (!isVirtual)
+                if (admitted != null && !receiveStarted)
                 {
-                    socketEventArg.Dispose();
+                    await admitted.RemovalDone.Task.ConfigureAwait(false);
+                    admitted.ReceiveDone.TrySetResult();
                 }
             }
-
-#if WINDOWS_PHONE
-        m_Receiver = new ReceiveThread(this, m_Socket, m_syncBase.m_Received);
-        m_ReceiverThread = new Thread(new ThreadStart(m_Receiver.Receive));
-        m_ReceiverThread.IsBackground = true;
-        m_ReceiverThread.Start();
-#else
-            if (!isVirtual)
-            {
-                (socket as Socket).BeginReceive(receiveBuffer, 0, receiveBuffer.Length,
-                                                SocketFlags.None, new AsyncCallback(RecieveComplete), socket);
-            }
-            isVirtualOpen = true;
-#endif
         }
-
-        /// <inheritdoc cref="IGXMedia.Close"/>
-        public void Close()
+    }
+    /// <summary>Publishes socket input while preserving datagram and per-client stream boundaries.</summary>
+    /// <param name="source">The socket to read.</param>
+    /// <param name="peer">The accepted client state, or null for a direct connection.</param>
+    /// <param name="token">The connection lifetime cancellation token.</param>
+    /// <param name="currentGeneration">The opening generation that owns this worker.</param>
+    /// <returns>A task completing after receive and cleanup finish.</returns>
+    async Task ReceiveLoop(Socket source, Peer? peer, CancellationToken token, long currentGeneration)
+    {
+        byte[] buffer = new byte[65536];
+        try
         {
-            if (parent != null)
+            while (!token.IsCancellationRequested)
             {
-                lock (parent.udpClients)
+                int count; string? sender;
+                if (Protocol == NetworkType.Udp && Server)
                 {
-                    parent.udpClients.Remove(socket);
+                    var result = await source.ReceiveFromAsync(buffer, SocketFlags.None, new IPEndPoint(UseIPv6 ? IPAddress.IPv6Any : IPAddress.Any, 0), token).ConfigureAwait(false);
+                    count = result.ReceivedBytes; sender = result.RemoteEndPoint.ToString();
                 }
-                socket = null;
-                parent = null;
-                return;
+                else { count = await source.ReceiveAsync(buffer, SocketFlags.None, token).ConfigureAwait(false); sender = peer?.Address ?? source.RemoteEndPoint?.ToString(); if (count == 0 && Protocol == NetworkType.Tcp) { break; } }
+                byte[] data = buffer.AsSpan(0, count).ToArray();
+                if (peer != null && Volatile.Read(ref peer.Removed) != 0) { break; }
+                if (peer != null && Volatile.Read(ref peer.Attached) is GXNet child) { AddBytesReceived(count); child.PublishReceived(data, sender); }
+                else if (Protocol == NetworkType.Udp)
+                {
+                    // A fresh framing buffer prevents Eop changes after opening from
+                    // ever combining datagrams belonging to different senders.
+                    var datagram = new GXSynchronousMediaBase();
+                    PublishReceived(data, sender, datagram);
+                    datagram.Close();
+                }
+                else { PublishReceived(data, sender, peer?.PacketBuffer); }
             }
-            if (socket != null || isVirtualOpen)
+        }
+        catch (Exception ex) when (token.IsCancellationRequested || ex is ObjectDisposedException || ex is SocketException { SocketErrorCode: SocketError.ConnectionReset or SocketError.ConnectionAborted or SocketError.OperationAborted }) { }
+        catch (Exception ex) { (peer?.Attached ?? this).ReportBackgroundError(ex); }
+        finally
+        {
+            if (peer != null)
             {
-                syncBase.Close();
-#if WINDOWS_PHONE
-            if (m_Receiver != null)
-            {
-                m_Receiver.Closing.Set();
-                if (m_ReceiverThread.IsAlive)
-                {
-                    m_ReceiverThread.Join();
-                }
-                m_Receiver = null;
-            }
-#endif
-                lock (tcpIpClients)
-                {
-                    foreach (var it in tcpIpClients)
-                    {
-                        try
-                        {
-                            if (m_OnClientDisconnected != null)
-                            {
-                                Socket s = (Socket)it.Key;
-                                m_OnClientDisconnected(this, new ConnectionEventArgs(s.RemoteEndPoint.ToString()));
-                                s.Close();
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            //Skip errors.
-                        }
-                    }
-                    tcpIpClients.Clear();
-                }
-                try
-                {
-                    if (isVirtualOpen)
-                    {
-                        if (socket is Socket)
-                        {
-                            if ((socket as Socket).Connected)
-                            {
-                                NotifyMediaStateChange(MediaState.Closing);
-                            }
-                        }
-                        else if (socket is UdpClient)
-                        {
-                            NotifyMediaStateChange(MediaState.Closing);
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    NotifyError(ex);
-                    throw;
-                }
+                try { RemovePeer(peer); }
+                catch (Exception ex) { (peer?.Attached ?? this).ReportBackgroundError(ex); }
                 finally
                 {
-                    try
-                    {
-                        if (socket is Socket)
-                        {
-                            if ((socket as Socket).Connected)
-                            {
-                                (socket as Socket).Shutdown(SocketShutdown.Both);
-                            }
-                            (socket as Socket).Close();
-                            socket = null;
-                        }
-                        else if (socket is UdpClient)
-                        {
-                            (socket as UdpClient).Close();
-                            socket = null;
-                        }
-                    }
-                    catch
-                    {
-                        //Ignore all errors on close.
-                    }
-                    isVirtualOpen = false;
-                    NotifyMediaStateChange(MediaState.Closed);
-                    BytesSent = BytesReceived = 0;
-                    syncBase.receivedSize = 0;
-                    syncBase.receivedEvent.Set();
+                    await peer.RemovalDone.Task.ConfigureAwait(false);
+                    peer.ReceiveDone.TrySetResult();
                 }
             }
-        }
-
-#if NET462_OR_GREATER || WINDOWS
-        /// <inheritdoc />
-        public System.Windows.Forms.Form PropertiesForm
-        {
-            get
+            else if (!token.IsCancellationRequested)
             {
-                return new Settings(this);
-            }
-        }
-#endif //NET462_OR_GREATER || WINDOWS
-
-        /// <inheritdoc cref="IGXMedia.IsOpen"/>
-        /// <seealso cref="Open">Open</seealso>
-        /// <seealso cref="Close">Close</seealso>
-        [Browsable(false)]
-        public bool IsOpen
-        {
-            get
-            {
-                return socket != null || isVirtualOpen;
-            }
-        }
-
-        /// <summary>
-        /// Retrieves or sets the protocol.
-        /// </summary>
-        /// <remarks>
-        /// Defaut protocol is UDP.
-        /// </remarks>
-        /// <value>
-        /// Protocol
-        /// </value>
-        [DefaultValue(NetworkType.Udp)]
-        [Category("Communication")]
-        [Description("Retrieves or sets the protocol.")]
-        public NetworkType Protocol
-        {
-            get
-            {
-                if (isVirtual && m_OnGetPropertyValue != null)
+                bool current;
+                lock (admission)
                 {
-                    string value = m_OnGetPropertyValue("Protocol");
-                    if (value != null)
-                    {
-                        return (NetworkType)int.Parse(value);
-                    }
+                    current = generation == currentGeneration && phase == MediaState.Open;
                 }
-                return communicationProtocol;
-            }
-            set
-            {
-                if (communicationProtocol != value)
-                {
-                    communicationProtocol = value;
-                    NotifyPropertyChanged("Protocol");
-                }
+                if (current) { await CloseAsync().ConfigureAwait(false); }
             }
         }
-
-        /// <summary>
-        /// Retrieves or sets the name or IP address of the host.
-        /// </summary>
-        /// <value>
-        /// The name of the host.
-        /// </value>
-        /// <seealso cref="Open">Open</seealso>
-        /// <seealso cref="Port">Port</seealso>
-        /// <seealso cref="Protocol">Protocol</seealso>
-        [DefaultValue("")]
-        [Category("Communication")]
-        [Description("Retrieves or sets the name or IP address of the host.")]
-        public string HostName
-        {
-            get
-            {
-                if (isVirtual && m_OnGetPropertyValue != null)
-                {
-                    string value = m_OnGetPropertyValue("HostName");
-                    if (value != null)
-                    {
-                        return value;
-                    }
-                }
-                return hostAddress;
-            }
-            set
-            {
-                if (hostAddress != value)
-                {
-                    hostAddress = value;
-                    NotifyPropertyChanged("HostName");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Retrieves or sets the host or server port number.
-        /// </summary>
-        /// <value>
-        /// Host or server port number.
-        /// </value>
-        /// <seealso cref="Open">Open</seealso>
-        /// <seealso cref="HostName">HostName</seealso>
-        /// <seealso cref="Protocol">Protocol</seealso>
-        [DefaultValue(0)]
-        [Category("Communication")]
-        [Description("Retrieves or sets the host port number.")]
-        public int Port
-        {
-            get
-            {
-                if (isVirtual && m_OnGetPropertyValue != null)
-                {
-                    string value = m_OnGetPropertyValue("Port");
-                    if (value != null)
-                    {
-                        return int.Parse(value);
-                    }
-                }
-                return port;
-            }
-            set
-            {
-                if (port != value)
-                {
-                    port = value;
-                    NotifyPropertyChanged("Port");
-                }
-            }
-        }
-
-#if !WINDOWS_PHONE
-        /// <summary>
-        /// Determines if the component is in server, or in client, mode.
-        /// </summary>
-        /// <value>
-        /// True, if component is a server. False, if component is a client.
-        /// </value>
-        /// <seealso cref="Open">Open</seealso>
-        [DefaultValue(false)]
-        [Category("Communication")]
-        [Description("Retrieves or sets the component to client or server mode.")]
-        public bool Server
-        {
-            get
-            {
-                if (isVirtual && m_OnGetPropertyValue != null)
-                {
-                    string value = m_OnGetPropertyValue("Server");
-                    if (value != null)
-                    {
-                        return bool.Parse(value);
-                    }
-                }
-                return isServer;
-            }
-            set
-            {
-                if (isServer != value)
-                {
-                    isServer = value;
-                    NotifyPropertyChanged("Server");
-                }
-            }
-        }
-#endif
-
-        /// <inheritdoc cref="IGXMedia.Receive"/>
-        public bool Receive<T>(ReceiveParameters<T> args)
-        {
-            if (!IsOpen)
-            {
-                throw new InvalidOperationException("Media is closed.");
-            }
-            return syncBase.Receive(args);
-        }
-
-        /// <summary>
-        /// Sent byte count.
-        /// </summary>
-        /// <seealso cref="BytesReceived">BytesReceived</seealso>
-        /// <seealso cref="ResetByteCounters">ResetByteCounters</seealso>
-        [Browsable(false)]
-        public UInt64 BytesSent
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Received byte count.
-        /// </summary>
-        /// <seealso cref="BytesSent">BytesSent</seealso>
-        /// <seealso cref="ResetByteCounters">ResetByteCounters</seealso>
-        [Browsable(false)]
-        public UInt64 BytesReceived
-        {
-            get;
-            private set;
-        }
-
-        /// <summary>
-        /// Resets BytesReceived and BytesSent counters.
-        /// </summary>
-        /// <seealso cref="BytesSent">BytesSent</seealso>
-        /// <seealso cref="BytesReceived">BytesReceived</seealso>
-        public void ResetByteCounters()
-        {
-            BytesSent = BytesReceived = 0;
-        }
-
-        /// <summary>
-        /// Retrieves or sets maximum count of connected clients.
-        /// </summary>
-        [DefaultValue(0)]
-        [Description("Retrieves or sets maximum count of connected clients.")]
-        public int MaxClientCount
-        {
-            get;
-            set;
-        }
-
-#if !WINDOWS_PHONE
-        /// <summary>
-        /// Disconnect selected client.
-        /// </summary>
-        public void DisconnectClient(string address)
-        {
-            lock (tcpIpClients)
-            {
-                foreach (var it in tcpIpClients)
-                {
-                    if (it.Key is Socket)
-                    {
-                        Socket s = (Socket)it.Key;
-                        if (s.RemoteEndPoint.ToString() == address)
-                        {
-                            tcpIpClients.Remove(it.Key);
-                            s.Shutdown(SocketShutdown.Both);
-                            s.Close();
-                            if (m_OnClientDisconnected != null)
-                            {
-                                m_OnClientDisconnected(this, new ConnectionEventArgs(address));
-                            }
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Returns list IP addresses and port numbers, of active clients in TCP/IP protocol.
-        /// </summary>
-        public string[] GetActiveClients()
-        {
-            string[] clients;
-            if (Protocol == NetworkType.Tcp)
-            {
-                lock (tcpIpClients)
-                {
-                    clients = new string[tcpIpClients.Count];
-                    int pos = -1;
-                    foreach (var it in tcpIpClients)
-                    {
-                        clients[++pos] = (it.Key as Socket).RemoteEndPoint.ToString();
-                    }
-                }
-            }
-            else
-            {
-                clients = new string[0];
-            }
-            return clients;
-        }
-#endif
-
-        /// <summary>
-        /// Media settings as a XML string.
-        /// </summary>
-        public string Settings
-        {
-            get
-            {
-                string tmp = "";
-                if (isServer)
-                {
-                    tmp = "<Server>1</Server>" + Environment.NewLine;
-                }
-                if (!string.IsNullOrEmpty(hostAddress))
-                {
-                    tmp += "<IP>" + hostAddress + "</IP>" + Environment.NewLine;
-                }
-                if (port != 0)
-                {
-                    tmp += "<Port>" + port + "</Port>" + Environment.NewLine;
-                }
-                if (communicationProtocol != NetworkType.Tcp)
-                {
-                    tmp += "<Protocol>" + Convert.ToString((int)communicationProtocol) + "</Protocol>" + Environment.NewLine;
-                }
-                if (UseIPv6)
-                {
-                    tmp += "<IPv6>1</IPv6>" + Environment.NewLine;
-                }
-                return tmp;
-            }
-            set
-            {
-                if (!string.IsNullOrEmpty(value))
-                {
-                    XmlReaderSettings settings = new XmlReaderSettings(); ;
-                    settings.ConformanceLevel = ConformanceLevel.Fragment;
-                    using (XmlReader xmlReader = XmlReader.Create(new System.IO.StringReader(value), settings))
-                    {
-                        while (!xmlReader.EOF)
-                        {
-                            if (xmlReader.IsStartElement())
-                            {
-                                switch (xmlReader.Name)
-                                {
-                                    case "Protocol":
-                                        communicationProtocol = (NetworkType)xmlReader.ReadElementContentAs(typeof(int), null);
-                                        break;
-                                    case "Port":
-                                        port = (int)(xmlReader.ReadElementContentAs(typeof(int), null));
-                                        break;
-                                    case "Server":
-                                        isServer = (int)xmlReader.ReadElementContentAs(typeof(int), null) == 1;
-                                        break;
-                                    case "IP":
-                                        hostAddress = (string)xmlReader.ReadElementContentAs(typeof(string), null);
-                                        break;
-                                    case "IPv6":
-                                        UseIPv6 = (int)xmlReader.ReadElementContentAs(typeof(int), null) == 1;
-                                        break;
-                                }
-                            }
-                            else
-                            {
-                                xmlReader.Read();
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public override string ToString()
-        {
-            StringBuilder sb = new StringBuilder();
-            if (isServer)
-            {
-                sb.Append(Resources.ServerTxt);
-            }
-            else
-            {
-                sb.Append(Resources.ClientTxt);
-            }
-            sb.Append(communicationProtocol);
-            sb.Append(' ');
-            if (isServer)
-            {
-                sb.Append(port);
-            }
-            else
-            {
-                sb.Append(hostAddress);
-                sb.Append(':');
-                sb.Append(port);
-            }
-            if (UseIPv6)
-            {
-                sb.Append(' ');
-                sb.Append(Resources.IPv6Txt);
-            }
-            return sb.ToString();
-        }
-
-        /// <summary>
-        /// Occurs when a property value changes.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged
-        {
-            add
-            {
-                m_OnPropertyChanged += value;
-            }
-            remove
-            {
-                m_OnPropertyChanged -= value;
-            }
-        }
-
-        /// <summary>
-        /// GXNet component sends received data through this method.
-        /// </summary>
-        [Description("GXNet component sends received data through this method.")]
-        public event ReceivedEventHandler OnReceived
-        {
-            add
-            {
-                m_OnReceived += value;
-            }
-            remove
-            {
-                m_OnReceived -= value;
-            }
-        }
-
-        /// <summary>
-        /// Errors that occur after the connection is established, are sent through this method.
-        /// </summary>
-        [Description("Errors that occur after the connection is established, are sent through this method.")]
-        public event ErrorEventHandler OnError
-        {
-            add
-            {
-
-                m_OnError += value;
-            }
-            remove
-            {
-                m_OnError -= value;
-            }
-        }
-
-        /// <summary>
-        /// Media component sends notification, when its state changes.
-        /// </summary>
-        [Description("Media component sends notification, when its state changes.")]
-        public event MediaStateChangeEventHandler OnMediaStateChange
-        {
-            add
-            {
-                m_OnMediaStateChange += value;
-            }
-            remove
-            {
-                m_OnMediaStateChange -= value;
-            }
-        }
-#if WINDOWS_PHONE
-    event ClientConnectedEventHandler IGXMedia.OnClientConnected
+    }
+    /// <summary>Reports a worker failure while allowing cleanup to continue if an error subscriber throws.</summary>
+    /// <param name="error">The worker or cleanup failure.</param>
+    void ReportBackgroundError(Exception error)
     {
-        add {
-            throw new NotImplementedException();
+        try { ReportError(error); }
+        catch { /* A throwing error subscriber must not terminate transport cleanup. */ }
+    }
+    /// <summary>Applies keepalive settings and retains operating-system defaults when optional tuning is unsupported.</summary>
+    /// <param name="target">The connected TCP socket to configure.</param>
+    void ConfigureTcpKeepAlive(Socket target)
+    {
+        // Use the managed options so .NET maps them to the platform TCP stack.
+        // Some mobile/older OS stacks support SO_KEEPALIVE but not every tuning
+        // option. Unsupported tuning keeps basic keepalive and the OS defaults.
+        try { target.SetSocketOption(SocketOptionLevel.Socket, SocketOptionName.KeepAlive, EnableTcpKeepAlive); }
+        catch (Exception error) when (UnsupportedKeepAliveOption(error)) { return; }
+        if (!EnableTcpKeepAlive) { return; }
+        SetOptional(SocketOptionName.TcpKeepAliveTime, TcpKeepAliveIdleSeconds);
+        SetOptional(SocketOptionName.TcpKeepAliveInterval, TcpKeepAliveIntervalSeconds);
+        SetOptional(SocketOptionName.TcpKeepAliveRetryCount, TcpKeepAliveRetryCount);
+        // Applies an optional TCP tuning value while retaining defaults on unsupported platforms.
+        // option: The TCP keepalive option to configure.
+        // value: The configured idle time, interval or probe count.
+        void SetOptional(SocketOptionName option, int value)
+        {
+            try { target.SetSocketOption(SocketOptionLevel.Tcp, option, value); }
+            catch (Exception error) when (UnsupportedKeepAliveOption(error)) { }
         }
-        remove {
-            throw new NotImplementedException();
+    }
+    /// <summary>Determines whether a socket option failure permits fallback to operating-system defaults.</summary>
+    /// <param name="error">The socket configuration failure.</param>
+    /// <returns>Whether the failure indicates an unsupported or invalid platform option.</returns>
+    static bool UnsupportedKeepAliveOption(Exception error) => error is NotSupportedException ||
+        error is SocketException { SocketErrorCode: SocketError.ProtocolOption or SocketError.OperationNotSupported or SocketError.ProtocolNotSupported or SocketError.SocketNotSupported or SocketError.InvalidArgument };
+    /// <summary>Removes and disposes an accepted client once, then closes its attached media and reports disconnection.</summary>
+    /// <param name="peer">The accepted client to remove.</param>
+    void RemovePeer(Peer peer)
+    {
+        GXNet? child;
+        lock (peer)
+        {
+            if (peer.Removed != 0) { return; }
+            peer.Removed = 1;
+            clients.TryRemove(peer.Address, out _); peer.Socket.Dispose();
+            peer.PacketBuffer.Close();
+            child = peer.Attached;
+        }
+        var previous = callbackOwner.Value;
+        callbackOwner.Value = this;
+        try
+        {
+            if (child != null)
+            {
+                bool notify;
+                lock (child.admission) { notify = child.phase != MediaState.Closing; child.open = false; child.phase = MediaState.Closed; }
+                child.ReceiveBuffer.Close();
+                if (notify) { child.SetState(MediaState.Closed); }
+            }
+        }
+        finally
+        {
+            try { NotifyClientDisconnected(peer.Address); }
+            finally
+            {
+                callbackOwner.Value = previous;
+                peer.RemovalDone.TrySetResult();
+            }
+        }
+    }
+    /// <summary>Disconnects a currently tracked client; unknown addresses are ignored.</summary>
+    /// <param name="address">The remote endpoint returned by <see cref="GetActiveClients"/>.</param>
+    public void DisconnectClient(string address) { if (clients.TryGetValue(address, out var peer)) { RemovePeer(peer); } }
+    /// <summary>Routes one accepted TCP client's data into an independent media and synchronous receive buffer.</summary>
+    /// <param name="info">The endpoint of a currently connected TCP client.</param>
+    /// <returns>The existing or newly created media attached to this client.</returns>
+    /// <exception cref="ArgumentException">The endpoint is no longer connected.</exception>
+    public GXNet Attach(object info)
+    {
+        if (!clients.TryGetValue(Convert.ToString(info) ?? "", out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(info)); }
+        lock (peer)
+        {
+            if (peer.Removed != 0 || !clients.TryGetValue(peer.Address, out var current) || !ReferenceEquals(peer, current)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientDisconnected, nameof(info)); }
+            if (peer.Attached != null) { return peer.Attached; }
+            var child = new GXNet(Protocol, HostName, Port) { parent = this, attached = peer, open = true, phase = MediaState.Open };
+            child.EnableTcpKeepAlive = EnableTcpKeepAlive; child.TcpKeepAliveIdleSeconds = TcpKeepAliveIdleSeconds;
+            child.TcpKeepAliveIntervalSeconds = TcpKeepAliveIntervalSeconds; child.TcpKeepAliveRetryCount = TcpKeepAliveRetryCount;
+            child.ReceiveBuffer.Open(); peer.Attached = child; return child;
+        }
+    }
+    /// <inheritdoc/>
+    public override async ValueTask SendAsync(ReadOnlyMemory<byte> data, string? receiver = null, CancellationToken cancellationToken = default)
+    {
+        if (!open) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed); }
+        if (attached != null) { await SendPeer(attached, data, cancellationToken).ConfigureAwait(false); return; }
+        if (Server && Protocol == NetworkType.Tcp)
+        {
+            if (receiver == null) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientAddressRequired, nameof(receiver)); }
+            if (!clients.TryGetValue(receiver, out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(receiver)); }
+            await SendPeer(peer, data, cancellationToken).ConfigureAwait(false); return;
+        }
+        var target = socket ?? throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed);
+        if (Protocol == NetworkType.Udp && Server)
+        {
+            if (receiver == null) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.DestinationRequired, nameof(receiver)); }
+            AddBytesSent(await target.SendToAsync(data, SocketFlags.None, IPEndPoint.Parse(receiver), cancellationToken).ConfigureAwait(false));
+        }
+        else
+        {
+            await clientSend.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try { await SendAll(target, data, cancellationToken).ConfigureAwait(false); }
+            finally { clientSend.Release(); }
+        }
+    }
+    /// <summary>Serializes a complete write to an accepted client socket.</summary>
+    /// <param name="peer">The connected client receiving the data.</param>
+    /// <param name="data">The bytes to send.</param>
+    /// <param name="token">The cancellation token for waiting and writing.</param>
+    /// <returns>An operation completing when all bytes are sent.</returns>
+    async ValueTask SendPeer(Peer peer, ReadOnlyMemory<byte> data, CancellationToken token)
+    {
+        await peer.SendLock.WaitAsync(token).ConfigureAwait(false);
+        try { await SendAll(peer.Socket, data, token).ConfigureAwait(false); }
+        finally { peer.SendLock.Release(); }
+    }
+    /// <summary>Writes a complete TCP payload or one UDP datagram and updates byte counters.</summary>
+    /// <param name="target">The destination socket.</param>
+    /// <param name="data">The payload bytes.</param>
+    /// <param name="token">The cancellation token for socket writes.</param>
+    /// <returns>An operation completing when the payload has been sent.</returns>
+    async ValueTask SendAll(Socket target, ReadOnlyMemory<byte> data, CancellationToken token)
+    {
+        if (Protocol == NetworkType.Udp) { AddBytesSent(await target.SendAsync(data, SocketFlags.None, token).ConfigureAwait(false)); return; }
+        while (!data.IsEmpty) { int count = await target.SendAsync(data, SocketFlags.None, token).ConfigureAwait(false); if (count == 0) { throw new IOException(global::Gurux.Net.Properties.Resources.SocketClosedDuringSend); } AddBytesSent(count); parent?.AddBytesSent(count); data = data[count..]; }
+    }
+    /// <summary>Closes this connection and awaits its receive callbacks unless called reentrantly from their owner.</summary>
+    /// <remarks>Closing an attached media drains only its peer; the listening server remains open.</remarks>
+    /// <inheritdoc/>
+    public override async Task CloseAsync()
+    {
+        Peer[] removed = [];
+        Task[] background = [];
+        Socket? closingSocket = null;
+        CancellationTokenSource? cancellation = null;
+        Task? opening = null;
+        Task? existingClose = null;
+        TaskCompletionSource? completion = null;
+        long closingGeneration = 0;
+        bool reentrant = callbackOwner.Value == this
+            || (parent != null && callbackOwner.Value == parent)
+            || callbackOwner.Value?.parent == this;
+        lock (admission)
+        {
+            if (phase == MediaState.Closed && !open)
+            { existingClose = Task.WhenAll(workers.Concat(openingDone == null ? [] : new[] { openingDone.Task })); }
+            else if (phase == MediaState.Closing)
+            { existingClose = Task.WhenAll(workers.Concat(openingDone == null ? [] : new[] { openingDone.Task }).Append(closingDone?.Task ?? Task.CompletedTask)); }
+            else
+            {
+                phase = MediaState.Closing; open = false; closingGeneration = generation;
+                closingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                removed = clients.Values.ToArray();
+                background = workers.ToArray();
+                opening = openingDone?.Task;
+                closingSocket = socket; socket = null;
+                cancellation = stopping; stopping = null;
+            }
+        }
+        if (attached != null)
+        {
+            background = background.Append(attached.ReceiveDone.Task).ToArray();
+            if (completion == null)
+            {
+                existingClose = Task.WhenAll(existingClose ?? Task.CompletedTask, attached.ReceiveDone.Task, closingDone?.Task ?? Task.CompletedTask);
+            }
+        }
+        if (completion == null)
+        {
+            if (!reentrant && existingClose != null) { await existingClose.ConfigureAwait(false); }
+            return;
+        }
+        var previous = callbackOwner.Value;
+        callbackOwner.Value = this;
+        Exception? callbackError = null;
+        // Runs a shutdown step and retains its first failure so remaining cleanup can continue.
+        // action: The shutdown operation to attempt.
+        void Cleanup(Action action) { try { action(); } catch (Exception ex) { callbackError ??= ex; } }
+        try
+        {
+            Cleanup(() => cancellation?.Cancel()); Cleanup(() => closingSocket?.Dispose()); Cleanup(() => ReceiveBuffer.Close());
+            Cleanup(() => SetState(MediaState.Closing));
+            if (parent != null && attached != null) { Cleanup(() => parent.RemovePeer(attached)); }
+            foreach (var peer in removed) { Cleanup(() => RemovePeer(peer)); }
+            // A synchronous event handler cannot await its own worker/open operation.
+            // External callers wait for every tracked operation to unwind.
+            if (!reentrant)
+            {
+                if (opening != null) { await opening.ConfigureAwait(false); }
+                await Task.WhenAll(background).ConfigureAwait(false);
+            }
+            lock (admission) { if (generation == closingGeneration) { phase = MediaState.Closed; } }
+            Cleanup(() => SetState(MediaState.Closed));
+        }
+        finally
+        {
+            callbackOwner.Value = previous;
+            completion.TrySetResult();
+            if (opening is { IsCompleted: false }) { _ = opening.ContinueWith(_ => cancellation?.Dispose(), TaskScheduler.Default); }
+            else { cancellation?.Dispose(); }
+        }
+        if (callbackError != null) { System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(callbackError).Throw(); }
+    }
+    /// <inheritdoc/>
+    public override Task<bool> ReceiveAsync<T>(ReceiveParameters<T> args, CancellationToken cancellationToken = default)
+    {
+        if (Server && Protocol == NetworkType.Tcp) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.AttachBeforeReceive); }
+        return base.ReceiveAsync(args, cancellationToken);
+    }
+    /// <inheritdoc/>
+    public override void Copy(object target)
+    {
+        if (target is not GXNet other) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ExpectedNetworkMedia, nameof(target)); }
+        other.Protocol = Protocol; other.HostName = HostName; other.Port = Port; other.Server = Server; other.UseIPv6 = UseIPv6; other.MaxClientCount = MaxClientCount; other.WaitTime = WaitTime;
+        other.EnableTcpKeepAlive = EnableTcpKeepAlive; other.TcpKeepAliveIdleSeconds = TcpKeepAliveIdleSeconds;
+        other.TcpKeepAliveIntervalSeconds = TcpKeepAliveIntervalSeconds; other.TcpKeepAliveRetryCount = TcpKeepAliveRetryCount;
+    }
+    /// <summary>Gets or replaces network settings as legacy XML fragments using IP, Port, Protocol, Server and IPv6.</summary>
+    /// <remarks>Also accepts the previous Net wrapper and HostName/UseIPv6 element names.
+    /// Null or empty input restores defaults, including the unconfigured zero port.</remarks>
+    /// <exception cref="InvalidOperationException">The media is open or a lifecycle transition is in progress.</exception>
+    /// <exception cref="System.Xml.XmlException">The supplied XML is malformed.</exception>
+    /// <exception cref="ArgumentException">The protocol cannot be parsed.</exception>
+    /// <exception cref="FormatException">A numeric or Boolean option is malformed.</exception>
+    public override string? Settings
+    {
+        get
+        {
+            var xml = new XElement("Net",
+                new XElement("IP", HostName), new XElement("Port", Port),
+                new XElement("Protocol", (int)Protocol), new XElement("Server", Server ? 1 : 0),
+                new XElement("IPv6", UseIPv6 ? 1 : 0),
+                new XElement("MaxClientCount", MaxClientCount),
+                new XElement("WaitTime", WaitTime),
+                new XElement("EnableTcpKeepAlive", EnableTcpKeepAlive),
+                new XElement("TcpKeepAliveIdleSeconds", TcpKeepAliveIdleSeconds),
+                new XElement("TcpKeepAliveIntervalSeconds", TcpKeepAliveIntervalSeconds),
+                new XElement("TcpKeepAliveRetryCount", TcpKeepAliveRetryCount));
+            return string.Concat(xml.Elements().Select(element => element.ToString(SaveOptions.DisableFormatting)));
+        }
+        set
+        {
+            var root = XElement.Parse("<Settings>" + value + "</Settings>");
+            var xml = root.Element("Net") ?? root;
+            var settings = new NetSettings
+            {
+                Protocol = Enum.Parse<NetworkType>((string?)xml.Element("Protocol") ?? "Tcp"),
+                HostName = (string?)xml.Element("IP") ?? (string?)xml.Element("HostName") ?? string.Empty,
+                Port = (int?)xml.Element("Port") ?? 0,
+                Server = (bool?)xml.Element("Server") ?? false,
+                UseIPv6 = (bool?)xml.Element("IPv6") ?? (bool?)xml.Element("UseIPv6") ?? false,
+                MaxClientCount = (int?)xml.Element("MaxClientCount") ?? 0,
+                WaitTime = (int?)xml.Element("WaitTime") ?? 60000,
+                EnableTcpKeepAlive = (bool?)xml.Element("EnableTcpKeepAlive") ?? true,
+                TcpKeepAliveIdleSeconds = (int?)xml.Element("TcpKeepAliveIdleSeconds") ?? 60,
+                TcpKeepAliveIntervalSeconds = (int?)xml.Element("TcpKeepAliveIntervalSeconds") ?? 10,
+                TcpKeepAliveRetryCount = (int?)xml.Element("TcpKeepAliveRetryCount") ?? 3,
+            };
+            ApplySettings(settings);
         }
     }
 
-    event ClientDisconnectedEventHandler IGXMedia.OnClientDisconnected
+    /// <summary>Gets or replaces the same network settings using JSON with source-generated metadata.</summary>
+    /// <remarks>Null restores defaults. Settings changes require closed media.</remarks>
+    /// <exception cref="JsonException">The supplied JSON is malformed or is the JSON null value.</exception>
+    /// <exception cref="InvalidOperationException">The media is open or a lifecycle transition is in progress.</exception>
+    public override string? JsonSettings
     {
-        add {
-            throw new NotImplementedException();
-        }
-        remove {
-            throw new NotImplementedException();
-        }
+        get => JsonSerializer.Serialize(new NetSettings
+        {
+            Protocol = Protocol,
+            HostName = HostName,
+            Port = Port,
+            Server = Server,
+            UseIPv6 = UseIPv6,
+            MaxClientCount = MaxClientCount,
+            WaitTime = WaitTime,
+            EnableTcpKeepAlive = EnableTcpKeepAlive,
+            TcpKeepAliveIdleSeconds = TcpKeepAliveIdleSeconds,
+            TcpKeepAliveIntervalSeconds = TcpKeepAliveIntervalSeconds,
+            TcpKeepAliveRetryCount = TcpKeepAliveRetryCount,
+        }, NetJsonContext.Default.NetSettings);
+        set => ApplySettings(value == null ? new NetSettings()
+            : JsonSerializer.Deserialize(value, NetJsonContext.Default.NetSettings)
+                ?? throw new JsonException());
     }
-#else
-        /// <summary>
-        /// Called when the client is establishing a connection with a Net Server.
-        /// </summary>
-        [Description("Called when the client is establishing a connection with a Net Server.")]
-        public event ClientConnectedEventHandler OnClientConnected
+
+    /// <summary>Applies a completely parsed settings snapshot without exposing partial parsing changes.</summary>
+    /// <param name="settings">The network configuration to apply while closed.</param>
+    /// <exception cref="InvalidOperationException">The media is open or a lifecycle transition is in progress.</exception>
+    private void ApplySettings(NetSettings settings)
+    {
+        lock (admission)
         {
-            add
+            if (phase != MediaState.Closed || open)
             {
-                m_OnClientConnected += value;
+                throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.CloseBeforeSettings);
             }
-            remove
-            {
-                m_OnClientConnected -= value;
-            }
+            Protocol = settings.Protocol;
+            HostName = settings.HostName;
+            Port = settings.Port;
+            Server = settings.Server;
+            UseIPv6 = settings.UseIPv6;
+            MaxClientCount = settings.MaxClientCount;
+            WaitTime = settings.WaitTime;
+            EnableTcpKeepAlive = settings.EnableTcpKeepAlive;
+            TcpKeepAliveIdleSeconds = settings.TcpKeepAliveIdleSeconds;
+            TcpKeepAliveIntervalSeconds = settings.TcpKeepAliveIntervalSeconds;
+            TcpKeepAliveRetryCount = settings.TcpKeepAliveRetryCount;
         }
-
-        /// <summary>
-        /// Called when the client has been disconnected from the network server.
-        /// </summary>
-        [Description("Called when the client has been disconnected from the network server.")]
-        public event ClientDisconnectedEventHandler OnClientDisconnected
-        {
-            add
-            {
-                m_OnClientDisconnected += value;
-            }
-            remove
-            {
-                m_OnClientDisconnected -= value;
-            }
-        }
-
-        /// <inheritdoc cref="TraceEventHandler"/>
-        [Description("Called when the Media is sending or receiving data.")]
-        public event TraceEventHandler OnTrace
-        {
-            add
-            {
-                m_OnTrace += value;
-            }
-            remove
-            {
-                m_OnTrace -= value;
-            }
-        }
-
-#endif
-        //Events
-        PropertyChangedEventHandler m_OnPropertyChanged;
-        MediaStateChangeEventHandler m_OnMediaStateChange;
-        TraceEventHandler m_OnTrace;
-        GetPropertyValueEventHandler m_OnGetPropertyValue;
-#if !WINDOWS_PHONE
-        ClientConnectedEventHandler m_OnClientConnected;
-        ClientDisconnectedEventHandler m_OnClientDisconnected;
-#endif
-        internal ErrorEventHandler m_OnError;
-        internal ReceivedEventHandler m_OnReceived;
-        ReceivedEventHandler m_OnDataSend;
-
-        #region IGXMedia Members
-
-        void IGXMedia.Copy(object target)
-        {
-            GXNet tmp = (GXNet)target;
-            port = tmp.port;
-            hostAddress = tmp.hostAddress;
-            communicationProtocol = tmp.communicationProtocol;
-#if !WINDOWS_PHONE
-            Server = tmp.Server;
-#endif
-        }
-
-        string IGXMedia.Name
-        {
-            get
-            {
-                string tmp;
-                tmp = HostName + " " + port;
-                if (Protocol == NetworkType.Udp)
-                {
-                    tmp += " UDP";
-                }
-                else
-                {
-                    tmp += " TCP/IP";
-                }
-                return tmp;
-            }
-        }
-
-        string IGXMedia.MediaType
-        {
-            get
-            {
-                return "Net";
-            }
-        }
-
-        [System.Runtime.InteropServices.DllImport("wininet.dll", CharSet = System.Runtime.InteropServices.CharSet.Auto)]
-        private extern static bool InternetGetConnectedState(ref InternetConnectionState lpdwFlags, int dwReserved);
-
-        [Flags]
-        private enum InternetConnectionState : int
-        {
-            Modem = 0x1,
-            Lan = 0x2,
-            Proxy = 0x4,
-            RasInstalled = 0x10,
-            Offline = 0x20,
-            Configured = 0x40
-        }
-
-        bool Gurux.Common.IGXMedia.Enabled
-        {
-            get
-            {
-                bool isConnected = true;
-                if (System.Environment.OSVersion.Platform != PlatformID.Unix)
-                {
-                    InternetConnectionState flags = InternetConnectionState.Lan | InternetConnectionState.Configured;
-                    isConnected = InternetGetConnectedState(ref flags, 0);
-                }
-                return isConnected;
-            }
-        }
-#if NET462_OR_GREATER || WINDOWS
-        /// <summary>
-        /// Shows the network Properties dialog.
-        /// </summary>
-        /// <param name="parent">Owner window of the Properties dialog.</param>
-        /// <returns>True, if the user has accepted the changes.</returns>
-        /// <seealso cref="Port">Port</seealso>
-        /// <seealso cref="HostName">HostName</seealso>
-        /// <seealso cref="Protocol">Protocol</seealso>
-        /// <seealso cref="Server">Server</seealso>
-        /// <seealso href="PropertiesDialog.html">Properties Dialog</seealso>
-        public bool Properties(System.Windows.Forms.Form parent)
-        {
-            return new Gurux.Shared.PropertiesForm(PropertiesForm, Resources.SettingsTxt, IsOpen, Resources.OK, Resources.Cancel,
-                "https://www.gurux.fi/GXNetProperties").ShowDialog(parent) == System.Windows.Forms.DialogResult.OK;
-        }
-#endif //NET462_OR_GREATER || WINDOWS
-
-        /// <inheritdoc cref="IGXMedia.Synchronous"/>
-        public object Synchronous
-        {
-            get
-            {
-                return synchronous;
-            }
-        }
-
-        /// <inheritdoc cref="IGXMedia.IsSynchronous"/>
-        public bool IsSynchronous
-        {
-            get
-            {
-                bool reserved = System.Threading.Monitor.TryEnter(synchronous, 0);
-                if (reserved)
-                {
-                    System.Threading.Monitor.Exit(synchronous);
-                }
-                return !reserved;
-            }
-        }
-
-        /// <inheritdoc cref="IGXMedia.ResetSynchronousBuffer"/>
-        public void ResetSynchronousBuffer()
-        {
-            lock (syncBase.receivedSync)
-            {
-                syncBase.receivedSize = 0;
-            }
-        }
-
-        /// <inheritdoc cref="IGXMedia.Validate"/>
-        public void Validate()
-        {
-            if (port == 0)
-            {
-                throw new Exception(Resources.InvalidPortName);
-            }
-            if (!isServer && string.IsNullOrEmpty(hostAddress))
-            {
-                throw new Exception(Resources.InvalidHostName);
-            }
-        }
-
-        /// <inheritdoc cref="IGXMedia.Eop"/>
-        public object Eop
-        {
-            get;
-            set;
-        }
-
-        /// <inheritdoc cref="IGXMedia.ConfigurableSettings"/>
-        int IGXMedia.ConfigurableSettings
-        {
-            get;
-            set;
-        }
-
-        #endregion
-
-        #region IDisposable Members
-
-        /// <summary>
-        /// Closes the connection.
-        /// </summary>
-        public void Dispose()
-        {
-            Close();
-        }
-
-        #endregion
     }
 }

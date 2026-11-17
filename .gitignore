@@ -171,3 +171,14 @@ Development/TraceAndTestImpact.testsettings
 *.ide-shm
 *.ide-wal
 *.zip
+
+# Tests and validation outputs stay local.
+**/[Tt]ests/
+artifacts/
+
+# Keep the requested production network regression suite in version control.
+!/tests/
+/tests/*
+!/tests/*.cs
+!/tests/*.csproj
+/tests

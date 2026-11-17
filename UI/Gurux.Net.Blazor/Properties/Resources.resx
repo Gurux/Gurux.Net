@@ -1,0 +1,40 @@
+<root>
+  <data name="WholeNumberRequired" xml:space="preserve"><value>{0} must be a whole number.</value></data>
+  <data name="Protocol" xml:space="preserve"><value>Protocol</value></data>
+  <data name="Hostname" xml:space="preserve"><value>Host name</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Server" xml:space="preserve"><value>Server</value></data>
+  <data name="IPv6" xml:space="preserve"><value>IPv6</value></data>
+  <data name="Maximumclients" xml:space="preserve"><value>Maximum clients</value></data>
+  <data name="Waittimemilliseconds" xml:space="preserve"><value>Wait time (milliseconds)</value></data>
+  <data name="TCPkeepalive" xml:space="preserve"><value>TCP keepalive</value></data>
+  <data name="TCPkeepaliveidleseconds" xml:space="preserve"><value>TCP keepalive idle (seconds)</value></data>
+  <data name="TCPkeepaliveintervalseconds" xml:space="preserve"><value>TCP keepalive interval (seconds)</value></data>
+  <data name="TCPkeepaliveretries" xml:space="preserve"><value>TCP keepalive retries</value></data>
+  <data name="Closethemediabeforeeditingsettings" xml:space="preserve"><value>Close the media before editing settings.</value></data>
+  <data name="Closethemediabeforesavingsettings" xml:space="preserve"><value>Close the media before saving settings.</value></data>
+  <data name="ThemediasettingschangedwhilethisformwasopenReopentheform" xml:space="preserve"><value>The media settings changed while this form was open. Reopen the form.</value></data>
+  <data name="Phonenumber" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Initializationcommandsoneperline" xml:space="preserve"><value>Initialization commands (one per line)</value></data>
+  <data name="Connectiontimeoutseconds" xml:space="preserve"><value>Connection timeout (seconds)</value></data>
+  <data name="SIMPIN" xml:space="preserve"><value>SIM PIN</value></data>
+  <data name="Messageencoding" xml:space="preserve"><value>Message encoding</value></data>
+  <data name="Portname" xml:space="preserve"><value>Port name</value></data>
+  <data name="Baudrate" xml:space="preserve"><value>Baud rate</value></data>
+  <data name="Databits" xml:space="preserve"><value>Data bits</value></data>
+  <data name="Parity" xml:space="preserve"><value>Parity</value></data>
+  <data name="Stopbits" xml:space="preserve"><value>Stop bits</value></data>
+  <data name="Handshake" xml:space="preserve"><value>Handshake</value></data>
+  <data name="DTRenabled" xml:space="preserve"><value>DTR enabled</value></data>
+  <data name="RTSenabled" xml:space="preserve"><value>RTS enabled</value></data>
+  <data name="MediaSettings" xml:space="preserve"><value>Media settings</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="UnsupportedMedia" xml:space="preserve"><value>This editor does not support the supplied media type.</value></data>
+  <data name="InvalidSettings" xml:space="preserve"><value>The settings could not be saved. Check the values and ensure the closed media has not changed.</value></data>
+  <data name="ListenAddress" xml:space="preserve"><value>Listen address</value></data>
+  <data name="AllInterfaces" xml:space="preserve"><value>All network interfaces</value></data>
+  <data name="LoopbackOnly" xml:space="preserve"><value>Only this device (loopback)</value></data>
+  <data name="CustomAddress" xml:space="preserve"><value>Enter an address manually</value></data>
+  <data name="InterfaceAddress" xml:space="preserve"><value>{0} ({1})</value></data>
+</root>

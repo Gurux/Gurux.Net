@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <data name="ApplicationTitle" xml:space="preserve"><value>Gurux Network example</value></data>
+  <data name="SendLabel" xml:space="preserve"><value>Send:</value></data>
+  <data name="ReceivedLabel" xml:space="preserve"><value>Received:</value></data>
+  <data name="Open" xml:space="preserve"><value>Open</value></data>
+  <data name="Close" xml:space="preserve"><value>Close / cancel</value></data>
+  <data name="Properties" xml:space="preserve"><value>Properties</value></data>
+  <data name="Send" xml:space="preserve"><value>Send</value></data>
+  <data name="Hex" xml:space="preserve"><value>Hexadecimal</value></data>
+  <data name="Sync" xml:space="preserve"><value>Sync</value></data>
+  <data name="Echo" xml:space="preserve"><value>Echo received data</value></data>
+  <data name="SyncSettings" xml:space="preserve"><value>Synchronous settings</value></data>
+  <data name="WaitTime" xml:space="preserve"><value>Wait time:</value></data>
+  <data name="Eop" xml:space="preserve"><value>EOP:</value></data>
+  <data name="Size" xml:space="preserve"><value>Size:</value></data>
+  <data name="Statistics" xml:space="preserve"><value>Packet statistics (bytes)</value></data>
+  <data name="Sent" xml:space="preserve"><value>Sent:</value></data>
+  <data name="Interval" xml:space="preserve"><value>Interval (ms):</value></data>
+  <data name="Tester" xml:space="preserve"><value>Tester</value></data>
+  <data name="GoStop" xml:space="preserve"><value>Go / Stop</value></data>
+  <data name="Clients" xml:space="preserve"><value>Clients</value></data>
+  <data name="Errors" xml:space="preserve"><value>Errors</value></data>
+  <data name="Stop" xml:space="preserve"><value>Stop</value></data>
+  <data name="Closed" xml:space="preserve"><value>Closed</value></data>
+  <data name="EchoQueueFull" xml:space="preserve"><value>Echo queue is full; packet skipped.</value></data>
+  <data name="TesterRunning" xml:space="preserve"><value>Tester is already running.</value></data>
+  <data name="PositiveInterval" xml:space="preserve"><value>Interval must be positive.</value></data>
+  <data name="OpenFirst" xml:space="preserve"><value>Open the connection first.</value></data>
+  <data name="SelectClient" xml:space="preserve"><value>Select a connected client.</value></data>
+  <data name="ReplyTimeout" xml:space="preserve"><value>No reply was received before the timeout.</value></data>
+  <data name="Opened" xml:space="preserve"><value>Opened.</value></data>
+  <data name="ClosedActivity" xml:space="preserve"><value>Closed.</value></data>
+  <data name="TransportError" xml:space="preserve"><value>Error: {0}</value></data>
+  <data name="ReplyReceived" xml:space="preserve"><value>Reply: {0}</value></data>
+  <data name="ReceivedBytes" xml:space="preserve"><value>RX {0}: {1} | {2}</value></data>
+  <data name="ReceivedData" xml:space="preserve"><value>RX {0}: {1}</value></data>
+  <data name="SentBytes" xml:space="preserve"><value>TX {0}</value></data>
+  <data name="TimestampedActivity" xml:space="preserve"><value>{0:HH:mm:ss} {1}</value></data>
+  <data name="Clear" xml:space="preserve"><value>Clear</value></data>
+  <data name="ReceivedDataHeading" xml:space="preserve"><value>Received data</value></data>
+  <data name="SendPlaceholder" xml:space="preserve"><value>Text or hexadecimal bytes</value></data>
+</root>

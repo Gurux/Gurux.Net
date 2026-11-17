@@ -1,0 +1,56 @@
+@*
+// --------------------------------------------------------------------------
+// Gurux Ltd
+//
+// Copyright (c) Gurux Ltd.
+//
+// This file is part of Gurux Device Framework.
+//
+// Commit: $Format:%H$
+// Date:   $Format:%cI$
+//
+// This software is available under either of the following licenses:
+//
+// 1. GNU General Public License, version 2 only (GPL-2.0-only).
+//    See the LICENSE file included with this distribution.
+//
+// 2. A commercial license granted by Gurux Ltd under a separate written
+//    agreement. Use under this option requires a valid commercial license
+//    and is governed by the terms of that agreement.
+//
+// If you have not obtained a commercial license from Gurux Ltd,
+// use of this software is governed by GPL-2.0-only.
+//
+// Commercial licensing: https://www.gurux.fi/
+//
+// SPDX-License-Identifier: GPL-2.0-only OR LicenseRef-Gurux-Commercial
+// --------------------------------------------------------------------------
+*@
+@if (Field.Address!.Server)
+{
+    var options = Field.Address.GetOptions(Properties.Resources.AllInterfaces, Properties.Resources.LoopbackOnly, Properties.Resources.CustomAddress, Properties.Resources.InterfaceAddress);
+    var selected = options.FindIndex(option => option.Address == Field.Value);
+    <select class="form-select mb-2" aria-label="@Properties.Resources.ListenAddress" value="@(selected >= 0 ? selected : options.Count - 1)" @onchange="SelectAddress">
+        @for (int index = 0; index < options.Count; ++index)
+        {
+            <option value="@index">@options[index].Caption</option>
+        }
+    </select>
+}
+<input type="text" class="form-control" id="@Field.Id" @bind="Field.Value" @bind:event="oninput" />
+
+@code {
+    /// <summary>Gets or sets the staged host field containing both address modes.</summary>
+    [Parameter, EditorRequired] public SettingsField Field { get; set; } = default!;
+
+    /// <summary>Copies the selected bind address into the editable text field.</summary>
+    /// <param name="args">The index of the selected bind choice.</param>
+    private void SelectAddress(ChangeEventArgs args)
+    {
+        var options = Field.Address!.GetOptions(Properties.Resources.AllInterfaces, Properties.Resources.LoopbackOnly, Properties.Resources.CustomAddress, Properties.Resources.InterfaceAddress);
+        if (int.TryParse(args.Value?.ToString(), out int selected) && selected >= 0 && selected < options.Count && options[selected].Address is string address)
+        {
+            Field.Value = address;
+        }
+    }
+}

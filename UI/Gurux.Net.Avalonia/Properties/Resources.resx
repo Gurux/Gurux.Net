@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <data name="Title" xml:space="preserve"><value>Media settings</value></data>
+  <data name="Save" xml:space="preserve"><value>Save</value></data>
+  <data name="Cancel" xml:space="preserve"><value>Cancel</value></data>
+  <data name="AlreadyShowing" xml:space="preserve"><value>This editor is already showing settings.</value></data>
+  <data name="ParentType" xml:space="preserve"><value>The parent must be an AvaloniaMediaWindow.</value></data>
+  <data name="OwnerVisible" xml:space="preserve"><value>Show the owner window before editing settings.</value></data>
+  <data name="CloseBeforeEdit" xml:space="preserve"><value>Close the media before editing settings.</value></data>
+  <data name="CloseBeforeSave" xml:space="preserve"><value>Close the media before saving settings.</value></data>
+  <data name="Conflict" xml:space="preserve"><value>The media settings changed while this form was open. Reopen the form.</value></data>
+  <data name="Unsupported" xml:space="preserve"><value>This editor does not support the supplied media type.</value></data>
+  <data name="NumberError" xml:space="preserve"><value>{0} must be a whole number.</value></data>
+  <data name="ChoiceError" xml:space="preserve"><value>Select {0}.</value></data>
+  <data name="PortName" xml:space="preserve"><value>Port name</value></data>
+  <data name="BaudRate" xml:space="preserve"><value>Baud rate</value></data>
+  <data name="DataBits" xml:space="preserve"><value>Data bits</value></data>
+  <data name="Parity" xml:space="preserve"><value>Parity</value></data>
+  <data name="StopBits" xml:space="preserve"><value>Stop bits</value></data>
+  <data name="Handshake" xml:space="preserve"><value>Handshake</value></data>
+  <data name="Dtr" xml:space="preserve"><value>DTR enabled</value></data>
+  <data name="Rts" xml:space="preserve"><value>RTS enabled</value></data>
+  <data name="Phone" xml:space="preserve"><value>Phone number</value></data>
+  <data name="Commands" xml:space="preserve"><value>Initialization commands (one per line)</value></data>
+  <data name="Timeout" xml:space="preserve"><value>Connection timeout (seconds)</value></data>
+  <data name="Pin" xml:space="preserve"><value>SIM PIN</value></data>
+  <data name="Encoding" xml:space="preserve"><value>Message encoding</value></data>
+  <data name="Protocol" xml:space="preserve"><value>Protocol</value></data>
+  <data name="Host" xml:space="preserve"><value>Host name</value></data>
+  <data name="Port" xml:space="preserve"><value>Port</value></data>
+  <data name="Server" xml:space="preserve"><value>Server</value></data>
+  <data name="IPv6" xml:space="preserve"><value>IPv6</value></data>
+  <data name="MaxClients" xml:space="preserve"><value>Maximum clients</value></data>
+  <data name="Wait" xml:space="preserve"><value>Wait time (milliseconds)</value></data>
+  <data name="KeepAlive" xml:space="preserve"><value>TCP keep alive</value></data>
+  <data name="Idle" xml:space="preserve"><value>Keep alive idle (seconds)</value></data>
+  <data name="Interval" xml:space="preserve"><value>Keep alive interval (seconds)</value></data>
+  <data name="Retries" xml:space="preserve"><value>Keep alive retries</value></data>
+  <data name="InvalidSettings" xml:space="preserve"><value>Settings could not be saved. Check the values and ensure the media remains closed and unchanged.</value></data>
+  <data name="ListenAddress" xml:space="preserve"><value>Listen address</value></data>
+  <data name="AllInterfaces" xml:space="preserve"><value>All network interfaces</value></data>
+  <data name="LoopbackOnly" xml:space="preserve"><value>Only this device (loopback)</value></data>
+  <data name="CustomAddress" xml:space="preserve"><value>Enter an address manually</value></data>
+  <data name="InterfaceAddress" xml:space="preserve"><value>{0} ({1})</value></data>
+</root>

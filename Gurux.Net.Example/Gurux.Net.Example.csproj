@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <ExampleRoot>$(MSBuildThisFileDirectory)</ExampleRoot>
+    <ExampleTitle>Gurux.Net.Example</ExampleTitle>
+    <ExampleId>network</ExampleId>
+    <AssemblyName>Gurux.Net.Example</AssemblyName>
+  </PropertyGroup>
+  <Import Project="$(ExampleRoot)/Example.App.props" />
+  <Import Project="$(ExampleRoot)/Example.App.targets" />
+</Project>
