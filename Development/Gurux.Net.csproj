@@ -15,12 +15,12 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems><EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GuruxCommonVersion Condition="'$(GuruxCommonVersion)' == ''">9.0.2611.1302</GuruxCommonVersion>
+    <GuruxCommonVersion Condition="'$(GuruxCommonVersion)' == ''">9.0.2611.1802</GuruxCommonVersion>
   </PropertyGroup>
   <ItemGroup><Compile Include="GXNet.cs;NetSettings.cs;NetJsonContext.cs;Enums/NetworkType.cs;AvailableMediaSettings.cs;Properties/Resources.cs" /><None Include="Net.png" Pack="true" PackagePath="/" /><None Include="../README.md" Pack="true" PackagePath="/" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Properties/Resources.resx" /></ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Gurux.Common" Version="9.0.2611.1801" />
+    <PackageReference Include="Gurux.Common" Version="9.0.2611.1802" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Net.png" LogicalName="Gurux.Net.MediaIcon.png" />
