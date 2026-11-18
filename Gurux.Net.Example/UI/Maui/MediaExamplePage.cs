@@ -35,36 +35,36 @@ namespace Gurux.Net.Example.Maui;
 public sealed class MediaExamplePage : ContentPage, IAsyncDisposable
 {
     /// <summary>The network connection owned by this page.</summary>
-    private readonly ExampleSession session = new();
+    private readonly ExampleSession _session = new();
     /// <summary>The compact network control panel.</summary>
-    private readonly NetworkExamplePanel networkPanel;
+    private readonly NetworkExamplePanel _networkPanel;
     /// <summary>Cancels pending settings requests when the page is destroyed.</summary>
-    private readonly CancellationTokenSource lifetime = new();
+    private readonly CancellationTokenSource _lifetime = new();
     /// <summary>Updates the panel on the native UI dispatcher.</summary>
-    private readonly Microsoft.Maui.Dispatching.IDispatcherTimer timer;
+    private readonly Microsoft.Maui.Dispatching.IDispatcherTimer _timer;
     /// <summary>Prevents overlapping native navigation sheets.</summary>
-    private bool navigationShowing;
+    private bool _navigationShowing;
     /// <summary>Shares a single shutdown operation across repeated requests.</summary>
-    private Task? disposal;
+    private Task? _disposal;
 
     /// <summary>Creates the network panel and starts transport state updates.</summary>
     public MediaExamplePage()
     {
         Title = ExampleResources.ApplicationTitle;
         ExampleLayout.Apply(this);
-        networkPanel = new NetworkExamplePanel(session,
-            () => new MauiMediaSettingsEditor(this).ShowAsync(session.Media, cancellationToken: lifetime.Token));
-        Content = networkPanel;
+        _networkPanel = new NetworkExamplePanel(_session,
+            () => new MauiMediaSettingsEditor(this).ShowAsync(_session.Media, cancellationToken: _lifetime.Token));
+        Content = _networkPanel;
 #if WINDOWS
         var connection = new MenuBarItem { Text = UiResources.ConnectionGroup };
-        connection.Add(new MenuFlyoutItem { Text = ExampleResources.Open, Command = networkPanel.CreateCommand("Open") });
-        connection.Add(new MenuFlyoutItem { Text = ExampleResources.Close, Command = networkPanel.CreateCommand("Close") });
+        connection.Add(new MenuFlyoutItem { Text = ExampleResources.Open, Command = _networkPanel.CreateCommand("Open") });
+        connection.Add(new MenuFlyoutItem { Text = ExampleResources.Close, Command = _networkPanel.CreateCommand("Close") });
         var view = new MenuBarItem { Text = UiResources.ViewMenu };
-        view.Add(MenuCommand(UiResources.PayloadLabel, networkPanel.ShowData));
-        view.Add(MenuCommand(UiResources.ActivityGroup, networkPanel.ShowActivity));
+        view.Add(MenuCommand(UiResources.PayloadLabel, _networkPanel.ShowData));
+        view.Add(MenuCommand(UiResources.ActivityGroup, _networkPanel.ShowActivity));
         var settings = new MenuBarItem { Text = UiResources.SettingsMenu };
-        settings.Add(new MenuFlyoutItem { Text = UiResources.MediaSettings, Command = networkPanel.CreateCommand("Settings") });
-        settings.Add(MenuCommand(UiResources.CommunicationSettings, networkPanel.ShowCommunication));
+        settings.Add(new MenuFlyoutItem { Text = UiResources.MediaSettings, Command = _networkPanel.CreateCommand("Settings") });
+        settings.Add(MenuCommand(UiResources.CommunicationSettings, _networkPanel.ShowCommunication));
         MenuBarItems.Add(connection); MenuBarItems.Add(view); MenuBarItems.Add(settings);
 #else
         var navigation = new ToolbarItem { Text = UiResources.NavigationMenu, AutomationId = "NavigationMenu" };
@@ -80,11 +80,11 @@ public sealed class MediaExamplePage : ContentPage, IAsyncDisposable
         navigation.Clicked += async (_, _) => await ShowNavigationAsync();
         ToolbarItems.Add(navigation);
 #endif
-        timer = Dispatcher.CreateTimer();
-        timer.Interval = TimeSpan.FromMilliseconds(200);
-        timer.Tick += (_, _) => networkPanel.Refresh();
-        timer.Start();
-        networkPanel.Refresh();
+        _timer = Dispatcher.CreateTimer();
+        _timer.Interval = TimeSpan.FromMilliseconds(200);
+        _timer.Tick += (_, _) => _networkPanel.Refresh();
+        _timer.Start();
+        _networkPanel.Refresh();
     }
 
     /// <summary>Creates a native menu command that respects view ownership.</summary>
@@ -93,36 +93,36 @@ public sealed class MediaExamplePage : ContentPage, IAsyncDisposable
     /// <returns>The native menu item.</returns>
     private MenuFlyoutItem MenuCommand(string caption, Action action)
     {
-        return new MenuFlyoutItem { Text = caption, Command = new Command(() => { if (disposal is null && networkPanel.CanNavigate) { action(); } }) };
+        return new MenuFlyoutItem { Text = caption, Command = new Command(() => { if (_disposal is null && _networkPanel.CanNavigate) { action(); } }) };
     }
     /// <summary>Displays native mobile navigation without replacing the session controls.</summary>
     /// <returns>A task completing after a selection or cancellation.</returns>
     private async Task ShowNavigationAsync()
     {
-        if (navigationShowing || disposal is not null || !networkPanel.CanNavigate || Navigation.ModalStack.Count != 0) { return; }
-        navigationShowing = true;
+        if (_navigationShowing || _disposal is not null || !_networkPanel.CanNavigate || Navigation.ModalStack.Count != 0) { return; }
+        _navigationShowing = true;
         try
         {
             var choices = new List<string> { UiResources.PayloadLabel };
-            if (networkPanel.CanEditSettings) { choices.Add(UiResources.MediaSettings); }
+            if (_networkPanel.CanEditSettings) { choices.Add(UiResources.MediaSettings); }
             choices.Add(UiResources.CommunicationSettings);
             choices.Add(UiResources.ActivityGroup);
             string? selected = await DisplayActionSheetAsync(UiResources.NavigationMenu, UiResources.CancelNavigation, null, choices.ToArray());
-            if (disposal is not null || !networkPanel.CanNavigate || Navigation.ModalStack.Count != 0) { return; }
-            if (selected == UiResources.PayloadLabel) { networkPanel.ShowData(); }
-            else if (selected == UiResources.MediaSettings && networkPanel.CanEditSettings) { networkPanel.InvokeCommand("Settings"); }
-            else if (selected == UiResources.CommunicationSettings) { networkPanel.ShowCommunication(); }
-            else if (selected == UiResources.ActivityGroup) { networkPanel.ShowActivity(); }
+            if (_disposal is not null || !_networkPanel.CanNavigate || Navigation.ModalStack.Count != 0) { return; }
+            if (selected == UiResources.PayloadLabel) { _networkPanel.ShowData(); }
+            else if (selected == UiResources.MediaSettings && _networkPanel.CanEditSettings) { _networkPanel.InvokeCommand("Settings"); }
+            else if (selected == UiResources.CommunicationSettings) { _networkPanel.ShowCommunication(); }
+            else if (selected == UiResources.ActivityGroup) { _networkPanel.ShowActivity(); }
         }
         catch (OperationCanceledException ex)
         {
-            if (disposal is null) { networkPanel.ReportNavigationError(ex); }
+            if (_disposal is null) { _networkPanel.ReportNavigationError(ex); }
         }
         catch (Exception ex)
         {
-            if (disposal is null) { networkPanel.ReportNavigationError(ex); }
+            if (_disposal is null) { _networkPanel.ReportNavigationError(ex); }
         }
-        finally { navigationShowing = false; }
+        finally { _navigationShowing = false; }
     }
 
     /// <summary>Completes cleanup when the owning native window is destroyed.</summary>
@@ -130,16 +130,16 @@ public sealed class MediaExamplePage : ContentPage, IAsyncDisposable
     public async Task ShutdownAsync() => await DisposeAsync();
 
     /// <inheritdoc/>
-    public ValueTask DisposeAsync() => new(disposal ??= DisposeCoreAsync());
+    public ValueTask DisposeAsync() => new(_disposal ??= DisposeCoreAsync());
 
     /// <summary>Stops updates and releases network and settings resources.</summary>
     /// <returns>A task completing after all resources are released.</returns>
     private async Task DisposeCoreAsync()
     {
-        timer.Stop();
-        lifetime.Cancel();
-        await networkPanel.DisposeAsync();
-        await session.DisposeAsync();
-        lifetime.Dispose();
+        _timer.Stop();
+        _lifetime.Cancel();
+        await _networkPanel.DisposeAsync();
+        await _session.DisposeAsync();
+        _lifetime.Dispose();
     }
 }

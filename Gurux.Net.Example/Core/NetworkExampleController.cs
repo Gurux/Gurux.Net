@@ -41,51 +41,51 @@ public sealed class NetworkExampleController : IAsyncDisposable
     /// <summary>Clears displayed activity and diagnostic errors while preserving reception, counters and connection state.</summary>
     public void ClearActivity()
     {
-        session.ClearActivity();
-        errors.Clear();
+        _session.ClearActivity();
+        _errors.Clear();
     }
     /// <summary>Owns the network connection used by this component.</summary>
-    private readonly ExampleSession session;
+    private readonly ExampleSession _session;
     /// <summary>Stores the bounded network error history.</summary>
-    private readonly SessionLog errors = new();
+    private readonly SessionLog _errors = new();
     /// <summary>Cancels pending operations when this owner closes.</summary>
-    private readonly CancellationTokenSource lifetime = new();
+    private readonly CancellationTokenSource _lifetime = new();
     /// <summary>Bounds packets waiting for asynchronous echo.</summary>
-    private readonly Channel<(byte[] Data, string? Sender)> echoes = Channel.CreateBounded<(byte[], string?)>(64);
+    private readonly Channel<(byte[] Data, string? Sender)> _echoes = Channel.CreateBounded<(byte[], string?)>(64);
     /// <summary>Runs the cancellable packet echo loop.</summary>
-    private readonly Task echoWorker;
+    private readonly Task _echoWorker;
     /// <summary>Cancels the active periodic send loop.</summary>
-    private CancellationTokenSource? tester;
+    private CancellationTokenSource? _tester;
     /// <summary>Tracks the current periodic send loop.</summary>
-    private Task? testing;
+    private Task? _testing;
     /// <summary>Stores the latest received payload.</summary>
-    private byte[] received = [];
+    private byte[] _received = [];
     /// <summary>Enables echoing received network packets.</summary>
-    private int echo;
+    private int _echo;
     /// <summary>Gets or sets whether received packets are echoed.</summary>
-    public bool Echo { get => Volatile.Read(ref echo) != 0; set => Volatile.Write(ref echo, value ? 1 : 0); }
+    public bool Echo { get => Volatile.Read(ref _echo) != 0; set => Volatile.Write(ref _echo, value ? 1 : 0); }
     /// <summary>Gets whether periodic sending is active.</summary>
-    public bool IsTesting => testing is { IsCompleted: false };
+    public bool IsTesting => _testing is { IsCompleted: false };
     /// <summary>Gets a snapshot of the bounded network error history.</summary>
-    public IReadOnlyList<string> Errors => errors.Snapshot;
+    public IReadOnlyList<string> Errors => _errors.Snapshot;
     /// <summary>Clears the retained received payload without changing the connection, counters or activity history.</summary>
-    public void ClearReceived() => Volatile.Write(ref received, []);
+    public void ClearReceived() => Volatile.Write(ref _received, []);
     /// <summary>Renders the latest received bytes as ASCII text, falling back to hexadecimal for any non-ASCII byte.</summary>
     /// <param name="hex">Whether to force hexadecimal representation even for ASCII payloads.</param>
     /// <returns>The complete hexadecimal packet when requested or non-ASCII, otherwise its ASCII text.</returns>
     public string Received(bool hex)
     {
-        var data = Volatile.Read(ref received);
+        var data = Volatile.Read(ref _received);
         return ExampleDataDisplay.Format(data, hex);
     }
     /// <summary>Subscribes to reception and starts the bounded echo worker.</summary>
     /// <param name="session">The network session owned by the calling view.</param>
     public NetworkExampleController(ExampleSession session)
     {
-        this.session = session;
+        this._session = session;
         session.Media.OnReceived += OnReceived;
         session.Media.OnError += OnError;
-        echoWorker = EchoAsync();
+        _echoWorker = EchoAsync();
     }
     /// <summary>Captures received bytes and queues an optional echo response.</summary>
     /// <param name="args">The data or connection information delivered by the event.</param>
@@ -93,8 +93,8 @@ public sealed class NetworkExampleController : IAsyncDisposable
     private void OnReceived(object? sender, ReceiveEventArgs args)
     {
         if (args.Data is not byte[] data) { return; }
-        Volatile.Write(ref received, data.ToArray());
-        if (Echo && !echoes.Writer.TryWrite((data.ToArray(), args.SenderInfo)))
+        Volatile.Write(ref _received, data.ToArray());
+        if (Echo && !_echoes.Writer.TryWrite((data.ToArray(), args.SenderInfo)))
         {
             Report(ExampleResources.EchoQueueFull);
         }
@@ -105,20 +105,20 @@ public sealed class NetworkExampleController : IAsyncDisposable
     private void OnError(object? sender, MediaErrorEventArgs args) => Report(args.Exception.Message);
     /// <summary>Adds an error description to the bounded history.</summary>
     /// <param name="message">The localized error description.</param>
-    public void Report(string message) => errors.Add(message);
+    public void Report(string message) => _errors.Add(message);
     /// <summary>Processes queued echo packets until cancellation.</summary>
     /// <returns>A task completing when echo processing stops.</returns>
     private async Task EchoAsync()
     {
         try
         {
-            await foreach (var packet in echoes.Reader.ReadAllAsync(lifetime.Token).ConfigureAwait(false))
+            await foreach (var packet in _echoes.Reader.ReadAllAsync(_lifetime.Token).ConfigureAwait(false))
             {
-                if (!Echo || !session.Media.IsOpen) { continue; }
+                if (!Echo || !_session.Media.IsOpen) { continue; }
                 try
                 {
-                    var net = (GXNet)session.Media;
-                    await net.SendAsync(packet.Data, net.Server || net.Protocol == NetworkType.Udp ? packet.Sender : null, lifetime.Token).ConfigureAwait(false);
+                    var net = (GXNet)_session.Media;
+                    await net.SendAsync(packet.Data, net.Server || net.Protocol == NetworkType.Udp ? packet.Sender : null, _lifetime.Token).ConfigureAwait(false);
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException) { Report(ex.Message); }
             }
@@ -137,11 +137,11 @@ public sealed class NetworkExampleController : IAsyncDisposable
             end = end.Replace("\\r", "\r").Replace("\\n", "\n").Replace("\\t", "\t");
             if (options.Hex) { end = Convert.ToHexString(Encoding.UTF8.GetBytes(end)); }
         }
-        byte[]? response = await session.SendBytesAsync(options.Text, options.Hex, options.Sync, end,
+        byte[]? response = await _session.SendBytesAsync(options.Text, options.Hex, options.Sync, end,
             options.Count, options.WaitTime, options.Receiver, cancellationToken).ConfigureAwait(false);
         if (response is not null)
         {
-            Volatile.Write(ref received, response);
+            Volatile.Write(ref _received, response);
         }
     }
     /// <summary>Validates connection settings and starts periodic network sends.</summary>
@@ -153,10 +153,10 @@ public sealed class NetworkExampleController : IAsyncDisposable
     {
         if (IsTesting) { throw new InvalidOperationException(ExampleResources.TesterRunning); }
         if (intervalMilliseconds < 1) { throw new ArgumentOutOfRangeException(nameof(intervalMilliseconds), ExampleResources.PositiveInterval); }
-        if (!session.Media.IsOpen) { throw new InvalidOperationException(ExampleResources.OpenFirst); }
-        tester?.Dispose();
-        tester = CancellationTokenSource.CreateLinkedTokenSource(lifetime.Token);
-        testing = TestAsync(options, intervalMilliseconds, tester.Token);
+        if (!_session.Media.IsOpen) { throw new InvalidOperationException(ExampleResources.OpenFirst); }
+        _tester?.Dispose();
+        _tester = CancellationTokenSource.CreateLinkedTokenSource(_lifetime.Token);
+        _testing = TestAsync(options, intervalMilliseconds, _tester.Token);
     }
     /// <summary>Sends packets until cancellation or a transport failure.</summary>
     /// <param name="interval">The delay between sends in milliseconds.</param>
@@ -180,19 +180,19 @@ public sealed class NetworkExampleController : IAsyncDisposable
     /// <returns>A task completing after the tester stops.</returns>
     public async Task StopTesterAsync()
     {
-        tester?.Cancel();
-        if (testing is not null) { await testing.ConfigureAwait(false); }
+        _tester?.Cancel();
+        if (_testing is not null) { await _testing.ConfigureAwait(false); }
     }
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        session.Media.OnReceived -= OnReceived;
-        session.Media.OnError -= OnError;
-        lifetime.Cancel();
+        _session.Media.OnReceived -= OnReceived;
+        _session.Media.OnError -= OnError;
+        _lifetime.Cancel();
         await StopTesterAsync().ConfigureAwait(false);
-        echoes.Writer.TryComplete();
-        await echoWorker.ConfigureAwait(false);
-        tester?.Dispose();
-        lifetime.Dispose();
+        _echoes.Writer.TryComplete();
+        await _echoWorker.ConfigureAwait(false);
+        _tester?.Dispose();
+        _lifetime.Dispose();
     }
 }

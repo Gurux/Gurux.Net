@@ -45,164 +45,164 @@ namespace Gurux.Net.Example.Desktop;
 internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
 {
     /// <summary>Displays connection state and selected endpoints in the fixed bottom status bar.</summary>
-    private readonly TextBlock mediaStatus = new() { Name = "MediaStatus" };
+    private readonly TextBlock _mediaStatus = new() { Name = "MediaStatus" };
 
     /// <summary>Persists this application's media and outgoing data preferences.</summary>
-    private readonly ExampleSettingsStore preferences = new();
+    private readonly ExampleSettingsStore _preferences = new();
     /// <summary>Completes when startup preferences have been applied on the UI thread.</summary>
-    private Task preferencesLoading = Task.CompletedTask;
+    private Task _preferencesLoading = Task.CompletedTask;
     /// <summary>Tracks the latest queued write so shutdown waits for the final disk update.</summary>
-    private Task preferencesSaving = Task.CompletedTask;
+    private Task _preferencesSaving = Task.CompletedTask;
     /// <summary>Prevents persistence until startup restoration has completed.</summary>
-    private bool preferencesReady;
+    private bool _preferencesReady;
     /// <summary>Tracks the most recently requested snapshot and avoids saving unchanged controls.</summary>
-    private string? preferencesSnapshot;
+    private string? _preferencesSnapshot;
 
     /// <summary>Stores the latest transport connection phase independently of command activity.</summary>
-    private int connectionPhase;
+    private int _connectionPhase;
     /// <summary>Prevents callbacks from refreshing disposed resources.</summary>
-    private int shuttingDown;
+    private int _shuttingDown;
     /// <summary>Shares controller cleanup between repeated disposal requests.</summary>
-    private Task? disposal;
+    private Task? _disposal;
     /// <summary>Owns the network connection used by this component.</summary>
-    private readonly ExampleSession session;
+    private readonly ExampleSession _session;
     /// <summary>Coordinates sends, echo responses and periodic testing.</summary>
-    private readonly NetworkExampleController controller;
+    private readonly NetworkExampleController _controller;
     /// <summary>Opens the network settings editor for this view.</summary>
-    private readonly Func<Task> properties;
+    private readonly Func<Task> _properties;
     /// <summary>Edits the outgoing payload.</summary>
-    private readonly TextBox send = new() { Name = "SendText", PlaceholderText = ExampleResources.SendPlaceholder, Text = "4D", AcceptsReturn = true, MinHeight = 64 };
+    private readonly TextBox _send = new() { Name = "SendText", PlaceholderText = ExampleResources.SendPlaceholder, Text = "4D", AcceptsReturn = true, MinHeight = 64 };
     /// <summary>Stores the latest received payload.</summary>
-    private readonly TextBox received = new() { Name = "ReceivedText", IsReadOnly = true };
+    private readonly TextBox _received = new() { Name = "ReceivedText", IsReadOnly = true };
     /// <summary>Stores the bounded network error history.</summary>
-    private readonly TextBox errors = new() { Name = "Errors", IsReadOnly = true, AcceptsReturn = true, MinHeight = 140 };
+    private readonly TextBox _errors = new() { Name = "Errors", IsReadOnly = true, AcceptsReturn = true, MinHeight = 140 };
     /// <summary>Displays the session activity independently of the received payload.</summary>
-    private readonly TextBox activity = new() { Name = "ActivityLog", IsReadOnly = true, AcceptsReturn = true };
+    private readonly TextBox _activity = new() { Name = "ActivityLog", IsReadOnly = true, AcceptsReturn = true };
     /// <summary>Contains diagnostic errors only while they have entries.</summary>
-    private readonly Border errorGroup;
+    private readonly Border _errorGroup;
     /// <summary>Tracks currently connected network clients.</summary>
-    private readonly ListBox clients = new() { Name = "Clients", MinHeight = 140 };
+    private readonly ListBox _clients = new() { Name = "Clients", MinHeight = 140 };
     /// <summary>Edits the remote host before connecting.</summary>
-    private readonly TextBox host = new() { Name = "Receiver", MinWidth = 100 };
+    private readonly TextBox _host = new() { Name = "Receiver", MinWidth = 100 };
     /// <summary>Edits the reply timeout in milliseconds.</summary>
-    private readonly TextBox timeout = new() { Name = "ReplyTimeout", Text = "5000", Width = 70 };
+    private readonly TextBox _timeout = new() { Name = "ReplyTimeout", Text = "5000", Width = 70 };
     /// <summary>Edits the end-of-packet marker.</summary>
-    private readonly TextBox eop = new() { Name = "ReplyEop", Text = "", Width = 70 };
+    private readonly TextBox _eop = new() { Name = "ReplyEop", Text = "", Width = 70 };
     /// <summary>Edits the minimum reply byte count.</summary>
-    private readonly TextBox count = new() { Name = "ReplyCount", Text = "0", Width = 60 };
+    private readonly TextBox _count = new() { Name = "ReplyCount", Text = "0", Width = 60 };
     /// <summary>Edits the tester delay in milliseconds.</summary>
-    private readonly TextBox interval = new() { Name = "TestInterval", Text = "1000", Width = 90 };
+    private readonly TextBox _interval = new() { Name = "TestInterval", Text = "1000", Width = 90 };
     /// <summary>Displays the transmitted byte count.</summary>
-    private readonly TextBox sent = new() { Name = "BytesSent", IsReadOnly = true, Text = "0", Width = 80 };
+    private readonly TextBox _sent = new() { Name = "BytesSent", IsReadOnly = true, Text = "0", Width = 80 };
     /// <summary>Displays the received byte count.</summary>
-    private readonly TextBox receivedCount = new() { Name = "BytesReceived", IsReadOnly = true, Text = "0", Width = 80 };
+    private readonly TextBox _receivedCount = new() { Name = "BytesReceived", IsReadOnly = true, Text = "0", Width = 80 };
     /// <summary>Selects hexadecimal payload representation.</summary>
-    private readonly ToggleSwitch hex = new() { Name = "HexMode", Content = ExampleResources.Hex, IsChecked = true, OnContent = null, OffContent = null };
+    private readonly ToggleSwitch _hex = new() { Name = "HexMode", Content = ExampleResources.Hex, IsChecked = true, OnContent = null, OffContent = null };
     /// <summary>Selects buffered reply reception for each send.</summary>
-    private readonly ToggleSwitch sync = new() { Name = "ReceiveReply", Content = ExampleResources.Sync, OnContent = null, OffContent = null };
+    private readonly ToggleSwitch _sync = new() { Name = "ReceiveReply", Content = ExampleResources.Sync, OnContent = null, OffContent = null };
     /// <summary>Enables echoing received network packets.</summary>
-    private readonly ToggleSwitch echo = new() { Name = "Echo", Content = ExampleResources.Echo, OnContent = null, OffContent = null };
+    private readonly ToggleSwitch _echo = new() { Name = "Echo", Content = ExampleResources.Echo, OnContent = null, OffContent = null };
     /// <summary>Displays connection state.</summary>
-    private readonly TextBlock state = new() { Name = "ConnectionState" };
+    private readonly TextBlock _state = new() { Name = "ConnectionState" };
     /// <summary>Opens the configured connection.</summary>
-    private readonly Button open;
+    private readonly Button _open;
     /// <summary>Cancels pending operations and closes the transport.</summary>
-    private readonly Button close;
+    private readonly Button _close;
     /// <summary>Opens network settings.</summary>
-    private readonly Button settings;
+    private readonly Button _settings;
     /// <summary>Sends the current payload.</summary>
-    private readonly Button transmit;
+    private readonly Button _transmit;
     /// <summary>Starts or stops periodic sending.</summary>
-    private readonly Button tester;
+    private readonly Button _tester;
 
     /// <summary>Retains payload controls across navigation.</summary>
-    private readonly StackPanel dataView = new() { Name = "DataView", Spacing = 12 };
+    private readonly StackPanel _dataView = new() { Name = "DataView", Spacing = 12 };
     /// <summary>Contains reply settings and testing controls.</summary>
-    private readonly StackPanel communicationView = new() { Name = "CommunicationView", Spacing = 12, IsVisible = false };
+    private readonly StackPanel _communicationView = new() { Name = "CommunicationView", Spacing = 12, IsVisible = false };
     /// <summary>Contains persistent read-only activity history.</summary>
-    private readonly StackPanel activityView = new() { Name = "ActivityView", Spacing = 12, IsVisible = false };
+    private readonly StackPanel _activityView = new() { Name = "ActivityView", Spacing = 12, IsVisible = false };
     /// <summary>Prevents navigation while a settings editor owns the view.</summary>
-    private bool editing;
+    private bool _editing;
     /// <summary>Creates Serial-style connection, payload and received cards while retaining network tools in separate sections.</summary>
     /// <param name="properties">Opens the network settings editor.</param>
     /// <param name="session">The network session owned by the calling view.</param>
     internal NetworkExamplePanel(ExampleSession session, Func<Task> properties)
     {
-        this.session = session;
-        this.properties = properties;
-        controller = new(session);
-        host.Text = ((GXNet)session.Media).HostName;
-        var body = ExampleLayout.CreateBody(state);
-        var actions = ExampleLayout.Toolbar(dataView);
-        open = Button(actions, "Open", ExampleResources.Open, async () =>
+        this._session = session;
+        this._properties = properties;
+        _controller = new(session);
+        _host.Text = ((GXNet)session.Media).HostName;
+        var body = ExampleLayout.CreateBody(_state);
+        var actions = ExampleLayout.Toolbar(_dataView);
+        _open = Button(actions, "Open", ExampleResources.Open, async () =>
         {
             var net = (GXNet)session.Media;
-            if (!net.Server && !string.IsNullOrWhiteSpace(host.Text)) { net.HostName = host.Text; }
+            if (!net.Server && !string.IsNullOrWhiteSpace(_host.Text)) { net.HostName = _host.Text; }
             await session.OpenAsync();
         });
-        close = Button(actions, "Close", ExampleResources.Close, async () => { var stopping = controller.StopTesterAsync(); await session.CloseAsync(); await stopping; });
-        settings = Button(null, "Settings", ExampleResources.Properties, async () => { editing = true; try { await this.properties(); host.Text = ((GXNet)session.Media).HostName; } finally { editing = false; } });
-        send.AcceptsReturn = false;
-        send.MinHeight = 0;
-        send.FontFamily = new global::Avalonia.Media.FontFamily("Cascadia Mono, DejaVu Sans Mono, Consolas, Menlo, monospace");
-        var payload = ExampleLayout.Field(UiResources.DataGroup, send);
+        _close = Button(actions, "Close", ExampleResources.Close, async () => { var stopping = _controller.StopTesterAsync(); await session.CloseAsync(); await stopping; });
+        _settings = Button(null, "Settings", ExampleResources.Properties, async () => { _editing = true; try { await this._properties(); _host.Text = ((GXNet)session.Media).HostName; } finally { _editing = false; } });
+        _send.AcceptsReturn = false;
+        _send.MinHeight = 0;
+        _send.FontFamily = new global::Avalonia.Media.FontFamily("Cascadia Mono, DejaVu Sans Mono, Consolas, Menlo, monospace");
+        var payload = ExampleLayout.Field(UiResources.DataGroup, _send);
         payload.MaxWidth = double.PositiveInfinity;
         payload.HorizontalAlignment = HorizontalAlignment.Stretch;
         var data = new StackPanel { Spacing = 10 };
         data.Children.Add(payload);
-        var sendActions = ExampleLayout.Row(hex, echo);
-        transmit = Button(sendActions, "Send", ExampleResources.Send, () => controller.SendAsync(Options()));
-        Button(sendActions, "Clear", ExampleResources.Clear, () => { controller.ClearReceived(); return Task.CompletedTask; });
+        var sendActions = ExampleLayout.Row(_hex, _echo);
+        _transmit = Button(sendActions, "Send", ExampleResources.Send, () => _controller.SendAsync(Options()));
+        Button(sendActions, "Clear", ExampleResources.Clear, () => { _controller.ClearReceived(); return Task.CompletedTask; });
         data.Children.Add(sendActions);
-        echo.IsCheckedChanged += (_, _) => controller.Echo = echo.IsChecked == true;
-        dataView.Children.Add(ExampleLayout.Group(UiResources.DataGroup, data));
-        ExampleLayout.ConfigureLog(received);
-        dataView.Children.Add(ExampleLayout.Group(ExampleResources.ReceivedDataHeading, received));
-        timeout.Width = double.NaN; eop.Width = double.NaN; count.Width = double.NaN;
-        var replyOptions = ExampleLayout.Group(UiResources.ReplyGroup, new StackPanel { Spacing = 10, Children = { sync, ExampleLayout.Row(
-            ExampleLayout.Field(UiResources.CountLabel, count), ExampleLayout.Field(UiResources.TerminatorLabel, eop), ExampleLayout.Field(UiResources.TimeoutLabel, timeout)) } });
+        _echo.IsCheckedChanged += (_, _) => _controller.Echo = _echo.IsChecked == true;
+        _dataView.Children.Add(ExampleLayout.Group(UiResources.DataGroup, data));
+        ExampleLayout.ConfigureLog(_received);
+        _dataView.Children.Add(ExampleLayout.Group(ExampleResources.ReceivedDataHeading, _received));
+        _timeout.Width = double.NaN; _eop.Width = double.NaN; _count.Width = double.NaN;
+        var replyOptions = ExampleLayout.Group(UiResources.ReplyGroup, new StackPanel { Spacing = 10, Children = { _sync, ExampleLayout.Row(
+            ExampleLayout.Field(UiResources.CountLabel, _count), ExampleLayout.Field(UiResources.TerminatorLabel, _eop), ExampleLayout.Field(UiResources.TimeoutLabel, _timeout)) } });
         var tools = new StackPanel { Spacing = 8 };
-        tools.Children.Add(ExampleLayout.Row(Label(ExampleResources.Sent), sent, Label(ExampleResources.ReceivedLabel), receivedCount));
-        var testRow = ExampleLayout.Row(Label(ExampleResources.Interval), interval);
-        tester = Button(testRow, "Tester", ExampleResources.GoStop, async () =>
+        tools.Children.Add(ExampleLayout.Row(Label(ExampleResources.Sent), _sent, Label(ExampleResources.ReceivedLabel), _receivedCount));
+        var testRow = ExampleLayout.Row(Label(ExampleResources.Interval), _interval);
+        _tester = Button(testRow, "Tester", ExampleResources.GoStop, async () =>
         {
-            if (controller.IsTesting) { await controller.StopTesterAsync(); }
-            else { controller.StartTester(Options(), int.Parse(interval.Text ?? "1000")); }
+            if (_controller.IsTesting) { await _controller.StopTesterAsync(); }
+            else { _controller.StartTester(Options(), int.Parse(_interval.Text ?? "1000")); }
         });
         tools.Children.Add(testRow);
-        communicationView.Children.Add(ExampleLayout.TwoColumns(replyOptions, ExampleLayout.Group(UiResources.ToolsGroup, tools)));
-        clients.Height = 140; clients.MinHeight = 120;
-        errors.Height = 140; errors.MinHeight = 120; errors.FontFamily = send.FontFamily;
-        communicationView.Children.Add(ExampleLayout.Group(UiResources.ConnectionGroup, ExampleLayout.Field(UiResources.HostLabel, host)));
-        communicationView.Children.Add(ExampleLayout.Group(ExampleResources.Clients, clients));
+        _communicationView.Children.Add(ExampleLayout.TwoColumns(replyOptions, ExampleLayout.Group(UiResources.ToolsGroup, tools)));
+        _clients.Height = 140; _clients.MinHeight = 120;
+        _errors.Height = 140; _errors.MinHeight = 120; _errors.FontFamily = _send.FontFamily;
+        _communicationView.Children.Add(ExampleLayout.Group(UiResources.ConnectionGroup, ExampleLayout.Field(UiResources.HostLabel, _host)));
+        _communicationView.Children.Add(ExampleLayout.Group(ExampleResources.Clients, _clients));
         var activityActions = ExampleLayout.Row();
-        Button(activityActions, "ClearActivity", ExampleResources.Clear, () => { controller.ClearActivity(); return Task.CompletedTask; });
-        activityView.Children.Add(activityActions);
-        errorGroup = ExampleLayout.Group(ExampleResources.Errors, errors);
-        activityView.Children.Add(errorGroup);
-        ExampleLayout.ConfigureLog(activity);
-        activityView.Children.Add(ExampleLayout.Group(UiResources.ActivityGroup, activity));
-        body.Children.Add(dataView); body.Children.Add(communicationView); body.Children.Add(activityView);
+        Button(activityActions, "ClearActivity", ExampleResources.Clear, () => { _controller.ClearActivity(); return Task.CompletedTask; });
+        _activityView.Children.Add(activityActions);
+        _errorGroup = ExampleLayout.Group(ExampleResources.Errors, _errors);
+        _activityView.Children.Add(_errorGroup);
+        ExampleLayout.ConfigureLog(_activity);
+        _activityView.Children.Add(ExampleLayout.Group(UiResources.ActivityGroup, _activity));
+        body.Children.Add(_dataView); body.Children.Add(_communicationView); body.Children.Add(_activityView);
         var menu = new Menu { Name = "ApplicationMenu" };
         var connection = new MenuItem { Name = "ConnectionMenu", Header = UiResources.ConnectionGroup };
-        connection.Items.Add(Command("OpenMenu", ExampleResources.Open, open));
-        connection.Items.Add(Command("CloseMenu", ExampleResources.Close, close));
+        connection.Items.Add(Command("OpenMenu", ExampleResources.Open, _open));
+        connection.Items.Add(Command("CloseMenu", ExampleResources.Close, _close));
         var view = new MenuItem { Name = "ViewMenu", Header = UiResources.ViewMenu };
-        view.Items.Add(Navigation("DataNavigation", UiResources.DataGroup, dataView));
-        view.Items.Add(Navigation("ActivityNavigation", UiResources.ActivityGroup, activityView));
+        view.Items.Add(Navigation("DataNavigation", UiResources.DataGroup, _dataView));
+        view.Items.Add(Navigation("ActivityNavigation", UiResources.ActivityGroup, _activityView));
         var configuration = new MenuItem { Name = "SettingsMenu", Header = UiResources.SettingsMenu };
-        configuration.Items.Add(Command("Settings", UiResources.MediaSettings, settings));
-        configuration.Items.Add(Navigation("CommunicationNavigation", UiResources.CommunicationSettings, communicationView));
+        configuration.Items.Add(Command("Settings", UiResources.MediaSettings, _settings));
+        configuration.Items.Add(Navigation("CommunicationNavigation", UiResources.CommunicationSettings, _communicationView));
         menu.Items.Add(connection); menu.Items.Add(view); menu.Items.Add(configuration);
         var frame = new DockPanel();
         DockPanel.SetDock(menu, Dock.Top);
         frame.Children.Add(menu);
-        frame.Children.Add(ExampleLayout.WithStatus(body, mediaStatus));
+        frame.Children.Add(ExampleLayout.WithStatus(body, _mediaStatus));
         Content = frame;
-        Volatile.Write(ref connectionPhase, (int)(session.Media.IsOpen ? MediaState.Open : MediaState.Closed));
+        Volatile.Write(ref _connectionPhase, (int)(session.Media.IsOpen ? MediaState.Open : MediaState.Closed));
         session.Media.OnMediaStateChange += MediaStateChanged;
         Refresh();
-        preferencesLoading = RestorePreferencesAsync();
+        _preferencesLoading = RestorePreferencesAsync();
 
     }
     /// <summary>Records transport lifecycle events and refreshes controls on the UI thread.</summary>
@@ -210,11 +210,11 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
     /// <param name="args">The new media state.</param>
     private void MediaStateChanged(object? sender, MediaStateEventArgs args)
     {
-        if (Volatile.Read(ref shuttingDown) != 0 || args.State == MediaState.Changed)
+        if (Volatile.Read(ref _shuttingDown) != 0 || args.State == MediaState.Changed)
         {
             return;
         }
-        Volatile.Write(ref connectionPhase, (int)args.State);
+        Volatile.Write(ref _connectionPhase, (int)args.State);
         if (Dispatcher.UIThread.CheckAccess())
         {
             RefreshMediaState();
@@ -227,7 +227,7 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
     /// <summary>Ignores queued transport notifications after shutdown begins.</summary>
     private void RefreshMediaState()
     {
-        if (Volatile.Read(ref shuttingDown) == 0)
+        if (Volatile.Read(ref _shuttingDown) == 0)
         {
             Refresh();
         }
@@ -262,25 +262,25 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
         return item;
     }
     /// <summary>Gets whether navigation can safely change the current view.</summary>
-    internal bool CanNavigate => preferencesReady && !editing && System.Threading.Volatile.Read(ref shuttingDown) == 0;
+    internal bool CanNavigate => _preferencesReady && !_editing && System.Threading.Volatile.Read(ref _shuttingDown) == 0;
     /// <summary>Changes the visible section while retaining all controls.</summary>
     /// <param name="section">The section to show.</param>
     private void ShowSection(StackPanel section)
     {
         if (CanNavigate)
         {
-            dataView.IsVisible = ReferenceEquals(section, dataView);
-            communicationView.IsVisible = ReferenceEquals(section, communicationView);
-            activityView.IsVisible = ReferenceEquals(section, activityView);
+            _dataView.IsVisible = ReferenceEquals(section, _dataView);
+            _communicationView.IsVisible = ReferenceEquals(section, _communicationView);
+            _activityView.IsVisible = ReferenceEquals(section, _activityView);
         }
     }
     /// <summary>Collects current payload and receive settings from the controls.</summary>
     /// <returns>The selected network send and receive settings.</returns>
     private NetworkSendOptions Options()
     {
-        var net = (GXNet)session.Media;
-        return new(send.Text ?? "", hex.IsChecked == true, sync.IsChecked == true, eop.Text,
-            int.Parse(count.Text ?? "0"), int.Parse(timeout.Text ?? "5000"), net.Server ? clients.SelectedItem as string : null);
+        var net = (GXNet)_session.Media;
+        return new(_send.Text ?? "", _hex.IsChecked == true, _sync.IsChecked == true, _eop.Text,
+            int.Parse(_count.Text ?? "0"), int.Parse(_timeout.Text ?? "5000"), net.Server ? _clients.SelectedItem as string : null);
     }
     /// <summary>Creates a vertically centered caption.</summary>
     /// <param name="text">The payload or caption to use.</param>
@@ -300,7 +300,7 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
         {
             try { Task task = action(); Refresh(); await task; }
             catch (OperationCanceledException) { }
-            catch (Exception ex) { controller.Report(ex.Message); }
+            catch (Exception ex) { _controller.Report(ex.Message); }
             finally { Refresh(); }
         };
         parent?.Children.Add(button);
@@ -309,44 +309,44 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
     /// <summary>Updates availability, counters and clients from connection state.</summary>
     internal void Refresh()
     {
-        if (Volatile.Read(ref shuttingDown) != 0)
+        if (Volatile.Read(ref _shuttingDown) != 0)
         {
-            open.IsEnabled = false;
-            close.IsEnabled = false;
-            settings.IsEnabled = false;
-            transmit.IsEnabled = false;
-            tester.IsEnabled = false;
-            host.IsEnabled = false;
+            _open.IsEnabled = false;
+            _close.IsEnabled = false;
+            _settings.IsEnabled = false;
+            _transmit.IsEnabled = false;
+            _tester.IsEnabled = false;
+            _host.IsEnabled = false;
             return;
         }
-        MediaState phase = (MediaState)Volatile.Read(ref connectionPhase);
+        MediaState phase = (MediaState)Volatile.Read(ref _connectionPhase);
         bool closed = phase == MediaState.Closed;
-        bool running = controller.IsTesting;
-        bool busy = session.IsBusy || running;
+        bool running = _controller.IsTesting;
+        bool busy = _session.IsBusy || running;
         bool connected = phase == MediaState.Open;
-        open.IsEnabled = !busy && closed;
-        settings.IsEnabled = !busy && closed;
-        close.IsEnabled = connected;
-        transmit.IsEnabled = connected && !busy;
-        tester.IsEnabled = connected && (!busy || running);
-        tester.Content = running ? ExampleResources.Stop : ExampleResources.GoStop;
-        host.IsEnabled = closed && !busy && !((GXNet)session.Media).Server;
-        ExampleLayout.UpdateStatus(state, connected, busy);
-        received.Text = controller.Received(hex.IsChecked == true);
-        sent.Text = session.Media.BytesSent.ToString(); receivedCount.Text = session.Media.BytesReceived.ToString();
-        errors.Text = string.Join(Environment.NewLine, controller.Errors);
-        errorGroup.IsVisible = controller.Errors.Count != 0;
-        string snapshot = string.Join(Environment.NewLine, session.Log);
-        if (activity.Text != snapshot) { activity.Text = snapshot; }
-        var current = session.Clients.ToArray();
-        if (!(clients.ItemsSource as string[] ?? []).SequenceEqual(current))
+        _open.IsEnabled = !busy && closed;
+        _settings.IsEnabled = !busy && closed;
+        _close.IsEnabled = connected;
+        _transmit.IsEnabled = connected && !busy;
+        _tester.IsEnabled = connected && (!busy || running);
+        _tester.Content = running ? ExampleResources.Stop : ExampleResources.GoStop;
+        _host.IsEnabled = closed && !busy && !((GXNet)_session.Media).Server;
+        ExampleLayout.UpdateStatus(_state, connected, busy);
+        _received.Text = _controller.Received(_hex.IsChecked == true);
+        _sent.Text = _session.Media.BytesSent.ToString(); _receivedCount.Text = _session.Media.BytesReceived.ToString();
+        _errors.Text = string.Join(Environment.NewLine, _controller.Errors);
+        _errorGroup.IsVisible = _controller.Errors.Count != 0;
+        string snapshot = string.Join(Environment.NewLine, _session.Log);
+        if (_activity.Text != snapshot) { _activity.Text = snapshot; }
+        var current = _session.Clients.ToArray();
+        if (!(_clients.ItemsSource as string[] ?? []).SequenceEqual(current))
         {
-            var selected = clients.SelectedItem;
-            clients.ItemsSource = current;
-            clients.SelectedItem = current.Contains(selected as string) ? selected : null;
+            var selected = _clients.SelectedItem;
+            _clients.ItemsSource = current;
+            _clients.SelectedItem = current.Contains(selected as string) ? selected : null;
         }
         _ = SavePreferencesAsync();
-        var statusNetwork = (GXNet)session.Media;
+        var statusNetwork = (GXNet)_session.Media;
         string statusAddress = string.IsNullOrWhiteSpace(statusNetwork.HostName)
             ? (statusNetwork.Server ? (statusNetwork.UseIPv6 ? "::" : "0.0.0.0") : StatusResources.StatusNotConfigured)
             : statusNetwork.HostName;
@@ -354,24 +354,24 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
         {
             statusAddress = string.Concat("[", statusAddress, "]");
         }
-        mediaStatus.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, StatusResources.StatusNetwork,
-            session.Media.IsOpen ? StatusResources.StatusOpen : StatusResources.StatusClosed,
+        _mediaStatus.Text = string.Format(System.Globalization.CultureInfo.CurrentCulture, StatusResources.StatusNetwork,
+            _session.Media.IsOpen ? StatusResources.StatusOpen : StatusResources.StatusClosed,
             statusNetwork.Protocol.ToString().ToUpperInvariant(), statusAddress, statusNetwork.Port);
 
     }
     /// <inheritdoc/>
-    public ValueTask DisposeAsync() => new(disposal ??= DisposeCoreAsync());
+    public ValueTask DisposeAsync() => new(_disposal ??= DisposeCoreAsync());
     /// <summary>Detaches lifecycle callbacks before releasing controller resources.</summary>
     /// <returns>A task completing after the controller has stopped.</returns>
     private async Task DisposeCoreAsync()
     {
-        Volatile.Write(ref shuttingDown, 1);
-        session.Media.OnMediaStateChange -= MediaStateChanged;
+        Volatile.Write(ref _shuttingDown, 1);
+        _session.Media.OnMediaStateChange -= MediaStateChanged;
         if (Dispatcher.UIThread.CheckAccess()) { Refresh(); }
         else { Dispatcher.UIThread.Post(Refresh); }
-        await preferencesLoading;
+        await _preferencesLoading;
         await SavePreferencesAsync();
-        await controller.DisposeAsync();
+        await _controller.DisposeAsync();
     }
     /// <summary>Captures media configuration and outgoing controls without opening a connection.</summary>
     /// <returns>A detached JSON object containing this view's persistent preferences.</returns>
@@ -379,15 +379,15 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
     {
         var values = new JsonObject
         {
-            ["Media"] = JsonNode.Parse(session.Media.JsonSettings ?? "{}"),
-            ["SendText"] = send.Text ?? "",
-            ["Hex"] = hex.IsChecked == true,
-            ["Echo"] = echo.IsChecked == true,
-            ["ReceiveReply"] = sync.IsChecked == true,
-            ["ReplyEop"] = eop.Text ?? "",
-            ["ReplyCount"] = count.Text ?? "",
-            ["ReplyTimeout"] = timeout.Text ?? "",
-            ["Host"] = host.Text ?? ""
+            ["Media"] = JsonNode.Parse(_session.Media.JsonSettings ?? "{}"),
+            ["SendText"] = _send.Text ?? "",
+            ["Hex"] = _hex.IsChecked == true,
+            ["Echo"] = _echo.IsChecked == true,
+            ["ReceiveReply"] = _sync.IsChecked == true,
+            ["ReplyEop"] = _eop.Text ?? "",
+            ["ReplyCount"] = _count.Text ?? "",
+            ["ReplyTimeout"] = _timeout.Text ?? "",
+            ["Host"] = _host.Text ?? ""
         };
         return values;
     }
@@ -396,15 +396,15 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
     /// <param name="values">The saved preferences; missing entries retain their current defaults.</param>
     private void ApplyPreferences(JsonObject values)
     {
-        if (values["Media"] is JsonObject media) { session.Media.JsonSettings = media.ToJsonString(); }
-        send.Text = values["SendText"]?.GetValue<string>() ?? send.Text;
-        hex.IsChecked = values["Hex"]?.GetValue<bool>() ?? (hex.IsChecked == true);
-        echo.IsChecked = values["Echo"]?.GetValue<bool>() ?? false;
-        sync.IsChecked = values["ReceiveReply"]?.GetValue<bool>() ?? (sync.IsChecked == true);
-        eop.Text = values["ReplyEop"]?.GetValue<string>() ?? eop.Text;
-        count.Text = values["ReplyCount"]?.GetValue<string>() ?? count.Text;
-        timeout.Text = values["ReplyTimeout"]?.GetValue<string>() ?? timeout.Text;
-        host.Text = values["Host"]?.GetValue<string>() ?? host.Text;
+        if (values["Media"] is JsonObject media) { _session.Media.JsonSettings = media.ToJsonString(); }
+        _send.Text = values["SendText"]?.GetValue<string>() ?? _send.Text;
+        _hex.IsChecked = values["Hex"]?.GetValue<bool>() ?? (_hex.IsChecked == true);
+        _echo.IsChecked = values["Echo"]?.GetValue<bool>() ?? false;
+        _sync.IsChecked = values["ReceiveReply"]?.GetValue<bool>() ?? (_sync.IsChecked == true);
+        _eop.Text = values["ReplyEop"]?.GetValue<string>() ?? _eop.Text;
+        _count.Text = values["ReplyCount"]?.GetValue<string>() ?? _count.Text;
+        _timeout.Text = values["ReplyTimeout"]?.GetValue<string>() ?? _timeout.Text;
+        _host.Text = values["Host"]?.GetValue<string>() ?? _host.Text;
     }
 
     /// <summary>Restores preferences asynchronously before enabling interaction and keeps defaults if loading fails.</summary>
@@ -415,18 +415,18 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
         JsonObject defaults = CapturePreferences();
         try
         {
-            JsonObject? values = await preferences.LoadAsync();
-            if (System.Threading.Volatile.Read(ref shuttingDown) != 0) { return; }
+            JsonObject? values = await _preferences.LoadAsync();
+            if (System.Threading.Volatile.Read(ref _shuttingDown) != 0) { return; }
             if (values is not null) { ApplyPreferences(values); }
         }
         catch (Exception ex)
         {
-            if (System.Threading.Volatile.Read(ref shuttingDown) != 0) { return; }
+            if (System.Threading.Volatile.Read(ref _shuttingDown) != 0) { return; }
             ApplyPreferences(defaults);
-            controller.Report(ex.Message);
+            _controller.Report(ex.Message);
         }
-        preferencesSnapshot = CapturePreferences().ToJsonString();
-        preferencesReady = true;
+        _preferencesSnapshot = CapturePreferences().ToJsonString();
+        _preferencesReady = true;
         IsEnabled = true;
         Refresh();
     }
@@ -440,21 +440,21 @@ internal sealed class NetworkExamplePanel : UserControl, IAsyncDisposable
             await Dispatcher.UIThread.InvokeAsync(SavePreferencesAsync);
             return;
         }
-        if (!preferencesReady) { return; }
+        if (!_preferencesReady) { return; }
         string? snapshot = null;
         try
         {
             JsonObject values = CapturePreferences();
             snapshot = values.ToJsonString();
-            if (snapshot == preferencesSnapshot) { await preferencesSaving; return; }
-            preferencesSnapshot = snapshot;
-            preferencesSaving = preferences.SaveAsync(values);
-            await preferencesSaving;
+            if (snapshot == _preferencesSnapshot) { await _preferencesSaving; return; }
+            _preferencesSnapshot = snapshot;
+            _preferencesSaving = _preferences.SaveAsync(values);
+            await _preferencesSaving;
         }
         catch (Exception ex)
         {
-            if (preferencesSnapshot == snapshot) { preferencesSnapshot = null; }
-            controller.Report(ex.Message);
+            if (_preferencesSnapshot == snapshot) { _preferencesSnapshot = null; }
+            _controller.Report(ex.Message);
         }
     }
 

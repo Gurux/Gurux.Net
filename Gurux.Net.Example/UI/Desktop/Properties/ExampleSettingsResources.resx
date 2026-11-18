@@ -17,7 +17,6 @@
   <data name="TerminatorLabel" xml:space="preserve"><value>End of packet</value></data>
   <data name="TimeoutLabel" xml:space="preserve"><value>Timeout (ms)</value></data>
   <data name="ToolsGroup" xml:space="preserve"><value>Statistics and tester</value></data>
-  <data name="NoErrors" xml:space="preserve"><value>No errors.</value></data>
   <data name="StatusOpen" xml:space="preserve"><value>Open</value></data>
   <data name="StatusClosed" xml:space="preserve"><value>Closed</value></data>
   <data name="StatusNotConfigured" xml:space="preserve"><value>Not configured</value></data>

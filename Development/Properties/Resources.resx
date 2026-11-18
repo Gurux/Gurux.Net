@@ -117,56 +117,14 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="ClientSettings" xml:space="preserve">
-    <value>Client Settings:</value>
-  </data>
-  <data name="HostNameTxt" xml:space="preserve">
-    <value>Host:</value>
-  </data>
   <data name="InvalidClient" xml:space="preserve">
     <value>Invalid client.</value>
-  </data>
-  <data name="InvalidConnection" xml:space="preserve">
-    <value>Invalid connection.</value>
-  </data>
-  <data name="InvalidHostName" xml:space="preserve">
-    <value>Invalid host name.</value>
-  </data>
-  <data name="InvalidPortName" xml:space="preserve">
-    <value>Invalid port name.</value>
   </data>
   <data name="PortTxt" xml:space="preserve">
     <value>Port:</value>
   </data>
-  <data name="ProtocolTxt" xml:space="preserve">
-    <value>Protocol</value>
-  </data>
-  <data name="ServerSettings" xml:space="preserve">
-    <value>Server Settings:</value>
-  </data>
-  <data name="ServerTxt" xml:space="preserve">
-    <value>Server</value>
-  </data>
   <data name="SettingsTxt" xml:space="preserve">
     <value>Network Settings</value>
-  </data>
-  <data name="UseIPv6Txt" xml:space="preserve">
-    <value>Use IPv6</value>
-  </data>
-  <data name="InvalidSenderInfo" xml:space="preserve">
-    <value>Invalid sender info.</value>
-  </data>
-  <data name="AttachByStringCanBeUsedOnlyWithTCPIPConnection" xml:space="preserve">
-    <value>Attach by string can be used only with TCP/IP connection.</value>
-  </data>
-  <data name="UnknownAddress" xml:space="preserve">
-    <value>Unknown address.</value>
-  </data>
-  <data name="ClientTxt" xml:space="preserve">
-    <value>Client:</value>
-  </data>
-  <data name="IPv6Txt" xml:space="preserve">
-    <value>IPv6</value>
   </data>
   <data name="Cancel" xml:space="preserve">
     <value>Cancel</value>

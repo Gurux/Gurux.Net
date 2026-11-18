@@ -89,33 +89,33 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         internal readonly TaskCompletionSource RemovalDone = new(TaskCreationOptions.RunContinuationsAsynchronously);
     }
     /// <summary>Maps connected remote endpoints to their socket state.</summary>
-    readonly ConcurrentDictionary<string, Peer> clients = new();
+    readonly ConcurrentDictionary<string, Peer> _clients = new();
     /// <summary>Protects connection admission and lifecycle transitions.</summary>
-    readonly object admission = new();
+    readonly Lock _admission = new();
     /// <summary>Serializes writes from an unbound client connection.</summary>
-    readonly SemaphoreSlim clientSend = new(1);
+    readonly SemaphoreSlim _clientSend = new(1);
     /// <summary>Tracks background operations that shutdown must await.</summary>
-    readonly HashSet<Task> workers = new();
+    readonly HashSet<Task> _workers = [];
     /// <summary>Identifies callbacks whose reentrant shutdown must avoid awaiting themselves.</summary>
-    static readonly AsyncLocal<GXNet?> callbackOwner = new();
+    static readonly AsyncLocal<GXNet?> _callbackOwner = new();
     /// <summary>Tracks the current lifecycle transition under the admission lock.</summary>
-    MediaState phase = MediaState.Closed;
+    MediaState _phase = MediaState.Closed;
     /// <summary>Distinguishes current connection work from earlier open attempts.</summary>
-    long generation;
+    long _generation;
     /// <summary>Signals when the current opening operation has unwound.</summary>
-    TaskCompletionSource? openingDone;
+    TaskCompletionSource? _openingDone;
     /// <summary>Signals when the current closing operation has completed.</summary>
-    TaskCompletionSource? closingDone;
+    TaskCompletionSource? _closingDone;
     /// <summary>Cancels socket operations belonging to the active connection.</summary>
-    CancellationTokenSource? stopping;
+    CancellationTokenSource? _stopping;
     /// <summary>Stores the listener or directly connected client socket.</summary>
-    Socket? socket;
+    Socket? _socket;
     /// <summary>Identifies the accepted client owned by an attached media.</summary>
-    Peer? attached;
+    Peer? _attached;
     /// <summary>References the listener that owns an attached client socket.</summary>
-    GXNet? parent;
+    GXNet? _parent;
     /// <summary>Publishes whether data operations may use the connection.</summary>
-    volatile bool open;
+    volatile bool _open;
 
     /// <summary>Creates a closed TCP client with default transport options.</summary>
     public GXNet()
@@ -168,19 +168,19 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
     /// <summary>Gets or sets the positive number of unanswered TCP keepalive probes before OS failure detection, where supported.</summary>
     public int TcpKeepAliveRetryCount { get; set; } = 3;
     /// <inheritdoc/>
-    public override bool IsOpen => open;
+    public override bool IsOpen => _open;
     /// <inheritdoc/>
     public override string Name => $"{HostName}:{Port}";
     /// <inheritdoc/>
     public override string MediaType => "Net";
     /// <summary>Returns a snapshot of the endpoints currently tracked by a TCP server.</summary>
     /// <returns>The connected client endpoint strings.</returns>
-    public string[] GetActiveClients() => clients.Keys.ToArray();
+    public string[] GetActiveClients() => [.. _clients.Keys];
     /// <summary>Reports all invalid network settings without opening a connection.</summary>
     /// <returns>Localized, property-specific errors, or an empty list when the settings are valid.</returns>
     public override IReadOnlyList<GXValidationError> Validate()
     {
-        List<GXValidationError> errors = new();
+        List<GXValidationError> errors = [];
         if (Port <= 0 || Port > 65535)
         {
             errors.Add(new(nameof(Port), "OutOfRange", global::Gurux.Net.Properties.Resources.PortOutOfRange));
@@ -246,21 +246,21 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         CancellationTokenSource attempt;
         TaskCompletionSource completion;
         long currentGeneration;
-        lock (admission)
+        lock (_admission)
         {
-            if (phase == MediaState.Open) { return; }
-            if (parent != null) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.AttachedReconnect); }
-            if (phase != MediaState.Closed) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.LifecycleInProgress); }
+            if (_phase == MediaState.Open) { return; }
+            if (_parent != null) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.AttachedReconnect); }
+            if (_phase != MediaState.Closed) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.LifecycleInProgress); }
             ValidateForOpen();
-            phase = MediaState.Opening;
-            currentGeneration = ++generation;
+            _phase = MediaState.Opening;
+            currentGeneration = ++_generation;
             attempt = new CancellationTokenSource();
             if (WaitTime > 0) { attempt.CancelAfter(WaitTime); }
-            stopping = attempt;
-            openingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            _stopping = attempt;
+            _openingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
         }
-        GXNet? previousOwner = callbackOwner.Value;
-        callbackOwner.Value = this;
+        GXNet? previousOwner = _callbackOwner.Value;
+        _callbackOwner.Value = this;
         var cancellationRegistration = cancellationToken.Register(() => attempt.Cancel());
         Socket? pending = null;
         try
@@ -276,22 +276,22 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
                 if (Protocol == NetworkType.Tcp) { pending.Listen(128); }
             }
             else { await pending.ConnectAsync(new IPEndPoint(address, Port), attempt.Token).ConfigureAwait(false); }
-            lock (admission)
+            lock (_admission)
             {
                 attempt.Token.ThrowIfCancellationRequested();
-                if (generation != currentGeneration || phase != MediaState.Opening) { throw new OperationCanceledException(attempt.Token); }
-                socket = pending;
+                if (_generation != currentGeneration || _phase != MediaState.Opening) { throw new OperationCanceledException(attempt.Token); }
+                _socket = pending;
                 attempt.CancelAfter(Timeout.Infinite);
                 if (Server) { Port = ((IPEndPoint)pending.LocalEndPoint!).Port; }
-                ReceiveBuffer.Open(); open = true; phase = MediaState.Open;
+                ReceiveBuffer.Open(); _open = true; _phase = MediaState.Open;
             }
             SetState(MediaState.Open);
-            lock (admission)
+            lock (_admission)
             {
-                if (generation == currentGeneration && phase == MediaState.Open)
+                if (_generation == currentGeneration && _phase == MediaState.Open)
                 {
                     var activeSocket = pending;
-                    StartWorker(() => Server && Protocol == NetworkType.Tcp ? AcceptLoop(activeSocket, attempt.Token) : ReceiveLoop(activeSocket, null, attempt.Token, currentGeneration));
+                    StartWorker(() => Server && Protocol == NetworkType.Tcp ? AcceptLoop(activeSocket, attempt.Token) : ReceiveLoop(activeSocket, null, currentGeneration, attempt.Token));
                 }
             }
         }
@@ -299,11 +299,11 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         {
             pending?.Dispose();
             bool reportClosed = false;
-            lock (admission)
+            lock (_admission)
             {
-                if (generation == currentGeneration && (phase == MediaState.Opening || (phase == MediaState.Open && ReferenceEquals(socket, pending))))
+                if (_generation == currentGeneration && (_phase == MediaState.Opening || (_phase == MediaState.Open && ReferenceEquals(_socket, pending))))
                 {
-                    socket = null; open = false; phase = MediaState.Closed; stopping = null;
+                    _socket = null; _open = false; _phase = MediaState.Closed; _stopping = null;
                     attempt.Cancel(); ReceiveBuffer.Close();
                     reportClosed = true;
                 }
@@ -314,11 +314,11 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         finally
         {
             cancellationRegistration.Dispose();
-            callbackOwner.Value = previousOwner;
+            _callbackOwner.Value = previousOwner;
             completion.TrySetResult();
-            lock (admission) { if (openingDone == completion) { openingDone = null; } }
+            lock (_admission) { if (_openingDone == completion) { _openingDone = null; } }
             // The active connection owns the token source until shutdown.
-            if (!open || generation != currentGeneration) { attempt.Dispose(); }
+            if (!_open || _generation != currentGeneration) { attempt.Dispose(); }
         }
     }
     /// <summary>Tracks and starts an asynchronous socket worker whose errors are reported through media events.</summary>
@@ -326,25 +326,25 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
     void StartWorker(Func<Task> action)
     {
         var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        lock (admission)
+        lock (_admission)
         {
-            workers.Add(completion.Task);
+            _workers.Add(completion.Task);
         }
         _ = Task.Run(Run);
         // Runs the registered worker, reports failures and signals cleanup completion.
         // A task completing after the worker and tracking cleanup finish.
         async Task Run()
         {
-            var previous = callbackOwner.Value;
-            callbackOwner.Value = this;
+            var previous = _callbackOwner.Value;
+            _callbackOwner.Value = this;
             try { await action().ConfigureAwait(false); }
             catch (Exception error) { ReportBackgroundError(error); }
             finally
             {
-                callbackOwner.Value = previous;
-                lock (admission)
+                _callbackOwner.Value = previous;
+                lock (_admission)
                 {
-                    workers.Remove(completion.Task);
+                    _workers.Remove(completion.Task);
                 }
                 completion.TrySetResult();
             }
@@ -366,20 +366,20 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
                 accepted = await listener.AcceptAsync(token).ConfigureAwait(false);
                 ConfigureTcpKeepAlive(accepted);
                 var peer = new Peer(accepted, accepted.RemoteEndPoint!.ToString()!);
-                lock (admission)
+                lock (_admission)
                 {
-                    if (!open || token.IsCancellationRequested || (MaxClientCount != 0 && clients.Count >= MaxClientCount)) { accepted.Dispose(); continue; }
-                    clients[peer.Address] = peer;
+                    if (!_open || token.IsCancellationRequested || (MaxClientCount != 0 && _clients.Count >= MaxClientCount)) { accepted.Dispose(); continue; }
+                    _clients[peer.Address] = peer;
                     admitted = peer;
                 }
                 if (!NotifyClientConnected(peer.Address)) { RemovePeer(peer); continue; }
                 bool startReceive;
-                lock (admission)
+                lock (_admission)
                 {
-                    startReceive = open && !token.IsCancellationRequested && Volatile.Read(ref peer.Removed) == 0;
+                    startReceive = _open && !token.IsCancellationRequested && Volatile.Read(ref peer.Removed) == 0;
                     if (startReceive)
                     {
-                        StartWorker(() => ReceiveLoop(accepted, peer, token, generation));
+                        StartWorker(() => ReceiveLoop(accepted, peer, _generation, token));
                         receiveStarted = true;
                     }
                 }
@@ -405,10 +405,10 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
     /// <summary>Publishes socket input while preserving datagram and per-client stream boundaries.</summary>
     /// <param name="source">The socket to read.</param>
     /// <param name="peer">The accepted client state, or null for a direct connection.</param>
-    /// <param name="token">The connection lifetime cancellation token.</param>
     /// <param name="currentGeneration">The opening generation that owns this worker.</param>
+    /// <param name="token">The connection lifetime cancellation token.</param>
     /// <returns>A task completing after receive and cleanup finish.</returns>
-    async Task ReceiveLoop(Socket source, Peer? peer, CancellationToken token, long currentGeneration)
+    async Task ReceiveLoop(Socket source, Peer? peer, long currentGeneration, CancellationToken token)
     {
         byte[] buffer = new byte[65536];
         try
@@ -453,9 +453,9 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
             else if (!token.IsCancellationRequested)
             {
                 bool current;
-                lock (admission)
+                lock (_admission)
                 {
-                    current = generation == currentGeneration && phase == MediaState.Open;
+                    current = _generation == currentGeneration && _phase == MediaState.Open;
                 }
                 if (current) { await CloseAsync().ConfigureAwait(false); }
             }
@@ -504,18 +504,18 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         {
             if (peer.Removed != 0) { return; }
             peer.Removed = 1;
-            clients.TryRemove(peer.Address, out _); peer.Socket.Dispose();
+            _clients.TryRemove(peer.Address, out _); peer.Socket.Dispose();
             peer.PacketBuffer.Close();
             child = peer.Attached;
         }
-        var previous = callbackOwner.Value;
-        callbackOwner.Value = this;
+        var previous = _callbackOwner.Value;
+        _callbackOwner.Value = this;
         try
         {
             if (child != null)
             {
                 bool notify;
-                lock (child.admission) { notify = child.phase != MediaState.Closing; child.open = false; child.phase = MediaState.Closed; }
+                lock (child._admission) { notify = child._phase != MediaState.Closing; child._open = false; child._phase = MediaState.Closed; }
                 child.ReceiveBuffer.Close();
                 if (notify) { child.SetState(MediaState.Closed); }
             }
@@ -525,43 +525,51 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
             try { NotifyClientDisconnected(peer.Address); }
             finally
             {
-                callbackOwner.Value = previous;
+                _callbackOwner.Value = previous;
                 peer.RemovalDone.TrySetResult();
             }
         }
     }
     /// <summary>Disconnects a currently tracked client; unknown addresses are ignored.</summary>
     /// <param name="address">The remote endpoint returned by <see cref="GetActiveClients"/>.</param>
-    public void DisconnectClient(string address) { if (clients.TryGetValue(address, out var peer)) { RemovePeer(peer); } }
+    public void DisconnectClient(string address) { if (_clients.TryGetValue(address, out var peer)) { RemovePeer(peer); } }
     /// <summary>Routes one accepted TCP client's data into an independent media and synchronous receive buffer.</summary>
     /// <param name="info">The endpoint of a currently connected TCP client.</param>
     /// <returns>The existing or newly created media attached to this client.</returns>
     /// <exception cref="ArgumentException">The endpoint is no longer connected.</exception>
     public GXNet Attach(object info)
     {
-        if (!clients.TryGetValue(Convert.ToString(info) ?? "", out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(info)); }
+        if (!_clients.TryGetValue(Convert.ToString(info) ?? "", out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(info)); }
         lock (peer)
         {
-            if (peer.Removed != 0 || !clients.TryGetValue(peer.Address, out var current) || !ReferenceEquals(peer, current)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientDisconnected, nameof(info)); }
+            if (peer.Removed != 0 || !_clients.TryGetValue(peer.Address, out var current) || !ReferenceEquals(peer, current)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientDisconnected, nameof(info)); }
             if (peer.Attached != null) { return peer.Attached; }
-            var child = new GXNet(Protocol, HostName, Port) { parent = this, attached = peer, open = true, phase = MediaState.Open };
-            child.EnableTcpKeepAlive = EnableTcpKeepAlive; child.TcpKeepAliveIdleSeconds = TcpKeepAliveIdleSeconds;
-            child.TcpKeepAliveIntervalSeconds = TcpKeepAliveIntervalSeconds; child.TcpKeepAliveRetryCount = TcpKeepAliveRetryCount;
+            var child = new GXNet(Protocol, HostName, Port)
+            {
+                _parent = this,
+                _attached = peer,
+                _open = true,
+                _phase = MediaState.Open,
+                EnableTcpKeepAlive = EnableTcpKeepAlive,
+                TcpKeepAliveIdleSeconds = TcpKeepAliveIdleSeconds,
+                TcpKeepAliveIntervalSeconds = TcpKeepAliveIntervalSeconds,
+                TcpKeepAliveRetryCount = TcpKeepAliveRetryCount
+            };
             child.ReceiveBuffer.Open(); peer.Attached = child; return child;
         }
     }
     /// <inheritdoc/>
     public override async ValueTask SendAsync(ReadOnlyMemory<byte> data, string? receiver = null, CancellationToken cancellationToken = default)
     {
-        if (!open) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed); }
-        if (attached != null) { await SendPeer(attached, data, cancellationToken).ConfigureAwait(false); return; }
+        if (!_open) { throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed); }
+        if (_attached != null) { await SendPeer(_attached, data, cancellationToken).ConfigureAwait(false); return; }
         if (Server && Protocol == NetworkType.Tcp)
         {
             if (receiver == null) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientAddressRequired, nameof(receiver)); }
-            if (!clients.TryGetValue(receiver, out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(receiver)); }
+            if (!_clients.TryGetValue(receiver, out var peer)) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.ClientNotConnected, nameof(receiver)); }
             await SendPeer(peer, data, cancellationToken).ConfigureAwait(false); return;
         }
-        var target = socket ?? throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed);
+        var target = _socket ?? throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.MediaClosed);
         if (Protocol == NetworkType.Udp && Server)
         {
             if (receiver == null) { throw new ArgumentException(global::Gurux.Net.Properties.Resources.DestinationRequired, nameof(receiver)); }
@@ -569,9 +577,9 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         }
         else
         {
-            await clientSend.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await _clientSend.WaitAsync(cancellationToken).ConfigureAwait(false);
             try { await SendAll(target, data, cancellationToken).ConfigureAwait(false); }
-            finally { clientSend.Release(); }
+            finally { _clientSend.Release(); }
         }
     }
     /// <summary>Serializes a complete write to an accepted client socket.</summary>
@@ -593,7 +601,7 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
     async ValueTask SendAll(Socket target, ReadOnlyMemory<byte> data, CancellationToken token)
     {
         if (Protocol == NetworkType.Udp) { AddBytesSent(await target.SendAsync(data, SocketFlags.None, token).ConfigureAwait(false)); return; }
-        while (!data.IsEmpty) { int count = await target.SendAsync(data, SocketFlags.None, token).ConfigureAwait(false); if (count == 0) { throw new IOException(global::Gurux.Net.Properties.Resources.SocketClosedDuringSend); } AddBytesSent(count); parent?.AddBytesSent(count); data = data[count..]; }
+        while (!data.IsEmpty) { int count = await target.SendAsync(data, SocketFlags.None, token).ConfigureAwait(false); if (count == 0) { throw new IOException(global::Gurux.Net.Properties.Resources.SocketClosedDuringSend); } AddBytesSent(count); _parent?.AddBytesSent(count); data = data[count..]; }
     }
     /// <summary>Closes this connection and awaits its receive callbacks unless called reentrantly from their owner.</summary>
     /// <remarks>Closing an attached media drains only its peer; the listening server remains open.</remarks>
@@ -608,32 +616,32 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         Task? existingClose = null;
         TaskCompletionSource? completion = null;
         long closingGeneration = 0;
-        bool reentrant = callbackOwner.Value == this
-            || (parent != null && callbackOwner.Value == parent)
-            || callbackOwner.Value?.parent == this;
-        lock (admission)
+        bool reentrant = _callbackOwner.Value == this
+            || (_parent != null && _callbackOwner.Value == _parent)
+            || _callbackOwner.Value?._parent == this;
+        lock (_admission)
         {
-            if (phase == MediaState.Closed && !open)
-            { existingClose = Task.WhenAll(workers.Concat(openingDone == null ? [] : new[] { openingDone.Task })); }
-            else if (phase == MediaState.Closing)
-            { existingClose = Task.WhenAll(workers.Concat(openingDone == null ? [] : new[] { openingDone.Task }).Append(closingDone?.Task ?? Task.CompletedTask)); }
+            if (_phase == MediaState.Closed && !_open)
+            { existingClose = Task.WhenAll(_workers.Concat(_openingDone == null ? [] : new[] { _openingDone.Task })); }
+            else if (_phase == MediaState.Closing)
+            { existingClose = Task.WhenAll(_workers.Concat(_openingDone == null ? [] : new[] { _openingDone.Task }).Append(_closingDone?.Task ?? Task.CompletedTask)); }
             else
             {
-                phase = MediaState.Closing; open = false; closingGeneration = generation;
-                closingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
-                removed = clients.Values.ToArray();
-                background = workers.ToArray();
-                opening = openingDone?.Task;
-                closingSocket = socket; socket = null;
-                cancellation = stopping; stopping = null;
+                _phase = MediaState.Closing; _open = false; closingGeneration = _generation;
+                _closingDone = completion = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                removed = [.. _clients.Values];
+                background = [.. _workers];
+                opening = _openingDone?.Task;
+                closingSocket = _socket; _socket = null;
+                cancellation = _stopping; _stopping = null;
             }
         }
-        if (attached != null)
+        if (_attached != null)
         {
-            background = background.Append(attached.ReceiveDone.Task).ToArray();
+            background = [.. background, _attached.ReceiveDone.Task];
             if (completion == null)
             {
-                existingClose = Task.WhenAll(existingClose ?? Task.CompletedTask, attached.ReceiveDone.Task, closingDone?.Task ?? Task.CompletedTask);
+                existingClose = Task.WhenAll(existingClose ?? Task.CompletedTask, _attached.ReceiveDone.Task, _closingDone?.Task ?? Task.CompletedTask);
             }
         }
         if (completion == null)
@@ -641,8 +649,8 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
             if (!reentrant && existingClose != null) { await existingClose.ConfigureAwait(false); }
             return;
         }
-        var previous = callbackOwner.Value;
-        callbackOwner.Value = this;
+        var previous = _callbackOwner.Value;
+        _callbackOwner.Value = this;
         Exception? callbackError = null;
         // Runs a shutdown step and retains its first failure so remaining cleanup can continue.
         // action: The shutdown operation to attempt.
@@ -651,7 +659,7 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
         {
             Cleanup(() => cancellation?.Cancel()); Cleanup(() => closingSocket?.Dispose()); Cleanup(() => ReceiveBuffer.Close());
             Cleanup(() => SetState(MediaState.Closing));
-            if (parent != null && attached != null) { Cleanup(() => parent.RemovePeer(attached)); }
+            if (_parent != null && _attached != null) { Cleanup(() => _parent.RemovePeer(_attached)); }
             foreach (var peer in removed) { Cleanup(() => RemovePeer(peer)); }
             // A synchronous event handler cannot await its own worker/open operation.
             // External callers wait for every tracked operation to unwind.
@@ -660,12 +668,12 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
                 if (opening != null) { await opening.ConfigureAwait(false); }
                 await Task.WhenAll(background).ConfigureAwait(false);
             }
-            lock (admission) { if (generation == closingGeneration) { phase = MediaState.Closed; } }
+            lock (_admission) { if (_generation == closingGeneration) { _phase = MediaState.Closed; } }
             Cleanup(() => SetState(MediaState.Closed));
         }
         finally
         {
-            callbackOwner.Value = previous;
+            _callbackOwner.Value = previous;
             completion.TrySetResult();
             if (opening is { IsCompleted: false }) { _ = opening.ContinueWith(_ => cancellation?.Dispose(), TaskScheduler.Default); }
             else { cancellation?.Dispose(); }
@@ -761,9 +769,9 @@ public class GXNet : GXMediaBase, IGXMediaIconProvider
     /// <exception cref="InvalidOperationException">The media is open or a lifecycle transition is in progress.</exception>
     private void ApplySettings(NetSettings settings)
     {
-        lock (admission)
+        lock (_admission)
         {
-            if (phase != MediaState.Closed || open)
+            if (_phase != MediaState.Closed || _open)
             {
                 throw new InvalidOperationException(global::Gurux.Net.Properties.Resources.CloseBeforeSettings);
             }

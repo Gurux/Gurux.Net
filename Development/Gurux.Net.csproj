@@ -20,7 +20,7 @@
   <ItemGroup><Compile Include="GXNet.cs;NetSettings.cs;NetJsonContext.cs;Enums/NetworkType.cs;AvailableMediaSettings.cs;Properties/Resources.cs" /><None Include="Net.png" Pack="true" PackagePath="/" /><None Include="../README.md" Pack="true" PackagePath="/" /></ItemGroup>
   <ItemGroup><EmbeddedResource Include="Properties/Resources.resx" /></ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Gurux.Common" Version="9.0.2611.1601" />
+    <PackageReference Include="Gurux.Common" Version="9.0.2611.1801" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Net.png" LogicalName="Gurux.Net.MediaIcon.png" />

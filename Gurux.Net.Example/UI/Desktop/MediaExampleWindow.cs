@@ -35,15 +35,15 @@ namespace Gurux.Net.Example.Desktop;
 public sealed class MediaExampleWindow : Window, IAsyncDisposable
 {
     /// <summary>The TCP or UDP connection used by this window.</summary>
-    private readonly ExampleSession session = new();
+    private readonly ExampleSession _session = new();
     /// <summary>The compact network controls displayed in the window.</summary>
-    private readonly NetworkExamplePanel networkPanel;
+    private readonly NetworkExamplePanel _networkPanel;
     /// <summary>Cancels pending settings when the window closes.</summary>
-    private readonly CancellationTokenSource lifetime = new();
+    private readonly CancellationTokenSource _lifetime = new();
     /// <summary>Refreshes transport state without handling transport callbacks on the UI thread.</summary>
-    private readonly DispatcherTimer timer;
+    private readonly DispatcherTimer _timer;
     /// <summary>Shares one asynchronous shutdown operation between close requests.</summary>
-    private Task? disposal;
+    private Task? _disposal;
 
     /// <summary>Creates a window for the network sample's own connection and settings.</summary>
     /// <remarks>Native close requests await shared cleanup and then close the window even when cleanup fails.</remarks>
@@ -51,15 +51,15 @@ public sealed class MediaExampleWindow : Window, IAsyncDisposable
     {
         Title = ExampleResources.ApplicationTitle;
         ExampleLayout.ConfigureWindow(this);
-        networkPanel = new NetworkExamplePanel(session,
-            () => new AvaloniaMediaSettingsEditor(this).ShowAsync(session.Media, cancellationToken: lifetime.Token));
-        Content = networkPanel;
-        timer = new DispatcherTimer(TimeSpan.FromMilliseconds(200), DispatcherPriority.Background, (_, _) => networkPanel.Refresh());
-        timer.Start();
-        networkPanel.Refresh();
+        _networkPanel = new NetworkExamplePanel(_session,
+            () => new AvaloniaMediaSettingsEditor(this).ShowAsync(_session.Media, cancellationToken: _lifetime.Token));
+        Content = _networkPanel;
+        _timer = new DispatcherTimer(TimeSpan.FromMilliseconds(200), DispatcherPriority.Background, (_, _) => _networkPanel.Refresh());
+        _timer.Start();
+        _networkPanel.Refresh();
         Closing += async (_, args) =>
         {
-            if (disposal is null)
+            if (_disposal is null)
             {
                 args.Cancel = true;
                 try
@@ -76,21 +76,21 @@ public sealed class MediaExampleWindow : Window, IAsyncDisposable
                     Dispatcher.UIThread.Post(() => Close());
                 }
             }
-            else if (!disposal.IsCompleted) { args.Cancel = true; }
+            else if (!_disposal.IsCompleted) { args.Cancel = true; }
         };
     }
 
     /// <inheritdoc/>
-    public ValueTask DisposeAsync() => new(disposal ??= DisposeCoreAsync());
+    public ValueTask DisposeAsync() => new(_disposal ??= DisposeCoreAsync());
 
     /// <summary>Stops UI updates, cancels background work and releases the transport.</summary>
     /// <returns>A task completing after all resources are released.</returns>
     private async Task DisposeCoreAsync()
     {
-        timer.Stop();
-        lifetime.Cancel();
-        await networkPanel.DisposeAsync();
-        await session.DisposeAsync();
-        lifetime.Dispose();
+        _timer.Stop();
+        _lifetime.Cancel();
+        await _networkPanel.DisposeAsync();
+        await _session.DisposeAsync();
+        _lifetime.Dispose();
     }
 }

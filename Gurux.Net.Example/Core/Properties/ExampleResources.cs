@@ -34,85 +34,85 @@ namespace Gurux.Net.Example.Properties;
 public static class ExampleResources
 {
     /// <summary>Gets the outgoing-payload input hint.</summary>
-    public static string SendPlaceholder => Manager.GetString(nameof(SendPlaceholder), CultureInfo.CurrentUICulture)!;
+    public static string SendPlaceholder => _manager.GetString(nameof(SendPlaceholder), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the title of the dedicated received-payload card.</summary>
-    public static string ReceivedDataHeading => Manager.GetString(nameof(ReceivedDataHeading), CultureInfo.CurrentUICulture)!;
+    public static string ReceivedDataHeading => _manager.GetString(nameof(ReceivedDataHeading), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the caption for clearing displayed history.</summary>
-    public static string Clear => Manager.GetString(nameof(Clear), System.Globalization.CultureInfo.CurrentUICulture) ?? nameof(Clear);
+    public static string Clear => _manager.GetString(nameof(Clear), System.Globalization.CultureInfo.CurrentUICulture) ?? nameof(Clear);
     /// <summary>Resolves resources from this application's own Core assembly.</summary>
-    private static readonly ResourceManager Manager = new("Gurux.Net.Example.Properties.ExampleResources", typeof(ExampleResources).Assembly);
+    private static readonly ResourceManager _manager = new("Gurux.Net.Example.Properties.ExampleResources", typeof(ExampleResources).Assembly);
     /// <summary>Gets the localized text: Gurux Network example</summary>
-    public static string ApplicationTitle => Manager.GetString(nameof(ApplicationTitle), CultureInfo.CurrentUICulture)!;
+    public static string ApplicationTitle => _manager.GetString(nameof(ApplicationTitle), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Send:</summary>
-    public static string SendLabel => Manager.GetString(nameof(SendLabel), CultureInfo.CurrentUICulture)!;
+    public static string SendLabel => _manager.GetString(nameof(SendLabel), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Received:</summary>
-    public static string ReceivedLabel => Manager.GetString(nameof(ReceivedLabel), CultureInfo.CurrentUICulture)!;
+    public static string ReceivedLabel => _manager.GetString(nameof(ReceivedLabel), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Open</summary>
-    public static string Open => Manager.GetString(nameof(Open), CultureInfo.CurrentUICulture)!;
+    public static string Open => _manager.GetString(nameof(Open), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the caption for closing the connection or canceling pending work.</summary>
-    public static string Close => Manager.GetString(nameof(Close), CultureInfo.CurrentUICulture)!;
+    public static string Close => _manager.GetString(nameof(Close), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Properties</summary>
-    public static string Properties => Manager.GetString(nameof(Properties), CultureInfo.CurrentUICulture)!;
+    public static string Properties => _manager.GetString(nameof(Properties), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Send</summary>
-    public static string Send => Manager.GetString(nameof(Send), CultureInfo.CurrentUICulture)!;
+    public static string Send => _manager.GetString(nameof(Send), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized caption for hexadecimal payloads.</summary>
-    public static string Hex => Manager.GetString(nameof(Hex), CultureInfo.CurrentUICulture)!;
+    public static string Hex => _manager.GetString(nameof(Hex), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Sync</summary>
-    public static string Sync => Manager.GetString(nameof(Sync), CultureInfo.CurrentUICulture)!;
+    public static string Sync => _manager.GetString(nameof(Sync), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized caption for echoing received data.</summary>
-    public static string Echo => Manager.GetString(nameof(Echo), CultureInfo.CurrentUICulture)!;
+    public static string Echo => _manager.GetString(nameof(Echo), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Synchronous settings</summary>
-    public static string SyncSettings => Manager.GetString(nameof(SyncSettings), CultureInfo.CurrentUICulture)!;
+    public static string SyncSettings => _manager.GetString(nameof(SyncSettings), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Wait time:</summary>
-    public static string WaitTime => Manager.GetString(nameof(WaitTime), CultureInfo.CurrentUICulture)!;
+    public static string WaitTime => _manager.GetString(nameof(WaitTime), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: EOP:</summary>
-    public static string Eop => Manager.GetString(nameof(Eop), CultureInfo.CurrentUICulture)!;
+    public static string Eop => _manager.GetString(nameof(Eop), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Size:</summary>
-    public static string Size => Manager.GetString(nameof(Size), CultureInfo.CurrentUICulture)!;
+    public static string Size => _manager.GetString(nameof(Size), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Packet statistics (bytes)</summary>
-    public static string Statistics => Manager.GetString(nameof(Statistics), CultureInfo.CurrentUICulture)!;
+    public static string Statistics => _manager.GetString(nameof(Statistics), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Sent:</summary>
-    public static string Sent => Manager.GetString(nameof(Sent), CultureInfo.CurrentUICulture)!;
+    public static string Sent => _manager.GetString(nameof(Sent), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Interval (ms):</summary>
-    public static string Interval => Manager.GetString(nameof(Interval), CultureInfo.CurrentUICulture)!;
+    public static string Interval => _manager.GetString(nameof(Interval), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Tester</summary>
-    public static string Tester => Manager.GetString(nameof(Tester), CultureInfo.CurrentUICulture)!;
+    public static string Tester => _manager.GetString(nameof(Tester), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Go / Stop</summary>
-    public static string GoStop => Manager.GetString(nameof(GoStop), CultureInfo.CurrentUICulture)!;
+    public static string GoStop => _manager.GetString(nameof(GoStop), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Clients</summary>
-    public static string Clients => Manager.GetString(nameof(Clients), CultureInfo.CurrentUICulture)!;
+    public static string Clients => _manager.GetString(nameof(Clients), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Errors</summary>
-    public static string Errors => Manager.GetString(nameof(Errors), CultureInfo.CurrentUICulture)!;
+    public static string Errors => _manager.GetString(nameof(Errors), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Stop</summary>
-    public static string Stop => Manager.GetString(nameof(Stop), CultureInfo.CurrentUICulture)!;
+    public static string Stop => _manager.GetString(nameof(Stop), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Closed</summary>
-    public static string Closed => Manager.GetString(nameof(Closed), CultureInfo.CurrentUICulture)!;
+    public static string Closed => _manager.GetString(nameof(Closed), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized caption for echoing received data. queue is full; packet skipped.</summary>
-    public static string EchoQueueFull => Manager.GetString(nameof(EchoQueueFull), CultureInfo.CurrentUICulture)!;
+    public static string EchoQueueFull => _manager.GetString(nameof(EchoQueueFull), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Tester is already running.</summary>
-    public static string TesterRunning => Manager.GetString(nameof(TesterRunning), CultureInfo.CurrentUICulture)!;
+    public static string TesterRunning => _manager.GetString(nameof(TesterRunning), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Interval must be positive.</summary>
-    public static string PositiveInterval => Manager.GetString(nameof(PositiveInterval), CultureInfo.CurrentUICulture)!;
+    public static string PositiveInterval => _manager.GetString(nameof(PositiveInterval), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Open the connection first.</summary>
-    public static string OpenFirst => Manager.GetString(nameof(OpenFirst), CultureInfo.CurrentUICulture)!;
+    public static string OpenFirst => _manager.GetString(nameof(OpenFirst), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: Select a connected client.</summary>
-    public static string SelectClient => Manager.GetString(nameof(SelectClient), CultureInfo.CurrentUICulture)!;
+    public static string SelectClient => _manager.GetString(nameof(SelectClient), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized text: No reply was received before the timeout.</summary>
-    public static string ReplyTimeout => Manager.GetString(nameof(ReplyTimeout), CultureInfo.CurrentUICulture)!;
+    public static string ReplyTimeout => _manager.GetString(nameof(ReplyTimeout), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized activity message: Opened.</summary>
-    public static string Opened => Manager.GetString(nameof(Opened), CultureInfo.CurrentUICulture)!;
+    public static string Opened => _manager.GetString(nameof(Opened), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized activity message: Closed.</summary>
-    public static string ClosedActivity => Manager.GetString(nameof(ClosedActivity), CultureInfo.CurrentUICulture)!;
+    public static string ClosedActivity => _manager.GetString(nameof(ClosedActivity), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized activity message: Error: {0}</summary>
-    public static string TransportError => Manager.GetString(nameof(TransportError), CultureInfo.CurrentUICulture)!;
+    public static string TransportError => _manager.GetString(nameof(TransportError), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the localized activity message: Reply: {0}</summary>
-    public static string ReplyReceived => Manager.GetString(nameof(ReplyReceived), CultureInfo.CurrentUICulture)!;
+    public static string ReplyReceived => _manager.GetString(nameof(ReplyReceived), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the activity format for received bytes and text.</summary>
-    public static string ReceivedBytes => Manager.GetString(nameof(ReceivedBytes), CultureInfo.CurrentUICulture)!;
+    public static string ReceivedBytes => _manager.GetString(nameof(ReceivedBytes), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the activity format for received data.</summary>
-    public static string ReceivedData => Manager.GetString(nameof(ReceivedData), CultureInfo.CurrentUICulture)!;
+    public static string ReceivedData => _manager.GetString(nameof(ReceivedData), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the activity format for sent bytes.</summary>
-    public static string SentBytes => Manager.GetString(nameof(SentBytes), CultureInfo.CurrentUICulture)!;
+    public static string SentBytes => _manager.GetString(nameof(SentBytes), CultureInfo.CurrentUICulture)!;
     /// <summary>Gets the format combining a culture-aware activity timestamp and message.</summary>
-    public static string TimestampedActivity => Manager.GetString(nameof(TimestampedActivity), CultureInfo.CurrentUICulture)!;
+    public static string TimestampedActivity => _manager.GetString(nameof(TimestampedActivity), CultureInfo.CurrentUICulture)!;
 }

@@ -38,31 +38,31 @@ namespace Gurux.Net.Example;
 public sealed class ExampleSession : IAsyncDisposable
 {
     /// <summary>Clears retained activity without changing received payloads, connection state or traffic counters.</summary>
-    public void ClearActivity() => log.Clear();
+    public void ClearActivity() => _log.Clear();
     /// <summary>Serializes operations that own receive buffering.</summary>
-    readonly SemaphoreSlim operations = new(1, 1);
+    readonly SemaphoreSlim _operations = new(1, 1);
     /// <summary>Protects shared state during concurrent transport callbacks.</summary>
-    readonly object sync = new();
+    readonly object _sync = new();
     /// <summary>Stores timestamped activity history.</summary>
-    readonly SessionLog log = new();
+    readonly SessionLog _log = new();
     /// <summary>Tracks currently connected network clients.</summary>
-    readonly HashSet<string> clients = new();
+    readonly HashSet<string> _clients = new();
     /// <summary>Retains attached-client receive subscriptions.</summary>
-    readonly Dictionary<string, GXNet> attachedClients = new();
+    readonly Dictionary<string, GXNet> _attachedClients = new();
     /// <summary>Cancels pending operations when this owner closes.</summary>
-    CancellationTokenSource lifetime = new();
+    CancellationTokenSource _lifetime = new();
     /// <summary>Records whether disposal has started.</summary>
-    bool disposed;
+    bool _disposed;
     /// <summary>Indicates an active serialized operation.</summary>
-    int busy;
+    int _busy;
     /// <summary>Gets the network transport owned by this session.</summary>
     public GXNet Media { get; }
     /// <summary>Gets whether a serialized network operation is active.</summary>
-    public bool IsBusy => Volatile.Read(ref busy) != 0;
+    public bool IsBusy => Volatile.Read(ref _busy) != 0;
     /// <summary>Gets a snapshot of connected client addresses.</summary>
-    public IReadOnlyList<string> Clients { get { lock (sync) { return clients.ToArray(); } } }
+    public IReadOnlyList<string> Clients { get { lock (_sync) { return _clients.ToArray(); } } }
     /// <summary>Gets a snapshot of timestamped network activity.</summary>
-    public IReadOnlyList<string> Log => log.Snapshot;
+    public IReadOnlyList<string> Log => _log.Snapshot;
 
     /// <summary>Takes ownership of a network transport and subscribes to its events.</summary>
     public ExampleSession() : this(new GXNet(NetworkType.Tcp, "localhost", 4059)) { }
@@ -85,23 +85,23 @@ public sealed class ExampleSession : IAsyncDisposable
     {
         if (args.Data is byte[] bytes)
         {
-            log.Add(ExampleDataDisplay.IsAscii(bytes)
+            _log.Add(ExampleDataDisplay.IsAscii(bytes)
                 ? string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReceivedBytes, args.SenderInfo, Convert.ToHexString(bytes), ExampleDataDisplay.Format(bytes))
                 : string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReceivedData, args.SenderInfo, ExampleDataDisplay.Format(bytes)));
         }
         else
         {
-            log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReceivedData, args.SenderInfo, args.Data));
+            _log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReceivedData, args.SenderInfo, args.Data));
         }
     }
     /// <summary>Records an asynchronous transport failure.</summary>
     /// <param name="args">The data or connection information delivered by the event.</param>
     /// <param name="sender">The transport that raised the event.</param>
-    void Error(object? sender, MediaErrorEventArgs args) => log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.TransportError, args.Exception.Message));
+    void Error(object? sender, MediaErrorEventArgs args) => _log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.TransportError, args.Exception.Message));
     /// <summary>Tracks a newly accepted client address.</summary>
     /// <param name="args">The data or connection information delivered by the event.</param>
     /// <param name="sender">The transport that raised the event.</param>
-    void Connected(object? sender, ConnectionEventArgs args) { if (args.Info is { } info) { lock (sync) { clients.Add(info); } } }
+    void Connected(object? sender, ConnectionEventArgs args) { if (args.Info is { } info) { lock (_sync) { _clients.Add(info); } } }
     /// <summary>Removes a disconnected client and its receive subscription.</summary>
     /// <param name="args">The data or connection information delivered by the event.</param>
     /// <param name="sender">The transport that raised the event.</param>
@@ -109,10 +109,10 @@ public sealed class ExampleSession : IAsyncDisposable
     {
         if (args.Info is { } info)
         {
-            lock (sync)
+            lock (_sync)
             {
-                clients.Remove(info);
-                if (attachedClients.Remove(info, out var attached)) { attached.OnReceived -= Received; }
+                _clients.Remove(info);
+                if (_attachedClients.Remove(info, out var attached)) { attached.OnReceived -= Received; }
             }
         }
     }
@@ -125,12 +125,12 @@ public sealed class ExampleSession : IAsyncDisposable
     async Task<T> RunAsync<T>(Func<CancellationToken, Task<T>> action, CancellationToken cancellationToken)
     {
         CancellationToken token;
-        lock (sync) { ObjectDisposedException.ThrowIf(disposed, this); token = lifetime.Token; }
+        lock (_sync) { ObjectDisposedException.ThrowIf(_disposed, this); token = _lifetime.Token; }
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(token, cancellationToken);
-        await operations.WaitAsync(linked.Token).ConfigureAwait(false);
-        Interlocked.Exchange(ref busy, 1);
+        await _operations.WaitAsync(linked.Token).ConfigureAwait(false);
+        Interlocked.Exchange(ref _busy, 1);
         try { linked.Token.ThrowIfCancellationRequested(); return await action(linked.Token).ConfigureAwait(false); }
-        finally { Interlocked.Exchange(ref busy, 0); operations.Release(); }
+        finally { Interlocked.Exchange(ref _busy, 0); _operations.Release(); }
     }
 
     /// <summary>Opens the configured network transport.</summary>
@@ -139,7 +139,7 @@ public sealed class ExampleSession : IAsyncDisposable
     public Task OpenAsync(CancellationToken cancellationToken = default) => RunAsync(async token =>
     {
         await Media.OpenAsync(token).ConfigureAwait(false);
-        log.Add(ExampleResources.Opened);
+        _log.Add(ExampleResources.Opened);
         return true;
     }, cancellationToken);
 
@@ -147,21 +147,21 @@ public sealed class ExampleSession : IAsyncDisposable
     /// <returns>A task completing after connection cleanup.</returns>
     public async Task CloseAsync()
     {
-        lock (sync) { lifetime.Cancel(); }
+        lock (_sync) { _lifetime.Cancel(); }
         var closing = Media.CloseAsync();
-        await operations.WaitAsync().ConfigureAwait(false);
+        await _operations.WaitAsync().ConfigureAwait(false);
         try
         {
             await closing.ConfigureAwait(false);
-            lock (sync)
+            lock (_sync)
             {
-                foreach (var attached in attachedClients.Values) { attached.OnReceived -= Received; }
-                attachedClients.Clear();
+                foreach (var attached in _attachedClients.Values) { attached.OnReceived -= Received; }
+                _attachedClients.Clear();
             }
-            lock (sync) { clients.Clear(); lifetime.Dispose(); lifetime = new(); }
-            log.Add(ExampleResources.ClosedActivity);
+            lock (_sync) { _clients.Clear(); _lifetime.Dispose(); _lifetime = new(); }
+            _log.Add(ExampleResources.ClosedActivity);
         }
-        finally { operations.Release(); }
+        finally { _operations.Release(); }
     }
 
     /// <summary>Sends UTF-8 text or hexadecimal bytes and optionally receives a buffered response.</summary>
@@ -205,20 +205,20 @@ public sealed class ExampleSession : IAsyncDisposable
             if (Media is GXNet { Server: true } net)
             {
                 if (string.IsNullOrWhiteSpace(receiver)) { throw new ArgumentException(ExampleResources.SelectClient, nameof(receiver)); }
-                if (receiveReply) { attached = net.Attach(receiver); target = attached; lock (sync) { if (attachedClients.TryAdd(receiver, attached)) { attached.OnReceived += Received; } } }
+                if (receiveReply) { attached = net.Attach(receiver); target = attached; lock (_sync) { if (_attachedClients.TryAdd(receiver, attached)) { attached.OnReceived += Received; } } }
             }
             try
             {
                 using var scope = receiveReply ? target.BeginSynchronous() : null;
                 if (receiveReply) { target.ResetSynchronousBuffer(); }
                 await target.SendAsync(data, attached is null ? receiver : null, token).ConfigureAwait(false);
-                log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.SentBytes, ExampleDataDisplay.Format(data, hex)));
+                _log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.SentBytes, ExampleDataDisplay.Format(data, hex)));
                 if (!receiveReply) { return null; }
                 var parameters = new ReceiveParameters<byte[]> { Count = count, WaitTime = waitTime, Eop = string.IsNullOrEmpty(eop) ? null : (hex ? Convert.FromHexString(string.Concat(eop.Where(c => !char.IsWhiteSpace(c)))) : Encoding.UTF8.GetBytes(eop)), AllData = count == 0 && string.IsNullOrEmpty(eop) };
                 if (!await target.ReceiveAsync(parameters, token).ConfigureAwait(false)) { throw new TimeoutException(ExampleResources.ReplyTimeout); }
                 var reply = parameters.Reply ?? [];
                 var result = ExampleDataDisplay.Format(reply, hex);
-                log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReplyReceived, result));
+                _log.Add(string.Format(System.Globalization.CultureInfo.CurrentCulture, ExampleResources.ReplyReceived, result));
                 return reply;
             }
             finally { /* Attached TCP media remains owned by the server until the client disconnects. */ }
@@ -227,7 +227,7 @@ public sealed class ExampleSession : IAsyncDisposable
     /// <inheritdoc/>
     public async ValueTask DisposeAsync()
     {
-        lock (sync) { if (disposed) { return; } disposed = true; }
+        lock (_sync) { if (_disposed) { return; } _disposed = true; }
         await CloseAsync().ConfigureAwait(false);
         Media.OnReceived -= Received;
         Media.OnError -= Error;
